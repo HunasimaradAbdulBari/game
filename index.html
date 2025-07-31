@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Restaurant Master - Modern Edition</title>
+    <link rel="stylesheet" href="style.css">
+    
+    <!-- Modern Animation Libraries -->
+    <script src="https://unpkg.com/scrollreveal@4.0.9/dist/scrollreveal.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    
+    <!-- Phaser -->
+    <script src="https://cdn.jsdelivr.net/npm/phaser@3.70.0/dist/phaser.min.js"></script>
+    
+    <!-- Modern Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <!-- Modern Loading Screen -->
+    <div id="loading-screen">
+        <div class="loading-content">
+            <div class="loading-logo">
+                <i class="fas fa-utensils" style="font-size: 60px; color: #3b82f6;"></i>
+            </div>
+            <div class="loading-text">Restaurant Master</div>
+            <div class="loading-bar">
+                <div class="loading-progress"></div>
+            </div>
+            <div class="loading-status">Loading your culinary adventure...</div>
+        </div>
+    </div>
+
+    <!-- Modern Game Container -->
+    <div id="game-container" class="fade-in">
+        <div id="game-canvas"></div>
+        
+        <!-- Modern UI Overlay -->
+        <div id="ui-overlay">
+            <div class="ui-panel ui-panel-top-left slide-in-left">
+                <div class="ui-icon">
+                    <i class="fas fa-trophy"></i>
+                </div>
+                <div class="ui-content">
+                    <div class="ui-label">Level</div>
+                    <div class="ui-value" id="current-level">1</div>
+                </div>
+            </div>
+            
+            <div class="ui-panel ui-panel-top-right slide-in-right">
+                <div class="ui-icon">
+                    <i class="fas fa-shopping-basket"></i>
+                </div>
+                <div class="ui-content">
+                    <div class="ui-label">Items</div>
+                    <div class="ui-value" id="basket-count">0</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Game Scripts -->
+    <script src="js/AnimationManager.js"></script>
+    <script src="js/scenes/MenuScene.js"></script>
+    <script src="js/scenes/RestaurantScene.js"></script>
+    <script src="js/scenes/MarketScene.js"></script>
+    <script src="js/scenes/ResultScene.js"></script>
+    <script src="js/main.js"></script>
+
+    <!-- Modern UI Animations Script -->
+    <script>
+        // Initialize modern animations
+        document.addEventListener('DOMContentLoaded', function() {
+            // GSAP animations for enhanced UI
+            gsap.from(".ui-panel", {
+                duration: 0.8,
+                y: -20,
+                opacity: 0,
+                stagger: 0.2,
+                ease: "power2.out"
+            });
+
+            // ScrollReveal for container
+            ScrollReveal().reveal('#game-container', {
+                duration: 1000,
+                scale: 0.95,
+                easing: 'cubic-bezier(0.4, 0, 0.2, 1)'
+            });
+
+            // Modern particle effect for success states
+            window.createSuccessParticles = function(x, y) {
+                for (let i = 0; i < 8; i++) {
+                    const particle = document.createElement('div');
+                    particle.className = 'success-particle';
+                    particle.style.left = x + 'px';
+                    particle.style.top = y + 'px';
+                    document.body.appendChild(particle);
+                    
+                    setTimeout(() => {
+                        particle.remove();
+                    }, 2000);
+                }
+            };
+
+            // Enhanced UI panel interactions
+            document.querySelectorAll('.ui-panel').forEach(panel => {
+                panel.addEventListener('mouseenter', function() {
+                    gsap.to(this, {
+                        duration: 0.3,
+                        scale: 1.05,
+                        y: -2,
+                        ease: "power2.out"
+                    });
+                });
+
+                panel.addEventListener('mouseleave', function() {
+                    gsap.to(this, {
+                        duration: 0.3,
+                        scale: 1,
+                        y: 0,
+                        ease: "power2.out"
+                    });
+                });
+            });
+        });
+    </script>
+</body>
+</html>
