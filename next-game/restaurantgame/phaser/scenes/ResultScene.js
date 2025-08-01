@@ -6,7 +6,7 @@ export class ResultScene extends Phaser.Scene {
     }
 
     create() {
-        console.log('🎮 ResultScene created');
+        console.log('ResultScene created with enhanced win/loss handling');
         const { width, height } = this.cameras.main;
 
         // Get data
@@ -24,71 +24,11 @@ export class ResultScene extends Phaser.Scene {
             this.updateProgress();
         }
 
-        // EMERGENCY: Setup multiple navigation methods
-        this.setupEmergencyNavigation();
-
         // Create result screen
         this.createResultBackground(width, height);
         this.createResultContent(width, height);
         this.createActionButtons(width, height);
         this.updateUI();
-    }
-
-    setupEmergencyNavigation() {
-        console.log('🆘 Setting up emergency navigation...');
-        
-        // Create multiple navigation functions
-        this.navMethods = {
-            // Method 1: Window navigation
-            windowNav: (scene) => {
-                if (typeof window !== 'undefined' && window.navigateToScene) {
-                    console.log('📍 Using window.navigateToScene');
-                    window.navigateToScene(scene);
-                    return true;
-                }
-                return false;
-            },
-            
-            // Method 2: Direct scene start
-            sceneNav: (scene) => {
-                if (this.scene && this.scene.start) {
-                    console.log('📍 Using scene.start');
-                    this.scene.start(scene);
-                    return true;
-                }
-                return false;
-            },
-            
-            // Method 3: Router navigation (Next.js)
-            routerNav: (scene) => {
-                if (typeof window !== 'undefined' && window.location) {
-                    console.log('📍 Using window.location');
-                    const routes = {
-                        'menu': '/',
-                        'MenuScene': '/',
-                        'restaurant': '/restaurant',
-                        'RestaurantScene': '/restaurant',
-                        'market': '/market',
-                        'MarketScene': '/market'
-                    };
-                    
-                    const route = routes[scene] || '/';
-                    window.location.href = route;
-                    return true;
-                }
-                return false;
-            },
-            
-            // Method 4: Page reload
-            reloadNav: () => {
-                console.log('📍 Using page reload');
-                if (typeof window !== 'undefined') {
-                    window.location.reload();
-                    return true;
-                }
-                return false;
-            }
-        };
     }
 
     createResultBackground(width, height) {
@@ -230,55 +170,61 @@ export class ResultScene extends Phaser.Scene {
 
         if (this.isWin) {
             if (this.currentLevel < 3) {
-                this.createEmergencyButton(
+                // Next level button
+                this.createActionButton(
                     width/2 - 100, buttonY, 180, 50, 0x6366f1,
-                    'NEXT LEVEL', 18, 'nextLevel'
+                    'NEXT LEVEL', 18, () => this.goToNextLevel()
                 );
             } else {
-                this.createEmergencyButton(
+                // All levels complete - play again from level 1
+                this.createActionButton(
                     width/2 - 100, buttonY, 180, 50, 0x6366f1,
-                    'PLAY AGAIN', 18, 'playAgain'
+                    'PLAY AGAIN', 18, () => this.playFromStart()
                 );
             }
 
-            this.createEmergencyButton(
+            // Replay current level
+            this.createActionButton(
                 width/2 + 100, buttonY, 180, 50, 0x10b981,
-                'REPLAY LEVEL', 18, 'replayLevel'
+                'REPLAY LEVEL', 18, () => this.replayLevel()
             );
         } else {
-            this.createEmergencyButton(
+            // Loss buttons
+            this.createActionButton(
                 width/2 - 100, buttonY, 180, 50, 0xfbbf24,
-                'TRY AGAIN', 18, 'tryAgain'
+                'TRY AGAIN', 18, () => this.tryAgain()
             );
 
-            this.createEmergencyButton(
+            this.createActionButton(
                 width/2 + 100, buttonY, 180, 50, 0x9ca3af,
-                'CHANGE LEVEL', 18, 'goToMenu'
+                'CHANGE LEVEL', 18, () => this.goToMenu()
             );
         }
 
-        this.createEmergencyButton(
+        // Main menu button (always present)
+        this.createActionButton(
             width/2, buttonY + 60, 200, 45, 0xa78bfa,
-            'MAIN MENU', 16, 'goToMenu'
+            'MAIN MENU', 16, () => this.goToMenu()
         );
     }
 
-    // EMERGENCY BUTTON with multiple event handlers
-    createEmergencyButton(x, y, width, height, color, text, fontSize, actionType) {
-        console.log(`🔘 Creating button: ${text}`);
-        
+    // FIXED: Simplified button creation with direct navigation
+    createActionButton(x, y, width, height, color, text, fontSize, callback) {
         const container = this.add.container(x, y);
 
+        // Button shadow
         const shadow = this.add.graphics();
         shadow.fillStyle(0x000000, 0.3);
         shadow.fillRoundedRect(-width/2 + 3, -height/2 + 3, width, height, 12);
 
+        // Button background
         const bg = this.add.graphics();
         bg.fillStyle(color, 0.9);
         bg.fillRoundedRect(-width/2, -height/2, width, height, 12);
         bg.lineStyle(3, 0xffffff, 0.8);
         bg.strokeRoundedRect(-width/2, -height/2, width, height, 12);
 
+        // Button text
         const buttonText = this.add.text(0, 0, text, {
             fontSize: `${fontSize}px`,
             fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, sans-serif',
@@ -290,26 +236,7 @@ export class ResultScene extends Phaser.Scene {
         container.setSize(width, height);
         container.setInteractive({ useHandCursor: true });
 
-        // EMERGENCY: Multiple click event handlers
-        const clickHandler = () => {
-            console.log(`🚨 EMERGENCY CLICK: ${text} -> ${actionType}`);
-            this.executeEmergencyAction(actionType, text);
-        };
-
-        // Add multiple event listeners
-        container.on('pointerdown', clickHandler);
-        container.on('pointerup', clickHandler);
-        container.on('pointertap', clickHandler);
-
-        // Also add a timeout-based click handler
-        container.on('pointerdown', () => {
-            setTimeout(() => {
-                console.log(`⏰ TIMEOUT CLICK: ${text} -> ${actionType}`);
-                this.executeEmergencyAction(actionType, text);
-            }, 100);
-        });
-
-        // Visual feedback
+        // Hover effects
         container.on('pointerover', () => {
             this.tweens.add({
                 targets: container,
@@ -318,6 +245,12 @@ export class ResultScene extends Phaser.Scene {
                 duration: 200,
                 ease: 'Back.easeOut'
             });
+
+            bg.clear();
+            bg.fillStyle(this.lightenColor(color, 0.2), 1);
+            bg.fillRoundedRect(-width/2, -height/2, width, height, 12);
+            bg.lineStyle(4, 0xffffff, 1);
+            bg.strokeRoundedRect(-width/2, -height/2, width, height, 12);
         });
 
         container.on('pointerout', () => {
@@ -328,6 +261,35 @@ export class ResultScene extends Phaser.Scene {
                 duration: 200,
                 ease: 'Back.easeOut'
             });
+
+            bg.clear();
+            bg.fillStyle(color, 0.9);
+            bg.fillRoundedRect(-width/2, -height/2, width, height, 12);
+            bg.lineStyle(3, 0xffffff, 0.8);
+            bg.strokeRoundedRect(-width/2, -height/2, width, height, 12);
+        });
+
+        // FIXED: Reliable click handler with direct navigation
+        container.on('pointerdown', () => {
+            console.log(`🔥 Button clicked: ${text}`);
+            
+            // Visual feedback
+            this.tweens.add({
+                targets: container,
+                scaleX: 0.95,
+                scaleY: 0.95,
+                duration: 100,
+                yoyo: true,
+                ease: 'Power2.easeInOut'
+            });
+
+            // FIXED: Direct callback execution
+            try {
+                callback();
+            } catch (error) {
+                console.error('Button callback error:', error);
+                this.fallbackNavigation(text);
+            }
         });
 
         // Entrance animation
@@ -344,103 +306,78 @@ export class ResultScene extends Phaser.Scene {
         return container;
     }
 
-    // EMERGENCY ACTION EXECUTOR
-    executeEmergencyAction(actionType, buttonText) {
-        console.log(`🆘 EMERGENCY ACTION: ${actionType} from button "${buttonText}"`);
+    // FIXED: Simple navigation methods with bulletproof routing
+    goToNextLevel() {
+        console.log('🎯 Going to next level...');
         
-        // Clear basket first
-        sessionStorage.removeItem('basket');
-        
-        let targetScene = '';
-        let targetRoute = '';
-        
-        // Determine target scene and route
-        switch (actionType) {
-            case 'nextLevel':
-                console.log('➡️ Next Level Action');
-                const nextLevel = this.currentLevel + 1;
-                if (nextLevel <= 3) {
-                    localStorage.setItem('restaurant-level', nextLevel.toString());
-                }
-                targetScene = 'restaurant';
-                targetRoute = '/restaurant';
-                break;
-                
-            case 'replayLevel':
-            case 'tryAgain':
-                console.log('🔄 Replay/Try Again Action');
-                targetScene = 'restaurant';
-                targetRoute = '/restaurant';
-                break;
-                
-            case 'playAgain':
-                console.log('🎮 Play Again Action');
-                localStorage.setItem('restaurant-level', '1');
-                targetScene = 'restaurant';
-                targetRoute = '/restaurant';
-                break;
-                
-            case 'goToMenu':
-                console.log('🏠 Go to Menu Action');
-                targetScene = 'menu';
-                targetRoute = '/';
-                break;
-                
-            default:
-                console.error(`❌ Unknown action: ${actionType}`);
-                targetScene = 'menu';
-                targetRoute = '/';
+        const nextLevel = this.currentLevel + 1;
+        if (nextLevel <= 3) {
+            localStorage.setItem('restaurant-level', nextLevel.toString());
+            console.log(`✅ Level set to: ${nextLevel}`);
         }
         
-        // Try multiple navigation methods
-        console.log(`🎯 Target: ${targetScene} (${targetRoute})`);
-        this.tryAllNavigationMethods(targetScene, targetRoute);
+        sessionStorage.removeItem('basket');
+        this.navigateToRestaurant();
     }
 
-    // Try all navigation methods in sequence
-    tryAllNavigationMethods(targetScene, targetRoute) {
-        console.log('🔄 Trying all navigation methods...');
+    replayLevel() {
+        console.log('🎯 Replaying current level...');
+        sessionStorage.removeItem('basket');
+        console.log(`✅ Replaying level: ${this.currentLevel}`);
+        this.navigateToRestaurant();
+    }
+
+    tryAgain() {
+        console.log('🎯 Trying again...');
+        sessionStorage.removeItem('basket');
+        console.log(`✅ Trying again level: ${this.currentLevel}`);
+        this.navigateToRestaurant();
+    }
+
+    playFromStart() {
+        console.log('🎯 Playing from start...');
+        localStorage.setItem('restaurant-level', '1');
+        sessionStorage.removeItem('basket');
+        console.log('✅ Level reset to: 1');
+        this.navigateToRestaurant();
+    }
+
+    goToMenu() {
+        console.log('🎯 Going to menu...');
+        sessionStorage.removeItem('basket');
         
-        let success = false;
+        // FIXED: Direct page navigation (most reliable)
+        setTimeout(() => {
+            if (typeof window !== 'undefined') {
+                window.location.href = '/';
+            }
+        }, 200);
+    }
+
+    // FIXED: Bulletproof restaurant navigation
+    navigateToRestaurant() {
+        console.log('🚀 Navigating to restaurant...');
         
-        // Method 1: Window navigation
-        if (!success) {
-            try {
-                success = this.navMethods.windowNav(targetScene);
-                if (success) console.log('✅ Window navigation succeeded');
-            } catch (error) {
-                console.error('❌ Window navigation failed:', error);
+        // FIXED: Direct page navigation (most reliable)
+        setTimeout(() => {
+            if (typeof window !== 'undefined') {
+                window.location.href = '/restaurant';
+            }
+        }, 200);
+    }
+
+    // FIXED: Simple fallback navigation
+    fallbackNavigation(buttonText) {
+        console.log(`🆘 Using fallback navigation for: ${buttonText}`);
+        
+        if (typeof window !== 'undefined') {
+            if (buttonText.includes('NEXT') || buttonText.includes('TRY') || 
+                buttonText.includes('REPLAY') || buttonText.includes('PLAY')) {
+                window.location.href = '/restaurant';
+            } else if (buttonText.includes('MENU') || buttonText.includes('CHANGE')) {
+                window.location.href = '/';
             }
         }
-        
-        // Method 2: Scene navigation  
-        if (!success) {
-            try {
-                success = this.navMethods.sceneNav(targetScene);
-                if (success) console.log('✅ Scene navigation succeeded');
-            } catch (error) {
-                console.error('❌ Scene navigation failed:', error);
-            }
-        }
-        
-        // Method 3: Router navigation (immediate)
-        if (!success) {
-            console.log('🆘 Using emergency router navigation');
-            setTimeout(() => {
-                this.navMethods.routerNav(targetScene);
-            }, 100);
-            success = true;
-        }
-        
-        // Method 4: Reload as last resort
-        if (!success) {
-            console.log('🆘 Using emergency page reload');
-            setTimeout(() => {
-                this.navMethods.reloadNav();
-            }, 200);
-        }
-        
-        console.log(`📊 Navigation attempt completed. Success: ${success}`);
     }
 
     updateProgress() {
