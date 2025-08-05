@@ -1,5 +1,7 @@
+// pages/index.js
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
+// import BackgroundAnimation from '@/components/BackgroundAnimation';
 import Layout from '../components/Layout';
 import LevelSelector from '../components/LevelSelector';
 import Button from '../components/Button';
@@ -29,133 +31,89 @@ export default function MenuPage() {
 
   return (
     <Layout scene="menu">
-      <div className="menu-scene" style={{
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'center',
-        height: '100%',
-        padding: '20px',
-        textAlign: 'center'
-      }}>
-        {/* Background Effects */}
+      <div className="menu-scene">
+        {/* Floating Elements */}
         <div className="floating-elements">
-          {Array.from({ length: 20 }, (_, i) => (
+          {Array.from({ length: 15 }, (_, i) => (
             <div
               key={i}
               className="floating-particle"
               style={{
                 position: 'absolute',
-                width: `${Math.random() * 8 + 3}px`,
-                height: `${Math.random() * 8 + 3}px`,
-                backgroundColor: '#94a3b8',
+                width: `${Math.random() * 6 + 3}px`,
+                height: `${Math.random() * 6 + 3}px`,
+                backgroundColor: 'rgba(33, 150, 243, 0.1)',
                 borderRadius: '50%',
-                opacity: 0.2,
+                opacity: Math.random() * 0.3 + 0.1,
                 left: `${Math.random() * 100}%`,
                 top: `${Math.random() * 100}%`,
-                animation: `float ${Math.random() * 8 + 4}s ease-in-out infinite alternate`,
-                animationDelay: `${Math.random() * 3}s`
+                animation: `float ${Math.random() * 8 + 6}s ease-in-out infinite alternate`,
+                animationDelay: `${Math.random() * 4}s`,
+                pointerEvents: 'none'
               }}
             />
           ))}
         </div>
 
-        {/* Title */}
-        <div className="title-section slide-in" style={{ marginBottom: '40px' }}>
-          <h1 style={{
-            fontSize: '48px',
-            fontWeight: '800',
-            color: '#1e293b',
-            marginBottom: '16px',
-            textShadow: '0 2px 4px rgba(203, 213, 225, 0.8)'
-          }}>
-            Restaurant Master
-          </h1>
-          <h2 style={{
-            fontSize: '24px',
-            fontWeight: '600',
-            color: '#475569'
-          }}>
-            Select Your Level
-          </h2>
+        {/* Title Section */}
+        <div className="title-section fade-in">
+          <h1>Restaurant Master</h1>
+          <h2>Select Your Level</h2>
         </div>
 
         {/* Level Selector */}
-        <div className="level-selector-container fade-in" style={{ marginBottom: '40px' }}>
+        <div className="level-selector-container slide-in">
           <LevelSelector onLevelSelect={handleLevelSelect} />
         </div>
 
         {/* Bottom Buttons */}
-        <div className="bottom-buttons" style={{
-          display: 'flex',
-          gap: '16px',
-          flexWrap: 'wrap',
-          justifyContent: 'center'
-        }}>
-          <Button variant="danger" onClick={handleResetProgress}>
-            Reset Progress
-          </Button>
-          <Button variant="secondary" onClick={handleShowInstructions}
-          
-          //  style={{ marginTop: '-34px', width: '100%' }}
+        <div className="bottom-buttons fade-in">
+          <Button
+            variant="danger"
+            onClick={handleResetProgress}
+            className="reset-button"
           >
-            How to Play
+            <svg className="w-[42px] h-[42px] text-gray-800 dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
+  <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m16 10 3-3m0 0-3-3m3 3H5v3m3 4-3 3m0 0 3 3m-3-3h14v-3"/>
+</svg>
+ Reset Game
+          </Button>
+          
+          <Button
+            variant="secondary"
+            onClick={handleShowInstructions}
+            className="instructions-button"
+          >
+            <svg className="w-[42px] h-[42px] text-gray-800 dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 24 24">
+  <path fill-rule="evenodd" d="M11 4.717c-2.286-.58-4.16-.756-7.045-.71A1.99 1.99 0 0 0 2 6v11c0 1.133.934 2.022 2.044 2.007 2.759-.038 4.5.16 6.956.791V4.717Zm2 15.081c2.456-.631 4.198-.829 6.956-.791A2.013 2.013 0 0 0 22 16.999V6a1.99 1.99 0 0 0-1.955-1.993c-2.885-.046-4.76.13-7.045.71v15.081Z" clip-rule="evenodd"/>
+</svg>
+ How to Play
           </Button>
         </div>
 
         {/* Instructions Modal */}
         {showInstructions && (
-          <div 
+          <div
             className="instructions-overlay"
-            style={{
-              position: 'fixed',
-              top: 0,
-              left: 0,
-              right: 0,
-              bottom: 0,
-              backgroundColor: 'rgba(0, 0, 0, 0.8)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              zIndex: 2000
-            }}
             onClick={() => setShowInstructions(false)}
           >
-            <div 
+            <div
               className="instructions-panel"
-              style={{
-                backgroundColor: '#ffffff',
-                borderRadius: '20px',
-                padding: '32px',
-                maxWidth: '600px',
-                maxHeight: '80vh',
-                overflow: 'auto',
-                margin: '20px',
-                border: '3px solid #6366f1'
-              }}
               onClick={(e) => e.stopPropagation()}
             >
-              <h3 style={{ 
-                color: '#1e293b', 
-                marginBottom: '20px',
-                fontSize: '20px',
-                fontWeight: '800'
-              }}>
-                🎯 HOW TO PLAY RESTAURANT MASTER
-              </h3>
-              
-              <div style={{ color: '#475569', lineHeight: '1.6' }}>
-                <p><strong>1.</strong> Read the customer's request carefully</p>
-                <p><strong>2.</strong> Go to the market and collect the right ingredients</p>
-                <p><strong>3.</strong> Drag items to your basket or tap to add them</p>
-                <p><strong>4.</strong> Submit your order to complete the level</p>
-                <p><strong>5.</strong> Get all ingredients correct to unlock the next level!</p>
+              <h3>🎯 HOW TO PLAY RESTAURANT MASTER</h3>
+              <div className="instructions-content">
+                <p>1. Read the customer's request carefully</p>
+                <p>2. Go to the market and collect the right ingredients</p>
+                <p>3. Drag items to your basket or tap to add them</p>
+                <p>4. Submit your order to complete the level</p>
+                <p>5. Get all ingredients correct to unlock the next level!</p>
               </div>
-
-              <Button 
-                variant="primary" 
+              
+              <Button
+                variant="primary"
                 onClick={() => setShowInstructions(false)}
-                style={{ marginTop: '24px', width: '100%' }}
+                className="got-it-button"
               >
                 GOT IT!
               </Button>
@@ -165,9 +123,161 @@ export default function MenuPage() {
       </div>
 
       <style jsx>{`
+        .menu-scene {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          height: 100%;
+          text-align: center;
+          position: relative;
+          gap: clamp(20px, 4vw, 32px);
+          padding: clamp(16px, 3vw, 24px);
+        }
+
+        .floating-elements {
+          position: absolute;
+          top: 0;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          overflow: hidden;
+          pointer-events: none;
+        }
+
+        .title-section {
+          flex-shrink: 0;
+          margin-bottom: clamp(16px, 3vw, 24px);
+        }
+
+        .title-section h1 {
+          font-size: clamp(36px, 8vw, 64px);
+          font-weight: 800;
+          color: #0d47a1;
+          margin-bottom: clamp(8px, 2vw, 16px);
+          text-shadow: 0 2px 4px rgba(33, 150, 243, 0.1);
+          background: linear-gradient(135deg, #1976d2 0%, #2196f3 100%);
+          -webkit-background-clip: text;
+          -webkit-text-fill-color: transparent;
+          background-clip: text;
+        }
+
+        .title-section h2 {
+          font-size: clamp(18px, 4vw, 28px);
+          font-weight: 600;
+          color: #1565c0;
+          opacity: 0.9;
+        }
+
+        .level-selector-container {
+          flex-shrink: 0;
+          margin: clamp(16px, 3vw, 24px) 0;
+        }
+
+        .bottom-buttons {
+          display: flex;
+          gap: clamp(12px, 3vw, 20px);
+          flex-wrap: wrap;
+          justify-content: center;
+          flex-shrink: 0;
+        }
+
+        .instructions-overlay {
+          position: fixed;
+          top: 0;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          background-color: rgba(13, 71, 161, 0.1);
+          backdrop-filter: blur(10px);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          z-index: 2000;
+          animation: fadeIn 0.3s ease forwards;
+          padding: clamp(12px, 3vw, 24px);
+        }
+
+        .instructions-panel {
+          background: linear-gradient(135deg, #ffffff 0%, #f8fdff 100%);
+          border-radius: clamp(16px, 3vw, 24px);
+          padding: clamp(24px, 5vw, 40px);
+          max-width: min(90vw, 600px);
+          max-height: 80vh;
+          overflow: auto;
+          border: 2px solid rgba(33, 150, 243, 0.1);
+          box-shadow: 0 20px 60px rgba(33, 150, 243, 0.15);
+          animation: scaleIn 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+          text-align: left;
+        }
+
+        .instructions-panel h3 {
+          font-size: clamp(20px, 4vw, 28px);
+          font-weight: 700;
+          color: #0d47a1;
+          margin-bottom: 20px;
+          text-align: center;
+        }
+
+        .instructions-content p {
+          font-size: clamp(14px, 2.5vw, 18px);
+          font-weight: 500;
+          color: #1565c0;
+          margin-bottom: 12px;
+          padding: 8px 0;
+          border-bottom: 1px solid rgba(33, 150, 243, 0.1);
+        }
+
+        .instructions-content p:last-child {
+          border-bottom: none;
+          margin-bottom: 24px;
+        }
+
+        .got-it-button {
+          width: 100%;
+          margin-top: 16px;
+        }
+
         @keyframes float {
-          0% { transform: translateY(0px); }
-          100% { transform: translateY(-20px); }
+          0% { transform: translateY(0px) translateX(0px); }
+          100% { transform: translateY(-20px) translateX(10px); }
+        }
+
+        @keyframes scaleIn {
+          from {
+            transform: scale(0.9);
+            opacity: 0;
+          }
+          to {
+            transform: scale(1);
+            opacity: 1;
+          }
+        }
+
+        @media (max-width: 768px) {
+          .bottom-buttons {
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+            max-width: 300px;
+          }
+
+          .instructions-panel {
+            margin: 12px;
+            padding: 20px;
+          }
+
+          .menu-scene {
+            gap: 20px;
+            padding: 16px;
+          }
+        }
+
+        @media (max-width: 480px) {
+          .menu-scene {
+            padding: 12px;
+            gap: 16px;
+          }
         }
       `}</style>
     </Layout>

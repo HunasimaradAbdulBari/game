@@ -1,5 +1,7 @@
+// pages/_app.js - ADD BACKGROUND GLOBALLY
 import '../styles/globals.css';
 import { useEffect } from 'react';
+import BackgroundAnimation from '../components/BackgroundAnimation'; // Add this
 
 export default function App({ Component, pageProps }) {
   useEffect(() => {
@@ -13,12 +15,16 @@ export default function App({ Component, pageProps }) {
     document.addEventListener('touchstart', preventZoom, { passive: false });
     document.addEventListener('touchmove', preventZoom, { passive: false });
 
-    // Cleanup
     return () => {
       document.removeEventListener('touchstart', preventZoom);
       document.removeEventListener('touchmove', preventZoom);
     };
   }, []);
 
-  return <Component {...pageProps} />;
+  return (
+    <>
+      <BackgroundAnimation /> {/* Add this line */}
+      <Component {...pageProps} />
+    </>
+  );
 }
