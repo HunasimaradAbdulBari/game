@@ -1,6 +1,7 @@
 // pages/restaurant.js
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
+// import BackgroundAnimation from '../components/BackgroundAnimation';
 import Layout from '../components/Layout';
 import Button from '../components/Button';
 import { getCurrentLevel, getBasket, clearBasket } from '../utils/storage';

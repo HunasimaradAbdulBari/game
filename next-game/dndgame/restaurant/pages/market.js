@@ -225,15 +225,16 @@ export default function MarketPage() {
             display: 'flex',
             flexDirection: 'column',
             height: '100%',
-            padding: '20px',
+            padding: 'clamp(12px, 2vw, 20px)',
             position: 'relative',
             touchAction: activeId ? 'none' : 'pan-y',
             userSelect: 'none',
             WebkitUserSelect: 'none',
             WebkitTouchCallout: 'none',
+            overflow: 'hidden', // FIXED: Prevent any scrolling
           }}
         >
-          {/* ---------- BACKGROUND PARTICLES (unchanged) ---------- */}
+          {/* ---------- BACKGROUND PARTICLES ---------- */}
           <div className="floating-elements">
             {Array.from({ length: 12 }, (_, i) => (
               <div
@@ -248,8 +249,7 @@ export default function MarketPage() {
                   opacity: Math.random() * 0.2 + 0.1,
                   left: `${Math.random() * 100}%`,
                   top: `${Math.random() * 100}%`,
-                  animation: `float ${Math.random() * 12 + 8
-                    }s ease-in-out infinite alternate`,
+                  animation: `float ${Math.random() * 12 + 8}s ease-in-out infinite alternate`,
                   animationDelay: `${Math.random() * 4}s`,
                   pointerEvents: 'none',
                 }}
@@ -257,31 +257,37 @@ export default function MarketPage() {
             ))}
           </div>
 
-          {/* ---------- HEADER (unchanged) ---------- */}
-          <div className="header" style={{ textAlign: 'center', marginBottom: '24px' }}>
+          {/* ---------- HEADER ---------- */}
+          <div 
+            className="header" 
+            style={{ 
+              textAlign: 'center', 
+              marginBottom: 'clamp(8px, 2vw, 16px)',
+              flexShrink: 0
+            }}
+          >
             <div
               style={{
                 background: 'rgba(251,251,251,0.8)',
-                borderRadius: '16px',
-                padding: '12px 24px',
-                marginLeft: '-150px',
+                borderRadius: 'clamp(8px, 2vw, 16px)',
+                padding: 'clamp(8px, 1.5vw, 12px) clamp(12px, 3vw, 24px)',
                 display: 'inline-block',
                 border: '1px solid #6366f1',
               }}
             >
               <h1
                 style={{
-                  fontSize: '26px',
+                  fontSize: 'clamp(18px, 4vw, 26px)',
                   fontWeight: '700',
                   color: '#1e293b',
-                  marginBottom: '4px',
+                  marginBottom: 'clamp(2px, 0.5vw, 4px)',
                 }}
               >
                 🏪 Market Selection
               </h1>
               <p
                 style={{
-                  fontSize: '14px',
+                  fontSize: 'clamp(10px, 2vw, 14px)',
                   fontWeight: '500',
                   color: '#475569',
                 }}
@@ -291,7 +297,7 @@ export default function MarketPage() {
             </div>
           </div>
 
-          {/* ---------- STATUS BADGE (unchanged) ---------- */}
+          {/* ---------- STATUS BADGE ---------- */}
           {activeId && (
             <div
               style={{
@@ -320,21 +326,22 @@ export default function MarketPage() {
               display: 'flex',
               justifyContent: 'flex-start',
               alignItems: 'center',
-              marginBottom: '24px',
+              marginBottom: 'clamp(8px, 2vw, 16px)',
               gap: '12px',
+              flexShrink: 0
             }}
           >
             <div
               style={{
                 background: 'rgba(255,255,255,0.8)',
                 borderRadius: '8px',
-                padding: '8px 16px',
+                padding: 'clamp(4px, 1vw, 8px) clamp(8px, 2vw, 16px)',
                 border: '1px solid #6366f1',
               }}
             >
               <span
                 style={{
-                  fontSize: '11px',
+                  fontSize: 'clamp(8px, 1.5vw, 11px)',
                   fontWeight: '600',
                   color: '#1e293b',
                 }}
@@ -342,20 +349,20 @@ export default function MarketPage() {
                 Level {currentLevel}
               </span>
             </div>
-            {/* Items box removed as requested */}
           </div>
 
-          {/* ---------- ITEMS GRID ---------- */}
+          {/* ---------- ITEMS GRID - FIXED: No overflow, proper fit ---------- */}
           <div
             className="items-grid"
             style={{
               display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))',
-              gap: '16px',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(clamp(80px, 12vw, 120px), 1fr))',
+              gap: 'clamp(8px, 2vw, 16px)',
               flex: '1',
-              padding: '0 20px',
-              overflow: 'auto',
-              WebkitOverflowScrolling: 'touch',
+              padding: '0 clamp(8px, 2vw, 20px)',
+              overflow: 'hidden', // FIXED: Remove scroll bar
+              alignContent: 'start', // FIXED: Align content to top
+              maxHeight: '100%', // FIXED: Ensure it doesn't exceed container
             }}
           >
             {levelData.available.map((item, idx) => (
@@ -366,6 +373,9 @@ export default function MarketPage() {
                   animation: `fadeIn 0.6s ease-out ${idx * 0.1}s both`,
                   touchAction: 'none',
                   userSelect: 'none',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
                 }}
               >
                 <DraggableWrapper
@@ -388,15 +398,17 @@ export default function MarketPage() {
           <div
             className="floating-basket"
             style={{
+              marginTop:'-100px',
               position: 'absolute',
-              top: '10px',
-              right: '100px',
-              width: '180px',
+              top: 'clamp(60px, 15vw, 120px)',
+              right: 'clamp(8px, 2vw, 20px)',
+              width: 'clamp(100px, 15vw, 180px)',
               touchAction: 'none',
               filter: activeId
                 ? 'drop-shadow(0 0 20px rgba(16,185,129,0.5))'
                 : 'none',
               transition: 'filter 0.3s ease',
+              zIndex: 100,
             }}
           >
             <div
@@ -424,12 +436,13 @@ export default function MarketPage() {
               display: 'flex',
               justifyContent: 'space-between',
               alignItems: 'center',
-              gap: '12px',
-              marginTop: '16px',
+              gap: 'clamp(6px, 1.5vw, 12px)',
+              marginTop: 'clamp(8px, 2vw, 16px)',
               flexWrap: 'wrap',
+              flexShrink: 0,
             }}
           >
-            {/* NEW Jedi-hongbin Back button */}
+            {/* Back button */}
             <button
               className="hongbin-back"
               onClick={handleGoToMenu}
@@ -449,7 +462,7 @@ export default function MarketPage() {
             <div
               style={{
                 display: 'flex',
-                gap: '12px',
+                gap: 'clamp(6px, 1.5vw, 12px)',
                 flex: '1',
                 justifyContent: 'center',
                 alignItems: 'center',
@@ -486,7 +499,7 @@ export default function MarketPage() {
             </Button>
           </div>
 
-          {/* ---------- BASKET POPUP (unchanged) ---------- */}
+          {/* ---------- BASKET POPUP ---------- */}
           {showBasketPopup && (
             <div
               className="basket-popup-overlay"
@@ -581,60 +594,11 @@ export default function MarketPage() {
 
       {/* ---------- STYLES ---------- */}
       <style jsx>{`
-        /* --- Hannahyockel tooltip button --- */
-        button.tooltip {
-          display: flex;
-          flex-direction: column;
-          justify-content: center;
-          align-items: center;
-          padding: 1em;
-          border: 0 solid transparent;
-          background-color: rgba(100, 77, 237, 0.08);
-          border-radius: 1.25em;
-          transition: all 0.2s linear;
-        }
-        button.tooltip:hover {
-          box-shadow: 3.4px 2.5px 4.9px rgba(0, 0, 0, 0.025),
-            8.6px 6.3px 12.4px rgba(0, 0, 0, 0.035),
-            17.5px 12.8px 25.3px rgba(0, 0, 0, 0.045),
-            36.1px 26.3px 52.2px rgba(0, 0, 0, 0.055),
-            99px 72px 143px rgba(0, 0, 0, 0.08);
-        }
-        .tooltip {
-          position: relative;
-        }
-        .tooltip .tooltiptext {
-          visibility: hidden;
-          width: 4em;
-          background-color: rgba(0, 0, 0, 0.253);
-          color: #fff;
-          text-align: center;
-          border-radius: 6px;
-          padding: 5px 0;
-          position: absolute;
-          z-index: 1;
-          top: 25%;
-          left: 110%;
-        }
-        .tooltip .tooltiptext::after {
-          content: '';
-          position: absolute;
-          top: 50%;
-          right: 100%;
-          margin-top: -5px;
-          border-width: 5px;
-          border-style: solid;
-          border-color: transparent rgba(0, 0, 0, 0.253) transparent transparent;
-        }
-        .tooltip:hover .tooltiptext {
-          visibility: visible;
-        }
-
-        /* --- Jedi-hongbin back button --- */
+        /* Back button styles */
         .hongbin-back {
           display: flex;
-          height: 3.45em;
-          width: 120px;
+          height: clamp(2.5em, 5vw, 3.45em);
+          width: clamp(80px, 20vw, 120px);
           align-items: center;
           justify-content: center;
           background-color: white;
@@ -644,10 +608,11 @@ export default function MarketPage() {
           cursor: pointer;
           border: none;
           background: red;
+          font-size: clamp(10px, 2vw, 14px);
         }
         .hongbin-back > svg {
           margin: 0 5px;
-          font-size: 20px;
+          font-size: clamp(14px, 3vw, 20px);
           transition: all 0.4s ease-in;
         }
         .hongbin-back:hover > svg {
@@ -659,55 +624,14 @@ export default function MarketPage() {
           transform: translateY(-2px);
         }
 
-        /* --- Existing market styles (unchanged excerpts) --- */
+        /* Responsive item styles */
         .item-slot {
           display: flex;
           align-items: center;
           justify-content: center;
+          max-width: 100%;
         }
-        .drag-item {
-          width: 100px;
-          height: 100px;
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          justify-content: center;
-          padding: 8px;
-          position: relative;
-        }
-        .item-icon {
-          font-size: 28px;
-          margin-bottom: 4px;
-        }
-        .item-name {
-          font-size: 9px;
-          font-weight: 600;
-          color: #334155;
-          text-align: center;
-          line-height: 1.1;
-        }
-        .checkmark {
-          position: absolute;
-          top: -8px;
-          right: -8px;
-          width: 16px;
-          height: 16px;
-          background: #10b981;
-          border-radius: 50%;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          color: #fff;
-          font-size: 10px;
-          font-weight: 900;
-        }
-        .drag-item.in-basket {
-          opacity: 0.5;
-          transform: scale(0.9);
-        }
-        .drag-item.disabled {
-          cursor: not-allowed;
-        }
+        
         @keyframes float {
           0% {
             transform: translateY(0) translateX(0);
@@ -716,6 +640,7 @@ export default function MarketPage() {
             transform: translateY(-40px) translateX(20px);
           }
         }
+        
         @keyframes fadeIn {
           from {
             opacity: 0;
@@ -726,28 +651,43 @@ export default function MarketPage() {
             transform: translateY(0) scale(1);
           }
         }
+        
+        /* Mobile specific adjustments */
         @media (max-width: 768px) {
           .items-grid {
-            grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
-            gap: 12px;
-            padding: 0 10px;
+            grid-template-columns: repeat(auto-fit, minmax(clamp(70px, 15vw, 100px), 1fr)) !important;
+            gap: clamp(6px, 2vw, 12px) !important;
+            padding: 0 clamp(4px, 1vw, 8px) !important;
           }
+          
           .floating-basket {
-            position: relative;
-            top: auto;
-            right: auto;
-            width: 100%;
-            margin: 16px 0;
+            position: relative !important;
+            top: auto !important;
+            right: auto !important;
+            width: 100% !important;
+            margin: clamp(8px, 2vw, 16px) 0 !important;
+            order: -1;
           }
-          .drag-item {
-            width: 80px;
-            height: 80px;
+          
+          .bottom-nav {
+            flex-direction: column !important;
+            gap: clamp(6px, 2vw, 12px) !important;
           }
-          .item-icon {
-            font-size: 24px;
+          
+          .market-scene {
+            padding: clamp(8px, 2vw, 16px) !important;
           }
-          .item-name {
-            font-size: 8px;
+        }
+        
+        @media (max-width: 480px) {
+          .items-grid {
+            grid-template-columns: repeat(auto-fit, minmax(60px, 1fr)) !important;
+            gap: 8px !important;
+            padding: 0 4px !important;
+          }
+          
+          .market-scene {
+            padding: 8px !important;
           }
         }
       `}</style>

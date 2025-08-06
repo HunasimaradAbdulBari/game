@@ -1,7 +1,7 @@
 // components/LevelSelector.js
 import { useState, useEffect } from 'react';
 import { getCurrentLevel, getMaxUnlockedLevel, setCurrentLevel } from '../utils/storage';
-
+import BackgroundAnimation from './BackgroundAnimation';
 export default function LevelSelector({ onLevelSelect }) {
   const [currentLevel, setCurrentLevelState] = useState(1);
   const [maxUnlocked, setMaxUnlocked] = useState(1);

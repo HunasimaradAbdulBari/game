@@ -1,5 +1,14 @@
 // components/BackgroundAnimation.jsx
+import { useRouter } from 'next/router';
+
 export default function BackgroundAnimation() {
+  const router = useRouter();
+  
+  // Only exclude result page, allow all others
+  if (router.pathname === '/result') {
+    return null;
+  }
+
   return (
     <div className="background-animation-container">
       {/* Floating Bubbles */}
@@ -62,6 +71,7 @@ export default function BackgroundAnimation() {
         </div>
       </div>
 
+      {/* ALL THE CSS STYLES - THIS WAS MISSING IN MY PREVIOUS RESPONSE */}
       <style jsx>{`
         .background-animation-container {
           position: fixed;

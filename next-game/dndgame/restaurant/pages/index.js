@@ -1,7 +1,7 @@
 // pages/index.js
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
-// import BackgroundAnimation from '@/components/BackgroundAnimation';
+// REMOVED: import BackgroundAnimation from '../components/BackgroundAnimation';
 import Layout from '../components/Layout';
 import LevelSelector from '../components/LevelSelector';
 import Button from '../components/Button';
@@ -30,6 +30,7 @@ export default function MenuPage() {
   };
 
   return (
+    // REMOVED: <BackgroundAnimation /> - Layout already includes it
     <Layout scene="menu">
       <div className="menu-scene">
         {/* Floating Elements */}
@@ -73,10 +74,24 @@ export default function MenuPage() {
             onClick={handleResetProgress}
             className="reset-button"
           >
-            <svg className="w-[42px] h-[42px] text-gray-800 dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
-  <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m16 10 3-3m0 0-3-3m3 3H5v3m3 4-3 3m0 0 3 3m-3-3h14v-3"/>
-</svg>
- Reset Game
+            <svg 
+              className="button-icon" 
+              aria-hidden="true" 
+              xmlns="http://www.w3.org/2000/svg" 
+              width="20" 
+              height="20" 
+              fill="none" 
+              viewBox="0 0 24 24"
+            >
+              <path 
+                stroke="currentColor" 
+                strokeLinecap="round" 
+                strokeLinejoin="round" 
+                strokeWidth="2" 
+                d="m16 10 3-3m0 0-3-3m3 3H5v3m3 4-3 3m0 0 3 3m-3-3h14v-3"
+              />
+            </svg>
+            Reset Game
           </Button>
           
           <Button
@@ -84,10 +99,22 @@ export default function MenuPage() {
             onClick={handleShowInstructions}
             className="instructions-button"
           >
-            <svg className="w-[42px] h-[42px] text-gray-800 dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 24 24">
-  <path fill-rule="evenodd" d="M11 4.717c-2.286-.58-4.16-.756-7.045-.71A1.99 1.99 0 0 0 2 6v11c0 1.133.934 2.022 2.044 2.007 2.759-.038 4.5.16 6.956.791V4.717Zm2 15.081c2.456-.631 4.198-.829 6.956-.791A2.013 2.013 0 0 0 22 16.999V6a1.99 1.99 0 0 0-1.955-1.993c-2.885-.046-4.76.13-7.045.71v15.081Z" clip-rule="evenodd"/>
-</svg>
- How to Play
+            <svg 
+              className="button-icon" 
+              aria-hidden="true" 
+              xmlns="http://www.w3.org/2000/svg" 
+              width="20" 
+              height="20" 
+              fill="currentColor" 
+              viewBox="0 0 24 24"
+            >
+              <path 
+                fillRule="evenodd" 
+                d="M11 4.717c-2.286-.58-4.16-.756-7.045-.71A1.99 1.99 0 0 0 2 6v11c0 1.133.934 2.022 2.044 2.007 2.759-.038 4.5.16 6.956.791V4.717Zm2 15.081c2.456-.631 4.198-.829 6.956-.791A2.013 2.013 0 0 0 22 16.999V6a1.99 1.99 0 0 0-1.955-1.993c-2.885-.046-4.76.13-7.045.71v15.081Z" 
+                clipRule="evenodd"
+              />
+            </svg>
+            How to Play
           </Button>
         </div>
 
@@ -182,6 +209,13 @@ export default function MenuPage() {
           flex-shrink: 0;
         }
 
+        .button-icon {
+          width: 20px;
+          height: 20px;
+          margin-right: 8px;
+          color: currentColor;
+        }
+
         .instructions-overlay {
           position: fixed;
           top: 0;
@@ -243,6 +277,11 @@ export default function MenuPage() {
           100% { transform: translateY(-20px) translateX(10px); }
         }
 
+        @keyframes fadeIn {
+          from { opacity: 0; }
+          to { opacity: 1; }
+        }
+
         @keyframes scaleIn {
           from {
             transform: scale(0.9);
@@ -271,12 +310,24 @@ export default function MenuPage() {
             gap: 20px;
             padding: 16px;
           }
+
+          .button-icon {
+            width: 16px;
+            height: 16px;
+            margin-right: 6px;
+          }
         }
 
         @media (max-width: 480px) {
           .menu-scene {
             padding: 12px;
             gap: 16px;
+          }
+
+          .button-icon {
+            width: 14px;
+            height: 14px;
+            margin-right: 4px;
           }
         }
       `}</style>

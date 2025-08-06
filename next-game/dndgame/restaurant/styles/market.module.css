@@ -4,6 +4,9 @@
   height: 100%;
   position: relative;
   gap: clamp(8px, 2vw, 16px);
+  /* overflow: hidden; */
+   overflow-y: hidden;
+  overflow-x: hidden;
 }
 
 .header {
