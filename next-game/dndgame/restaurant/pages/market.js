@@ -206,6 +206,28 @@ export default function MarketPage() {
   };
   const handleGoToMenu = () => router.push('/');
 
+  // Helper function to get item emoji and name
+  const getItemDetails = (itemId) => {
+    const itemMap = {
+      'apple': { emoji: '🍎', name: 'Apple' },
+      'banana': { emoji: '🍌', name: 'Banana' },
+      'orange': { emoji: '🍊', name: 'Orange' },
+      'bread': { emoji: '🍞', name: 'Bread' },
+      'milk': { emoji: '🥛', name: 'Milk' },
+      'egg': { emoji: '🥚', name: 'Egg' },
+      'tomato': { emoji: '🍅', name: 'Tomato' },
+      'carrot': { emoji: '🥕', name: 'Carrot' },
+      'potato': { emoji: '🥔', name: 'Potato' },
+      'onion': { emoji: '🧅', name: 'Onion' },
+      'cheese': { emoji: '🧀', name: 'Cheese' },
+      'chicken': { emoji: '🍗', name: 'Chicken' },
+      'fish': { emoji: '🐟', name: 'Fish' },
+      'rice': { emoji: '🍚', name: 'Rice' },
+      'pasta': { emoji: '🍝', name: 'Pasta' },
+    };
+    return itemMap[itemId] || { emoji: '📦', name: itemId };
+  };
+
   if (!levelData) return null;
 
   /* ---------- JSX ---------- */
@@ -234,6 +256,59 @@ export default function MarketPage() {
             overflow: 'hidden', // FIXED: Prevent any scrolling
           }}
         >
+          {/* ---------- SHINY ANIMATED BUBBLE BACKGROUND ---------- */}
+          <div className="bubble-container">
+            <div className="bubble">
+              <span></span>
+              <span></span>
+              <span></span>
+              <span></span>
+              <span></span>
+            </div>
+            <div className="bubble">
+              <span></span>
+              <span></span>
+              <span></span>
+              <span></span>
+              <span></span>
+            </div>
+            <div className="bubble">
+              <span></span>
+              <span></span>
+              <span></span>
+              <span></span>
+              <span></span>
+            </div>
+            <div className="bubble">
+              <span></span>
+              <span></span>
+              <span></span>
+              <span></span>
+              <span></span>
+            </div>
+            <div className="bubble">
+              <span></span>
+              <span></span>
+              <span></span>
+              <span></span>
+              <span></span>
+            </div>
+            <div className="bubble">
+              <span></span>
+              <span></span>
+              <span></span>
+              <span></span>
+              <span></span>
+            </div>
+            <div className="bubble">
+              <span></span>
+              <span></span>
+              <span></span>
+              <span></span>
+              <span></span>
+            </div>
+          </div>
+
           {/* ---------- BACKGROUND PARTICLES ---------- */}
           <div className="floating-elements">
             {Array.from({ length: 12 }, (_, i) => (
@@ -266,58 +341,9 @@ export default function MarketPage() {
               flexShrink: 0
             }}
           >
-            <div
-              style={{
-                background: 'rgba(251,251,251,0.8)',
-                borderRadius: 'clamp(8px, 2vw, 16px)',
-                padding: 'clamp(8px, 1.5vw, 12px) clamp(12px, 3vw, 24px)',
-                display: 'inline-block',
-                border: '1px solid #6366f1',
-              }}
-            >
-              <h1
-                style={{
-                  fontSize: 'clamp(18px, 4vw, 26px)',
-                  fontWeight: '700',
-                  color: '#1e293b',
-                  marginBottom: 'clamp(2px, 0.5vw, 4px)',
-                }}
-              >
-                🏪 Market Selection
-              </h1>
-              <p
-                style={{
-                  fontSize: 'clamp(10px, 2vw, 14px)',
-                  fontWeight: '500',
-                  color: '#475569',
-                }}
-              >
-                Drag items to basket or tap to add them! 🎯
-              </p>
-            </div>
           </div>
 
           {/* ---------- STATUS BADGE ---------- */}
-          {activeId && (
-            <div
-              style={{
-                position: 'fixed',
-                top: '20px',
-                left: '50%',
-                transform: 'translateX(-50%)',
-                background: 'rgba(99,102,241,0.9)',
-                color: '#fff',
-                padding: '8px 16px',
-                borderRadius: '20px',
-                fontSize: '12px',
-                fontWeight: '600',
-                zIndex: 1000,
-                backdropFilter: 'blur(10px)',
-              }}
-            >
-              Dragging: {activeId} 🎯
-            </div>
-          )}
 
           {/* ---------- INFO BAR ---------- */}
           <div
@@ -379,6 +405,9 @@ export default function MarketPage() {
                 }}
               >
                 <DraggableWrapper
+                  style={{
+                    marginTop:'-80px'
+                  }}
                   id={item}
                   isDisabled={basket.includes(item)}
                   isDragging={activeId === item}
@@ -499,7 +528,7 @@ export default function MarketPage() {
             </Button>
           </div>
 
-          {/* ---------- BASKET POPUP ---------- */}
+          {/* ---------- BASKET POPUP - MINIMAL COMPACT LIST ---------- */}
           {showBasketPopup && (
             <div
               className="basket-popup-overlay"
@@ -534,24 +563,65 @@ export default function MarketPage() {
                 <h3
                   style={{
                     color: '#1e293b',
-                    marginBottom: '20px',
+                    marginBottom: '16px',
                     fontSize: '20px',
                     fontWeight: '700',
+                    textAlign: 'center'
                   }}
                 >
-                  🛒 Your Basket
+                  Your Basket ({basket.length})
                 </h3>
 
-                <div style={{ marginBottom: '24px' }}>
-                  {basket.map((item, idx) => (
-                    <div key={`basket-${item}-${idx}`} className="basket-item">
-                      <Basket
-                        items={[item]}
-                        showItems
-                        onRemoveItem={() => handleRemoveItem(idx)}
-                      />
-                    </div>
-                  ))}
+                {/* Compact Item List */}
+                <div style={{ marginBottom: '20px' }}>
+                  {basket.map((item, idx) => {
+                    const itemDetails = getItemDetails(item);
+                    return (
+                      <div 
+                        key={`basket-${item}-${idx}`} 
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'space-between',
+                          padding: '8px 12px',
+                          marginBottom: '6px',
+                          backgroundColor: '#f8f9fa',
+                          borderRadius: '8px',
+                          border: '1px solid #e9ecef'
+                        }}
+                      >
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                          <span style={{ fontSize: '20px' }}>{itemDetails.emoji}</span>
+                          <span style={{ 
+                            fontSize: '14px', 
+                            fontWeight: '500',
+                            color: '#495057'
+                          }}>
+                            {itemDetails.name}
+                          </span>
+                        </div>
+                        <button
+                          onClick={() => handleRemoveItem(idx)}
+                          style={{
+                            background: 'none',
+                            border: 'none',
+                            cursor: 'pointer',
+                            fontSize: '16px',
+                            color: '#dc3545',
+                            padding: '4px',
+                            borderRadius: '4px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center'
+                          }}
+                          onMouseEnter={(e) => e.target.style.backgroundColor = '#f8d7da'}
+                          onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
+                        >
+                          ❌
+                        </button>
+                      </div>
+                    );
+                  })}
                 </div>
 
                 <Button
@@ -624,6 +694,147 @@ export default function MarketPage() {
           transform: translateY(-2px);
         }
 
+        /* ===== SHINY ANIMATED BUBBLE BACKGROUND ===== */
+        .bubble-container {
+          position: fixed;
+          top: 0;
+          left: 0;
+          width: 100vw;
+          height: 100vh;
+          z-index: -20;
+          pointer-events: none;
+          overflow: hidden;
+        }
+
+        .bubble {
+          position: absolute;
+          width: clamp(120px, 25vw, 200px);
+          height: clamp(120px, 25vw, 200px);
+          border-radius: 50%;
+          box-shadow: inset 0 0 25px rgba(255, 255, 255, 0.4);
+          animation: animate_bubble 8s ease-in-out infinite;
+          opacity: 0.7;
+        }
+
+        .bubble:nth-child(1) {
+          top: 10%;
+          left: 10%;
+          animation-delay: 0s;
+        }
+
+        .bubble:nth-child(2) {
+          top: 15%;
+          right: 15%;
+          zoom: 0.6;
+          animation-delay: -2s;
+        }
+
+        .bubble:nth-child(3) {
+          top: 50%;
+          left: 5%;
+          zoom: 0.5;
+          animation-delay: -4s;
+        }
+
+        .bubble:nth-child(4) {
+          bottom: 20%;
+          left: 20%;
+          zoom: 0.4;
+          animation-delay: -6s;
+        }
+
+        .bubble:nth-child(5) {
+          bottom: 15%;
+          right: 10%;
+          zoom: 0.7;
+          animation-delay: -1s;
+        }
+
+        .bubble:nth-child(6) {
+          top: 30%;
+          right: 30%;
+          zoom: 0.45;
+          animation-delay: -3s;
+        }
+
+        .bubble:nth-child(7) {
+          bottom: 40%;
+          right: 5%;
+          zoom: 0.35;
+          animation-delay: -5s;
+        }
+
+        @keyframes animate_bubble {
+          0%, 100% {
+            transform: translateY(-20px);
+          }
+          50% {
+            transform: translateY(20px);
+          }
+        }
+
+        .bubble::before {
+          content: '';
+          position: absolute;
+          top: 25%;
+          left: 30%;
+          width: 25%;
+          height: 25%;
+          border-radius: 50%;
+          background: rgba(255, 255, 255, 0.8);
+          z-index: 10;
+          filter: blur(2px);
+        }
+
+        .bubble::after {
+          content: '';
+          position: absolute;
+          top: 40%;
+          left: 50%;
+          width: 15%;
+          height: 15%;
+          border-radius: 50%;
+          background: rgba(255, 255, 255, 0.6);
+          z-index: 10;
+          filter: blur(1px);
+        }
+
+        .bubble span {
+          position: absolute;
+          border-radius: 50%;
+        }
+
+        .bubble span:nth-child(1) {
+          inset: 10px;
+          border-left: 15px solid rgba(187, 222, 251, 0.6);
+          filter: blur(8px);
+        }
+
+        .bubble span:nth-child(2) {
+          inset: 10px;
+          border-right: 15px solid rgba(144, 202, 249, 0.5);
+          filter: blur(8px);
+        }
+
+        .bubble span:nth-child(3) {
+          inset: 10px;
+          border-top: 15px solid rgba(227, 242, 253, 0.7);
+          filter: blur(8px);
+        }
+
+        .bubble span:nth-child(4) {
+          inset: 30px;
+          border-left: 15px solid rgba(100, 181, 246, 0.4);
+          filter: blur(12px);
+        }
+
+        .bubble span:nth-child(5) {
+          inset: 10px;
+          border-bottom: 10px solid rgba(255, 255, 255, 0.8);
+          filter: blur(8px);
+          transform: rotate(330deg);
+        }
+
         /* Responsive item styles */
         .item-slot {
           display: flex;
@@ -677,6 +888,11 @@ export default function MarketPage() {
           .market-scene {
             padding: clamp(8px, 2vw, 16px) !important;
           }
+
+          .bubble {
+            width: clamp(80px, 20vw, 150px);
+            height: clamp(80px, 20vw, 150px);
+          }
         }
         
         @media (max-width: 480px) {
@@ -688,6 +904,11 @@ export default function MarketPage() {
           
           .market-scene {
             padding: 8px !important;
+          }
+
+          .bubble {
+            width: clamp(60px, 18vw, 120px);
+            height: clamp(60px, 18vw, 120px);
           }
         }
       `}</style>

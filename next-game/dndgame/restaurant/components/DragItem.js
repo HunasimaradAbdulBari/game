@@ -55,6 +55,7 @@ export default function DragItem({
       className={`drag-item ${inBasket ? 'in-basket' : ''} ${disabled ? 'disabled' : ''}`}
       onClick={handleClick}
       style={{
+        marginTop:'120px',
         '--item-color': getItemColor(item),
         opacity: disabled ? 0.5 : 1,
         transform: inBasket ? 'scale(0.9)' : 'scale(1)',

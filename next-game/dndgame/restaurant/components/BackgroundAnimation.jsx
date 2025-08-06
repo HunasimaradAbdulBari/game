@@ -1,57 +1,209 @@
 // components/BackgroundAnimation.jsx
 import { useRouter } from 'next/router';
+import { useEffect, useRef, useState } from 'react';
 
 export default function BackgroundAnimation() {
   const router = useRouter();
-  
+  const bubblesRef = useRef([]);
+  const pyramidsRef = useRef([]);
+  const gradientRef = useRef(null);
+  const [mounted, setMounted] = useState(false);
+
   // Only exclude result page, allow all others
   if (router.pathname === '/result') {
     return null;
   }
 
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (!mounted) return;
+
+    let gsap = null;
+    let animations = [];
+
+    const loadGSAP = async () => {
+      try {
+        const { gsap: gsapModule } = await import('gsap');
+        gsap = gsapModule;
+
+        // Enhanced bubble animations with GSAP
+        bubblesRef.current.forEach((bubble, index) => {
+          if (!bubble) return;
+
+          // Floating animation with random paths
+          const floatTween = gsap.to(bubble, {
+            y: gsap.utils.random(-40, 40),
+            x: gsap.utils.random(-30, 30),
+            duration: gsap.utils.random(4, 8),
+            repeat: -1,
+            yoyo: true,
+            ease: "power2.inOut",
+            delay: gsap.utils.random(0, 3)
+          });
+
+          // Rotation animation
+          const rotateTween = gsap.to(bubble, {
+            rotation: gsap.utils.random(0, 360),
+            duration: gsap.utils.random(15, 25),
+            repeat: -1,
+            ease: "none",
+            delay: gsap.utils.random(0, 5)
+          });
+
+          // Scale pulsing
+          const scaleTween = gsap.to(bubble, {
+            scale: gsap.utils.random(0.8, 1.3),
+            duration: gsap.utils.random(3, 6),
+            repeat: -1,
+            yoyo: true,
+            ease: "power2.inOut",
+            delay: gsap.utils.random(0, 2)
+          });
+
+          // Opacity breathing effect
+          const opacityTween = gsap.to(bubble, {
+            opacity: gsap.utils.random(0.3, 0.8),
+            duration: gsap.utils.random(2, 5),
+            repeat: -1,
+            yoyo: true,
+            ease: "power1.inOut",
+            delay: gsap.utils.random(0, 2)
+          });
+
+          animations.push(floatTween, rotateTween, scaleTween, opacityTween);
+        });
+
+        // Enhanced pyramid animations with GSAP
+        pyramidsRef.current.forEach((pyramid, index) => {
+          if (!pyramid) return;
+
+          // 3D drift animation
+          const driftTween = gsap.to(pyramid, {
+            y: gsap.utils.random(-50, 50),
+            x: gsap.utils.random(-40, 40),
+            rotationX: gsap.utils.random(-30, -10),
+            duration: gsap.utils.random(8, 15),
+            repeat: -1,
+            yoyo: true,
+            ease: "power2.inOut",
+            delay: gsap.utils.random(0, 4)
+          });
+
+          // Continuous Y rotation (enhanced)
+          const spinTween = gsap.to(pyramid.querySelector('.wrapper'), {
+            rotationY: 360,
+            duration: gsap.utils.random(6, 12),
+            repeat: -1,
+            ease: "none",
+            delay: gsap.utils.random(0, 3)
+          });
+
+          // Scale animation
+          const pyramidScaleTween = gsap.to(pyramid, {
+            scale: gsap.utils.random(0.7, 1.2),
+            duration: gsap.utils.random(4, 8),
+            repeat: -1,
+            yoyo: true,
+            ease: "power2.inOut",
+            delay: gsap.utils.random(0, 3)
+          });
+
+          animations.push(driftTween, spinTween, pyramidScaleTween);
+        });
+
+        // Enhanced background gradient animation
+        if (gradientRef.current) {
+          const gradientTween = gsap.to(gradientRef.current, {
+            rotation: 360,
+            duration: 20,
+            repeat: -1,
+            ease: "none"
+          });
+
+          // Add breathing effect to background
+          const breatheTween = gsap.to(gradientRef.current, {
+            scale: gsap.utils.random(1, 1.1),
+            duration: gsap.utils.random(8, 12),
+            repeat: -1,
+            yoyo: true,
+            ease: "power2.inOut"
+          });
+
+          animations.push(gradientTween, breatheTween);
+        }
+
+        // Additional floating particles animation
+        const createFloatingParticles = () => {
+          const particles = document.querySelectorAll('.floating-particle');
+          particles.forEach((particle, index) => {
+            if (!particle) return;
+
+            const particleTween = gsap.to(particle, {
+              y: gsap.utils.random(-100, 100),
+              x: gsap.utils.random(-80, 80),
+              rotation: gsap.utils.random(0, 360),
+              scale: gsap.utils.random(0.5, 1.5),
+              opacity: gsap.utils.random(0.2, 0.9),
+              duration: gsap.utils.random(5, 12),
+              repeat: -1,
+              yoyo: true,
+              ease: "power2.inOut",
+              delay: gsap.utils.random(0, 4)
+            });
+
+            animations.push(particleTween);
+          });
+        };
+
+        createFloatingParticles();
+
+      } catch (error) {
+        console.log('GSAP not available, using CSS animations');
+      }
+    };
+
+    loadGSAP();
+
+    return () => {
+      // Cleanup GSAP animations
+      animations.forEach(animation => {
+        if (animation && animation.kill) {
+          animation.kill();
+        }
+      });
+      animations = [];
+    };
+  }, [mounted, router.pathname]);
+
+  if (!mounted) return null;
+
   return (
     <div className="background-animation-container">
-      {/* Floating Bubbles */}
+      {/* Enhanced Floating Bubbles */}
       <div className="bubble-container">
-        <div className="bubble">
-          <span></span>
-          <span></span>
-          <span></span>
-          <span></span>
-          <span></span>
-        </div>
-        <div className="bubble">
-          <span></span>
-          <span></span>
-          <span></span>
-          <span></span>
-          <span></span>
-        </div>
-        <div className="bubble">
-          <span></span>
-          <span></span>
-          <span></span>
-          <span></span>
-          <span></span>
-        </div>
-        <div className="bubble">
-          <span></span>
-          <span></span>
-          <span></span>
-          <span></span>
-          <span></span>
-        </div>
-        <div className="bubble">
-          <span></span>
-          <span></span>
-          <span></span>
-          <span></span>
-          <span></span>
-        </div>
+        {[...Array(5)].map((_, index) => (
+          <div 
+            key={index}
+            className={`bubble bubble-${index + 1}`}
+            ref={el => bubblesRef.current[index] = el}
+          >
+            <span></span>
+            <span></span>
+            <span></span>
+            <span></span>
+            <span></span>
+          </div>
+        ))}
       </div>
 
-      {/* Floating Pyramids */}
-      <div className="pyramid-loader pyramid-1">
+      {/* Enhanced Floating Pyramids */}
+      <div 
+        className="pyramid-loader pyramid-1"
+        ref={el => pyramidsRef.current[0] = el}
+      >
         <div className="wrapper">
           <span className="side side1"></span>
           <span className="side side2"></span>
@@ -61,7 +213,10 @@ export default function BackgroundAnimation() {
         </div>
       </div>
 
-      <div className="pyramid-loader pyramid-2">
+      <div 
+        className="pyramid-loader pyramid-2"
+        ref={el => pyramidsRef.current[1] = el}
+      >
         <div className="wrapper">
           <span className="side side1"></span>
           <span className="side side2"></span>
@@ -71,7 +226,23 @@ export default function BackgroundAnimation() {
         </div>
       </div>
 
-      {/* ALL THE CSS STYLES - THIS WAS MISSING IN MY PREVIOUS RESPONSE */}
+      {/* Additional Floating Particles for Enhanced Effect */}
+      <div className="floating-particles">
+        {[...Array(12)].map((_, index) => (
+          <div 
+            key={index}
+            className={`floating-particle particle-${index + 1}`}
+          />
+        ))}
+      </div>
+
+      {/* Enhanced Background Gradient */}
+      <div 
+        className="enhanced-gradient-bg"
+        ref={gradientRef}
+      />
+
+      {/* ALL THE CSS STYLES - ENHANCED WITH GSAP-FRIENDLY ANIMATIONS */}
       <style jsx>{`
         .background-animation-container {
           position: fixed;
@@ -84,10 +255,8 @@ export default function BackgroundAnimation() {
           background: linear-gradient(135deg, #e3f2fd 0%, #f8fdff 50%, #ffffff 100%);
         }
 
-        /* Original rotating gradient background */
-        .background-animation-container::before,
-        .background-animation-container::after {
-          content: "";
+        /* Enhanced rotating gradient background */
+        .enhanced-gradient-bg {
           position: absolute;
           top: 50%;
           left: 50%;
@@ -95,26 +264,51 @@ export default function BackgroundAnimation() {
           height: 200%;
           background: conic-gradient(
             from 0deg,
-            rgba(187, 222, 251, 0.3),
-            rgba(144, 202, 249, 0.4),
-            rgba(100, 181, 246, 0.3),
-            rgba(66, 165, 245, 0.2),
-            rgba(33, 150, 243, 0.3),
-            rgba(30, 136, 229, 0.4),
-            rgba(25, 118, 210, 0.3),
-            rgba(187, 222, 251, 0.3)
+            rgba(187, 222, 251, 0.4),
+            rgba(144, 202, 249, 0.5),
+            rgba(100, 181, 246, 0.4),
+            rgba(66, 165, 245, 0.3),
+            rgba(33, 150, 243, 0.4),
+            rgba(30, 136, 229, 0.5),
+            rgba(25, 118, 210, 0.4),
+            rgba(187, 222, 251, 0.4)
           );
           transform: translate(-50%, -50%);
-          animation: rotate 15s linear infinite;
           filter: blur(80px);
-          opacity: 0.4;
+          opacity: 0.5;
+          will-change: transform, scale;
+        }
+
+        .background-animation-container::before,
+        .background-animation-container::after {
+          content: "";
+          position: absolute;
+          top: 50%;
+          left: 50%;
+          width: 180%;
+          height: 180%;
+          background: conic-gradient(
+            from 0deg,
+            rgba(187, 222, 251, 0.2),
+            rgba(144, 202, 249, 0.3),
+            rgba(100, 181, 246, 0.2),
+            rgba(66, 165, 245, 0.1),
+            rgba(33, 150, 243, 0.2),
+            rgba(30, 136, 229, 0.3),
+            rgba(25, 118, 210, 0.2),
+            rgba(187, 222, 251, 0.2)
+          );
+          transform: translate(-50%, -50%);
+          animation: rotate-reverse 25s linear infinite;
+          filter: blur(60px);
+          opacity: 0.3;
         }
 
         .background-animation-container::after {
-          width: 180%;
-          height: 180%;
-          animation: rotate-reverse 20s linear infinite;
-          opacity: 0.3;
+          width: 160%;
+          height: 160%;
+          animation: rotate 30s linear infinite;
+          opacity: 0.2;
         }
 
         /* Bubble Container */
@@ -125,65 +319,45 @@ export default function BackgroundAnimation() {
           pointer-events: none;
         }
 
-        /* Enhanced Bubbles with Light Theme */
+        /* Enhanced Bubbles with GSAP-friendly properties */
         .bubble {
           position: absolute;
           width: 150px;
           height: 150px;
           border-radius: 50%;
-          box-shadow: inset 0 0 25px rgba(33, 150, 243, 0.1);
-          animation: bubble-float 10s ease-in-out infinite;
+          box-shadow: inset 0 0 25px rgba(33, 150, 243, 0.15);
           opacity: 0.6;
+          will-change: transform, opacity, scale;
         }
 
-        .bubble:nth-child(1) {
+        .bubble-1 {
           top: 10%;
           left: 10%;
-          zoom: 0.6;
-          animation-delay: 0s;
+          transform: scale(0.6);
         }
 
-        .bubble:nth-child(2) {
+        .bubble-2 {
           top: 20%;
           right: 15%;
-          zoom: 0.4;
-          animation-delay: -2s;
+          transform: scale(0.4);
         }
 
-        .bubble:nth-child(3) {
+        .bubble-3 {
           top: 60%;
           left: 20%;
-          zoom: 0.5;
-          animation-delay: -4s;
+          transform: scale(0.5);
         }
 
-        .bubble:nth-child(4) {
+        .bubble-4 {
           bottom: 20%;
           right: 20%;
-          zoom: 0.3;
-          animation-delay: -6s;
+          transform: scale(0.3);
         }
 
-        .bubble:nth-child(5) {
+        .bubble-5 {
           bottom: 10%;
           left: 50%;
-          zoom: 0.45;
-          animation-delay: -8s;
-        }
-
-        @keyframes bubble-float {
-          0%, 100% {
-            transform: translateY(-30px) translateX(-10px) scale(1);
-          }
-          25% {
-            transform: translateY(20px) translateX(15px) scale(1.1);
-          }
-          50% {
-            transform: translateY(30px) translateX(-5px) scale(0.9);
-          }
-          75% {
-            transform: translateY(-10px) translateX(20px) scale(1.05);
-          }
+          transform: scale(0.45);
         }
 
         .bubble::before {
@@ -248,7 +422,7 @@ export default function BackgroundAnimation() {
           transform: rotate(330deg);
         }
 
-        /* Enhanced Pyramids with Light Theme */
+        /* Enhanced Pyramids with GSAP-friendly properties */
         .pyramid-loader {
           position: absolute;
           width: 80px;
@@ -258,31 +432,17 @@ export default function BackgroundAnimation() {
           transform: rotateX(-20deg);
           opacity: 0.4;
           pointer-events: none;
+          will-change: transform, scale, opacity;
         }
 
         .pyramid-1 {
           top: 15%;
           right: 25%;
-          animation: pyramid-drift 12s ease-in-out infinite;
         }
 
         .pyramid-2 {
           bottom: 25%;
           left: 15%;
-          animation: pyramid-drift 15s ease-in-out infinite reverse;
-          animation-delay: -5s;
-        }
-
-        @keyframes pyramid-drift {
-          0%, 100% {
-            transform: rotateX(-20deg) translateY(-20px) translateX(-10px);
-          }
-          33% {
-            transform: rotateX(-15deg) translateY(15px) translateX(20px);
-          }
-          66% {
-            transform: rotateX(-25deg) translateY(25px) translateX(-15px);
-          }
         }
 
         .wrapper {
@@ -290,13 +450,7 @@ export default function BackgroundAnimation() {
           width: 100%;
           height: 100%;
           transform-style: preserve-3d;
-          animation: spin 8s linear infinite;
-        }
-
-        @keyframes spin {
-          100% {
-            transform: rotateY(360deg);
-          }
+          will-change: transform;
         }
 
         .pyramid-loader .wrapper .side {
@@ -366,7 +520,41 @@ export default function BackgroundAnimation() {
           filter: blur(8px);
         }
 
-        /* Original keyframes */
+        /* Enhanced Floating Particles */
+        .floating-particles {
+          position: absolute;
+          width: 100%;
+          height: 100%;
+          pointer-events: none;
+        }
+
+        .floating-particle {
+          position: absolute;
+          width: 8px;
+          height: 8px;
+          border-radius: 50%;
+          background: radial-gradient(circle, 
+            rgba(33, 150, 243, 0.8) 0%, 
+            rgba(187, 222, 251, 0.4) 100%);
+          box-shadow: 0 0 15px rgba(33, 150, 243, 0.3);
+          opacity: 0.6;
+          will-change: transform, opacity, scale;
+        }
+
+        .particle-1 { top: 5%; left: 5%; }
+        .particle-2 { top: 15%; left: 85%; }
+        .particle-3 { top: 25%; left: 15%; }
+        .particle-4 { top: 35%; right: 10%; }
+        .particle-5 { top: 45%; left: 60%; }
+        .particle-6 { top: 55%; right: 30%; }
+        .particle-7 { top: 65%; left: 25%; }
+        .particle-8 { top: 75%; right: 15%; }
+        .particle-9 { bottom: 20%; left: 40%; }
+        .particle-10 { bottom: 10%; right: 20%; }
+        .particle-11 { top: 40%; left: 30%; }
+        .particle-12 { bottom: 30%; right: 40%; }
+
+        /* Fallback CSS keyframes */
         @keyframes rotate {
           0% {
             transform: translate(-50%, -50%) rotate(0deg);
@@ -401,6 +589,11 @@ export default function BackgroundAnimation() {
             width: 35px;
             height: 35px;
           }
+          
+          .floating-particle {
+            width: 6px;
+            height: 6px;
+          }
         }
 
         @media (max-width: 480px) {
@@ -417,6 +610,11 @@ export default function BackgroundAnimation() {
           .pyramid-loader .wrapper .side {
             width: 30px;
             height: 30px;
+          }
+          
+          .floating-particle {
+            width: 4px;
+            height: 4px;
           }
         }
       `}</style>

@@ -1,11 +1,12 @@
-// components/Layout.js
+// components/Layout.js - CORRECTED VERSION
 
 import { useEffect, useState, useRef } from 'react';
 import { useRouter } from 'next/router';
 
 export default function Layout({ children, scene }) {
   const [mounted, setMounted] = useState(false);
-  const spheresRef = useRef([]);
+  const bubblesContainerRef = useRef(null);
+  const bubblesRef = useRef([]);
   const router = useRouter();
 
   useEffect(() => {
@@ -20,67 +21,93 @@ export default function Layout({ children, scene }) {
       try {
         const { gsap } = await import('gsap');
         
-        // Animate each sphere with unique bouncing and rotation
-        spheresRef.current.forEach((sphere, index) => {
-          if (!sphere) return;
+        // Create bubbles container
+        const container = bubblesContainerRef.current;
+        if (!container) return;
 
-          // Random bounce animation
-          gsap.to(sphere, {
-            y: gsap.utils.random(-15, 15),
-            duration: gsap.utils.random(2, 4),
-            repeat: -1,
-            yoyo: true,
-            ease: "power2.inOut",
-            delay: gsap.utils.random(0, 2)
+        // Clear existing bubbles
+        container.innerHTML = '';
+        bubblesRef.current = [];
+
+        // Create 20 animated bubbles
+        for (let i = 0; i < 20; i++) {
+          const bubble = document.createElement('div');
+          bubble.className = 'floating-bubble';
+          
+          const size = Math.random() * 40 + 20; // 20-60px
+          bubble.style.width = `${size}px`;
+          bubble.style.height = `${size}px`;
+          
+          container.appendChild(bubble);
+          bubblesRef.current.push(bubble);
+
+          // Initial position
+          gsap.set(bubble, {
+            x: Math.random() * window.innerWidth,
+            y: window.innerHeight + size,
+            opacity: Math.random() * 0.7 + 0.3,
+            scale: Math.random() * 0.5 + 0.5
           });
 
-          // Random horizontal float
-          gsap.to(sphere, {
-            x: gsap.utils.random(-20, 20),
-            duration: gsap.utils.random(3, 5),
+          // Animation timeline
+          const tl = gsap.timeline({ repeat: -1 });
+          
+          tl.to(bubble, {
+            y: -size - 100,
+            x: `+=${Math.random() * 200 - 100}`,
+            duration: Math.random() * 15 + 10,
+            ease: "sine.inOut",
+            onComplete: () => {
+              // Reset position
+              gsap.set(bubble, {
+                x: Math.random() * window.innerWidth,
+                y: window.innerHeight + size,
+                opacity: Math.random() * 0.7 + 0.3,
+                scale: Math.random() * 0.5 + 0.5
+              });
+            }
+          });
+
+          // Add subtle floating motion
+          gsap.to(bubble, {
+            x: `+=${Math.random() * 60 - 30}`,
+            duration: Math.random() * 4 + 3,
             repeat: -1,
             yoyo: true,
             ease: "sine.inOut",
-            delay: gsap.utils.random(0, 1.5)
+            delay: Math.random() * 2
           });
 
-          // Rotation for the entire sphere
-          gsap.to(sphere, {
+          // Add rotation
+          gsap.to(bubble, {
             rotation: 360,
-            duration: gsap.utils.random(8, 12),
+            duration: Math.random() * 20 + 15,
             repeat: -1,
-            ease: "none",
-            delay: gsap.utils.random(0, 3)
+            ease: "none"
           });
+        }
 
-          // Scale pulsing effect
-          gsap.to(sphere, {
-            scale: gsap.utils.random(0.9, 1.1),
-            duration: gsap.utils.random(2.5, 4.5),
-            repeat: -1,
-            yoyo: true,
-            ease: "power2.inOut",
-            delay: gsap.utils.random(0, 2.5)
+        // Handle window resize
+        const handleResize = () => {
+          bubblesRef.current.forEach(bubble => {
+            if (Math.random() > 0.5) {
+              gsap.set(bubble, {
+                x: Math.random() * window.innerWidth
+              });
+            }
           });
+        };
 
-          // Opacity pulsing for glowing effect
-          gsap.to(sphere, {
-            opacity: gsap.utils.random(0.4, 0.8),
-            duration: gsap.utils.random(3, 6),
-            repeat: -1,
-            yoyo: true,
-            ease: "power1.inOut",
-            delay: gsap.utils.random(0, 2)
-          });
-        });
+        window.addEventListener('resize', handleResize);
 
         return () => {
+          window.removeEventListener('resize', handleResize);
           // Cleanup GSAP animations
-          gsap.killTweensOf(spheresRef.current);
+          gsap.killTweensOf(bubblesRef.current);
         };
 
       } catch (error) {
-        console.log('GSAP not available');
+        console.log('GSAP not available, falling back to CSS animations');
       }
     };
 
@@ -91,24 +118,12 @@ export default function Layout({ children, scene }) {
 
   return (
     <>
-      {/* Multiple 3D Spheres - Only show if not result page */}
+      {/* Animated Bubbles Container - Only show if not result page */}
       {router.pathname !== '/result' && (
-        <div className="spheres-container">
-          {/* Center Sphere */}
-          <div 
-            className="sphere-loader sphere-center"
-            ref={el => spheresRef.current[0] = el}
-          ></div>
-
-          {/* 24 Spheres spread across full screen */}
-          {Array.from({ length: 24 }, (_, index) => (
-            <div
-              key={index + 1}
-              className={`sphere-loader sphere-${index + 1}`}
-              ref={el => spheresRef.current[index + 1] = el}
-            ></div>
-          ))}
-        </div>
+        <div 
+          ref={bubblesContainerRef}
+          className="animated-bubbles-container"
+        />
       )}
       
       <div className={`scene scene-${scene}`}>
