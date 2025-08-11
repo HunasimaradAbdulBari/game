@@ -1,0 +1,286 @@
+.resultScene {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  padding: 20px;
+  text-align: center;
+  position: relative;
+  border-radius: 10px;
+}
+
+.resultScene.win {
+  background: linear-gradient(135deg, #66d1ad 50%, #79b09c 50%, );
+}
+
+.resultScene.lose {
+ background: linear-gradient(145deg, rgba(232, 85, 36, 0.9) 0%, rgba(248, 81, 48, 0.9) 100%);
+}
+
+.celebrationParticles {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.celebrationParticle {
+  position: absolute;
+  border-radius: 50%;
+  animation: celebrate ease-out forwards;
+}
+
+.resultTitle {
+  margin-bottom: 32px;
+  animation: bounceIn 0.8s cubic-bezier(0.68, -0.55, 0.265, 1.55) forwards;
+}
+
+.resultTitle h1 {
+  font-size: 42px;
+  font-weight: 900;
+  color: #1e293b;
+  text-shadow: 0 2px 4px rgba(226, 232, 240, 0.8);
+  margin-bottom: 8px;
+  background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.resultTitle h2 {
+  font-size: 24px;
+  font-weight: 700;
+  color: #475569;
+}
+
+.comparisonSection {
+  display: flex;
+  gap: 24px;
+  align-items: center;
+  margin-bottom: 32px;
+  flex-wrap: wrap;
+  justify-content: center;
+  animation: fadeInUp 0.8s cubic-bezier(0.4, 0, 0.2, 1) 0.3s forwards;
+  opacity: 0;
+}
+
+.comparisonCard {
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 15px;
+  padding: 20px;
+  min-width: 180px;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  border: 3px solid;
+}
+
+.requiredCard {
+  border-color: #6366f1;
+}
+
+.basketCard.win {
+  border-color: #10b981;
+}
+
+.basketCard.lose {
+  border-color: #f87171;
+}
+
+.cardTitle {
+  font-size: 16px;
+  font-weight: 800;
+  color: #1e293b;
+  margin-bottom: 12px;
+}
+
+.cardContent {
+  font-size: 14px;
+  font-weight: 600;
+  color: #475569;
+  line-height: 1.5;
+}
+
+.cardContent div {
+  padding: 1px 0;
+}
+
+.resultIcon {
+  font-size: 32px;
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+.resultIcon.win {
+  animation: bounce 1s ease-in-out, pulse 1.5s ease-in-out 1s infinite;
+}
+
+.progressMessage {
+  font-size: 20px;
+  font-weight: 700;
+  color: #fbbf24;
+  margin-bottom: 24px;
+  animation: slideInFromLeft 0.8s cubic-bezier(0.4, 0, 0.2, 1) 0.5s forwards;
+  opacity: 0;
+}
+
+.masterMessage {
+  font-size: 22px;
+  font-weight: 800;
+  color: #fbbf24;
+  margin-bottom: 24px;
+  animation: slideInFromLeft 0.8s cubic-bezier(0.4, 0, 0.2, 1) 0.5s forwards;
+  opacity: 0;
+}
+
+.actionButtons {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+  justify-content: center;
+  margin-bottom: 16px;
+  animation: fadeInUp 0.8s cubic-bezier(0.4, 0, 0.2, 1) 0.7s forwards;
+  opacity: 0;
+}
+
+.mainMenuButton {
+  animation: fadeInUp 0.8s cubic-bezier(0.4, 0, 0.2, 1) 0.9s forwards;
+  opacity: 0;
+}
+
+/* Animations */
+@keyframes celebrate {
+  0% {
+    transform: translateY(0) translateX(0) scale(1);
+    opacity: 0.8;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(-100px) translateX(var(--random-x, 0px)) scale(0);
+    opacity: 0;
+  }
+}
+
+@keyframes bounceIn {
+  0% {
+    transform: scale(0);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(1.2);
+    opacity: 0.8;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideInFromLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+}
+
+@keyframes bounce {
+  0%, 20%, 53%, 80%, 100% {
+    transform: translate3d(0, 0, 0);
+  }
+  40%, 43% {
+    transform: translate3d(0, -15px, 0);
+  }
+  70% {
+    transform: translate3d(0, -8px, 0);
+  }
+  90% {
+    transform: translate3d(0, -3px, 0);
+  }
+}
+
+/* Mobile Responsiveness */
+@media (max-width: 768px) {
+  .comparisonSection {
+    flex-direction: column;
+    gap: 16px;
+  }
+  
+  .resultTitle h1 {
+    font-size: 28px;
+  }
+  
+  .resultTitle h2 {
+    font-size: 18px;
+  }
+  
+  .actionButtons {
+    flex-direction: column;
+    width: 100%;
+    max-width: 300px;
+  }
+  
+  .comparisonCard {
+    min-width: 150px;
+    padding: 16px;
+  }
+  
+  .progressMessage,
+  .masterMessage {
+    font-size: 18px;
+  }
+}
+
+@media (max-width: 480px) {
+  .resultScene {
+    padding: 15px;
+  }
+  
+  .resultTitle h1 {
+    font-size: 24px;
+  }
+  
+  .resultTitle h2 {
+    font-size: 16px;
+  }
+  
+  .comparisonCard {
+    min-width: 120px;
+    padding: 12px;
+  }
+  
+  .cardTitle {
+    font-size: 14px;
+  }
+  
+  .cardContent {
+    font-size: 12px;
+  }
+}
