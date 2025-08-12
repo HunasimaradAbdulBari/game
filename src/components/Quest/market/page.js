@@ -5,12 +5,12 @@ import {
 } from '@dnd-kit/core';
 import { restrictToWindowEdges, snapCenterToCursor } from '@dnd-kit/modifiers';
 import { useRouter } from 'next/navigation';
-import Layout from '../../components/Quest/Layout';
-import DragItem from '../../components/Quest/DragItem';
-import Button from '../../components/Quest/Button';
+import Layout from '../Layout';
+import DragItem from '../DragItem';
+import Button from '../Button';
 import { gsap } from 'gsap';
-import { getCurrentLevel, getBasket, setBasket, getCurrentSubject } from '../../components/Quest/utils/storage';
-import { getLevelData } from '../../components/Quest/utils/gameLogic';
+import { getCurrentLevel, getBasket, setBasket, getCurrentSubject } from '../utils/storage';
+import { getLevelData } from '../utils/gameLogic';
 
 /* ---------- DRAGGABLE WRAPPER ---------- */
 function DraggableWrapper({ id, children, isDisabled, isDragging }) {

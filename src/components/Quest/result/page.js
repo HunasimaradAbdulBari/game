@@ -3,10 +3,10 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 
-import Layout from '../../components/Quest/Layout';
-import Button from '../../components/Quest/Button';
-import { getCurrentLevel, setCurrentLevel, getBasket, clearBasket, getCurrentSubject, setMaxUnlockedLevel } from '../../components/Quest/utils/storage';
-import { getLevelData, checkWin, updateProgress } from '../../components/Quest/utils/gameLogic';
+import Layout from '../Layout';
+import Button from '../Button';
+import { getCurrentLevel, setCurrentLevel, getBasket, clearBasket, getCurrentSubject, setMaxUnlockedLevel } from '../utils/storage';
+import { getLevelData, checkWin, updateProgress } from '../utils/gameLogic';
 
 export default function ResultPage() {
   const router = useRouter();
