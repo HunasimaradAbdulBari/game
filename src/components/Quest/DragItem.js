@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react';
-import { ITEM_ICONS } from '../utils/gameLogic';
+import { ITEM_ICONS } from '../Quest/utils/gameLogic';
 
 export default function DragItem({ 
   item, 

@@ -3,10 +3,10 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import Layout from '../../components/Layout';
-import Button from '../../components/Button';
-import { getCurrentLevel, getBasket, clearBasket, getCurrentSubject } from '../../utils/storage';
-import { getLevelData } from '../../utils/gameLogic';
+import Layout from '../../components/Quest/Layout';
+import Button from '../../components/Quest/Button';
+import { getCurrentLevel, getBasket, clearBasket, getCurrentSubject } from '../../components/Quest/utils/storage';
+import { getLevelData } from '../../components/Quest/utils/gameLogic';
 
 export default function RestaurantPage() {
   const router = useRouter();
@@ -260,7 +260,7 @@ export default function RestaurantPage() {
                   lineHeight: '1.4',
                 }}
               >
-                "{levelData.request}"
+                "{levelData.question}"
               </p>
             </div>
           </div>

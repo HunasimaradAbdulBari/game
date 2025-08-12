@@ -3,10 +3,10 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 
-import Layout from '../../components/Layout';
-import Button from '../../components/Button';
-import { getCurrentLevel, setCurrentLevel, getBasket, clearBasket, getCurrentSubject, setMaxUnlockedLevel } from '../../utils/storage';
-import { getLevelData, checkWin, updateProgress } from '../../utils/gameLogic';
+import Layout from '../../components/Quest/Layout';
+import Button from '../../components/Quest/Button';
+import { getCurrentLevel, setCurrentLevel, getBasket, clearBasket, getCurrentSubject, setMaxUnlockedLevel } from '../../components/Quest/utils/storage';
+import { getLevelData, checkWin, updateProgress } from '../../components/Quest/utils/gameLogic';
 
 export default function ResultPage() {
   const router = useRouter();
@@ -234,7 +234,7 @@ export default function ResultPage() {
                 lineHeight: '1.5',
               }}
             >
-              {levelData.required.map((item, index) => (
+              {levelData.correctAnswer.map((item, index) => (
                 <div key={index} style={{ padding: '1px 0' }}>
                   {item}
                 </div>
@@ -351,7 +351,7 @@ export default function ResultPage() {
                 </div>
               ) : (
                 <Button variant="primary" onClick={handlePlayFromStart}>
-                  NEW SUBJECT
+                  PLAY AGAIN
                 </Button>
               )}
               <Button variant="secondary" onClick={handleReplayLevel}>

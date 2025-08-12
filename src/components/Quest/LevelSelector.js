@@ -2,7 +2,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { getCurrentLevel, getMaxUnlockedLevel, setCurrentLevel, getCurrentSubject } from '../utils/storage';
+import { getCurrentLevel, getMaxUnlockedLevel, setCurrentLevel, getCurrentSubject } from '../Quest/utils/storage';
 
 export default function LevelSelector({ onLevelSelect, subject }) {
   const [currentLevel, setCurrentLevelState] = useState(1);
