@@ -9,6 +9,7 @@ import LevelSelector from '../components/Quest/LevelSelector';
 import Button from '../components/Quest/Button';
 import { resetProgress, getCurrentLevel, getCurrentSubject, setCurrentSubject } from '../components/Quest/utils/storage';
 
+
 export default function MenuPage() {
  const router = useRouter();
  const [currentScene, setCurrentScene] = useState('subject'); // 'subject' or 'level'
