@@ -43,7 +43,7 @@ export default function MenuPage() {
  };
 
  const handleLevelSelect = (level) => {
-   router.push('/components/Quest/restaurant');
+   router.push('/restaurant');
  };
 
  const handleBackToSubjects = () => {

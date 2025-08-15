@@ -111,15 +111,17 @@ export default function ResultPage() {
           flexDirection: 'column',
           alignItems: 'center',
           justifyContent: 'center',
-          height: '100%',
-          width:'100%',
-          padding: 'clamp(12px, 3vw, 20px)',
+          height: '100vh',
+          width: '100vw',
+          padding: 'clamp(8px, 2vw, 16px)',
           textAlign: 'center',
           position: 'relative',
-          borderRadius: 'clamp(8px, 2vw, 10px)',
+          borderRadius: 'clamp(6px, 1.5vw, 8px)',
           background: isWin 
             ? 'linear-gradient(135deg, rgba(110, 231, 183, 0.9) 0%, rgba(16, 185, 129, 0.9) 100%)'
             : 'linear-gradient(145deg, rgba(248, 180, 180, 0.9) 0%, rgba(239, 68, 68, 0.9) 100%)',
+          maxHeight: '100vh',
+          overflow: 'hidden'
         }}
       >
         {/* Celebration Particles */}
@@ -136,7 +138,7 @@ export default function ResultPage() {
               pointerEvents: 'none',
             }}
           >
-            {Array.from({ length: 30 }, (_, i) => (
+            {Array.from({ length: 20 }, (_, i) => (
               <div
                 key={i}
                 className="celebration-particle"
@@ -144,8 +146,8 @@ export default function ResultPage() {
                   position: 'absolute',
                   left: `${Math.random() * 100}%`,
                   top: `${Math.random() * 100}%`,
-                  width: `${Math.random() * 8 + 4}px`,
-                  height: `${Math.random() * 8 + 4}px`,
+                  width: `${Math.random() * 6 + 3}px`,
+                  height: `${Math.random() * 6 + 3}px`,
                   backgroundColor: ['#fbbf24', '#34d399', '#60a5fa', '#a78bfa'][
                     Math.floor(Math.random() * 4)
                   ],
@@ -162,29 +164,33 @@ export default function ResultPage() {
         <div
           className="result-title"
           style={{
-            marginBottom: 'clamp(16px, 4vw, 32px)',
+            marginBottom: 'clamp(12px, 3vh, 20px)',
+            flexShrink: 0
           }}
         >
           <h1
             style={{
-              fontSize: 'clamp(24px, 6vw, 42px)',
+              fontSize: 'clamp(18px, 4.5vw, 32px)',
               fontWeight: '900',
               color: '#1e293b',
               textShadow: '0 2px 4px rgba(226, 232, 240, 0.8)',
-              marginBottom: 'clamp(4px, 1vw, 8px)',
+              marginBottom: 'clamp(4px, 1vh, 6px)',
               background: 'linear-gradient(135deg, #2563eb 0%, #7c3aed 100%)',
               WebkitBackgroundClip: 'text',
               WebkitTextFillColor: 'transparent',
               backgroundClip: 'text',
+              lineHeight: '1.2'
             }}
           >
             {isWin ? 'EXPERIMENT COMPLETE! 🎉' : 'TRY AGAIN! 💪'}
           </h1>
           <h2
             style={{
-              fontSize: 'clamp(14px, 3vw, 24px)',
+              fontSize: 'clamp(12px, 2.5vw, 18px)',
               fontWeight: '700',
               color: '#475569',
+              margin: 0,
+              lineHeight: '1.2'
             }}
           >
             {currentSubject.charAt(0).toUpperCase() + currentSubject.slice(1)} - Level {currentLevel}
@@ -196,11 +202,14 @@ export default function ResultPage() {
           className="comparison-section"
           style={{
             display: 'flex',
-            gap: 'clamp(12px, 3vw, 24px)',
-            alignItems: 'center',
-            marginBottom: 'clamp(16px, 4vw, 32px)',
+            gap: 'clamp(8px, 2vw, 16px)',
+            alignItems: 'stretch',
+            marginBottom: 'clamp(12px, 3vh, 20px)',
             flexWrap: 'wrap',
             justifyContent: 'center',
+            width: '100%',
+            maxWidth: '90vw',
+            flexShrink: 0
           }}
         >
           {/* Required Items */}
@@ -208,30 +217,33 @@ export default function ResultPage() {
             className="comparison-card required-card"
             style={{
               background: 'rgba(255, 255, 255, 0.95)',
-              borderRadius: 'clamp(8px, 2vw, 15px)',
-              padding: 'clamp(12px, 3vw, 20px)',
-              minWidth: '180px',
+              borderRadius: 'clamp(6px, 1.5vw, 10px)',
+              padding: 'clamp(8px, 2vw, 14px)',
+              minWidth: 'clamp(120px, 25vw, 160px)',
+              maxWidth: 'clamp(160px, 30vw, 200px)',
               backdropFilter: 'blur(10px)',
-              boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)',
-              border: '3px solid #2563eb',
+              boxShadow: '0 4px 16px rgba(0, 0, 0, 0.1)',
+              border: '2px solid #2563eb',
+              flex: '1'
             }}
           >
             <h3
               style={{
-                fontSize: 'clamp(12px, 2.5vw, 16px)',
+                fontSize: 'clamp(10px, 2.2vw, 14px)',
                 fontWeight: '800',
                 color: '#1e293b',
-                marginBottom: 'clamp(6px, 1.5vw, 12px)',
+                marginBottom: 'clamp(4px, 1vh, 8px)',
+                margin: '0 0 clamp(4px, 1vh, 8px) 0'
               }}
             >
               Required Equipment:
             </h3>
             <div
               style={{
-                fontSize: 'clamp(10px, 2vw, 14px)',
+                fontSize: 'clamp(8px, 1.8vw, 11px)',
                 fontWeight: '600',
                 color: '#475569',
-                lineHeight: '1.5',
+                lineHeight: '1.3',
               }}
             >
               {levelData.correctAnswer.map((item, index) => (
@@ -246,7 +258,11 @@ export default function ResultPage() {
           <div
             className={`result-icon ${isWin ? 'win' : ''}`}
             style={{
-              fontSize: 'clamp(24px, 6vw, 32px)',
+              fontSize: 'clamp(20px, 4vw, 28px)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              flexShrink: 0
             }}
           >
             {isWin ? '✅' : '❌'}
@@ -257,30 +273,33 @@ export default function ResultPage() {
             className={`comparison-card basket-card ${isWin ? 'win' : 'lose'}`}
             style={{
               background: 'rgba(255, 255, 255, 0.95)',
-              borderRadius: 'clamp(8px, 2vw, 15px)',
-              padding: 'clamp(12px, 3vw, 20px)',
-              minWidth: '180px',
+              borderRadius: 'clamp(6px, 1.5vw, 10px)',
+              padding: 'clamp(8px, 2vw, 14px)',
+              minWidth: 'clamp(120px, 25vw, 160px)',
+              maxWidth: 'clamp(160px, 30vw, 200px)',
               backdropFilter: 'blur(10px)',
-              boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)',
-              border: `3px solid ${isWin ? '#10b981' : '#f87171'}`,
+              boxShadow: '0 4px 16px rgba(0, 0, 0, 0.1)',
+              border: `2px solid ${isWin ? '#10b981' : '#f87171'}`,
+              flex: '1'
             }}
           >
             <h3
               style={{
-                fontSize: 'clamp(12px, 2.5vw, 16px)',
+                fontSize: 'clamp(10px, 2.2vw, 14px)',
                 fontWeight: '800',
                 color: '#1e293b',
-                marginBottom: 'clamp(6px, 1.5vw, 12px)',
+                marginBottom: 'clamp(4px, 1vh, 8px)',
+                margin: '0 0 clamp(4px, 1vh, 8px) 0'
               }}
             >
               Your Equipment:
             </h3>
             <div
               style={{
-                fontSize: 'clamp(10px, 2vw, 14px)',
+                fontSize: 'clamp(8px, 1.8vw, 11px)',
                 fontWeight: '600',
                 color: '#475569',
-                lineHeight: '1.5',
+                lineHeight: '1.3',
               }}
             >
               {basket.length > 0 ? basket.map((item, index) => (
@@ -296,10 +315,12 @@ export default function ResultPage() {
         {isWin && currentLevel < 3 && (
           <p
             style={{
-              fontSize: 'clamp(14px, 3vw, 20px)',
+              fontSize: 'clamp(12px, 2.5vw, 16px)',
               fontWeight: '700',
               color: '#fbbf24',
-              marginBottom: 'clamp(12px, 3vw, 24px)',
+              marginBottom: 'clamp(8px, 2vh, 12px)',
+              margin: '0 0 clamp(8px, 2vh, 12px) 0',
+              flexShrink: 0
             }}
           >
             Next level unlocked! 🌟
@@ -309,10 +330,12 @@ export default function ResultPage() {
         {isWin && currentLevel === 3 && (
           <p
             style={{
-              fontSize: 'clamp(16px, 3.5vw, 22px)',
+              fontSize: 'clamp(14px, 3vw, 18px)',
               fontWeight: '800',
               color: '#fbbf24',
-              marginBottom: 'clamp(12px, 3vw, 24px)',
+              marginBottom: 'clamp(8px, 2vh, 12px)',
+              margin: '0 0 clamp(8px, 2vh, 12px) 0',
+              flexShrink: 0
             }}
           >
             You mastered {currentSubject.charAt(0).toUpperCase() + currentSubject.slice(1)}! 👑
@@ -324,10 +347,13 @@ export default function ResultPage() {
           className="action-buttons"
           style={{
             display: 'flex',
-            gap: 'clamp(8px, 2vw, 16px)',
+            gap: 'clamp(6px, 1.5vw, 10px)',
             flexWrap: 'wrap',
             justifyContent: 'center',
-            marginBottom: 'clamp(8px, 2vw, 16px)',
+            marginBottom: 'clamp(8px, 2vh, 12px)',
+            flexShrink: 0,
+            width: '100%',
+            maxWidth: '90vw'
           }}
         >
           {isWin ? (
@@ -343,6 +369,9 @@ export default function ResultPage() {
                       '--color-outline': '#2563eb80',
                       '--color-shadow': '#00000080',
                       cursor: 'pointer',
+                      fontSize: 'clamp(10px, 2.2vw, 14px)',
+                      padding: 'clamp(6px, 1.5vw, 10px) clamp(12px, 3vw, 20px)',
+                      height: 'clamp(32px, 6vh, 44px)'
                     }}
                   >
                     NEXT LEVEL
@@ -350,20 +379,52 @@ export default function ResultPage() {
                   </div>
                 </div>
               ) : (
-                <Button variant="primary" onClick={handlePlayFromStart}>
+                <Button 
+                  variant="primary" 
+                  onClick={handlePlayFromStart}
+                  style={{
+                    fontSize: 'clamp(10px, 2.2vw, 14px)',
+                    height: 'clamp(32px, 6vh, 44px)',
+                    padding: '0 clamp(12px, 3vw, 20px)'
+                  }}
+                >
                   PLAY AGAIN
                 </Button>
               )}
-              <Button variant="secondary" onClick={handleReplayLevel}>
+              <Button 
+                variant="secondary" 
+                onClick={handleReplayLevel}
+                style={{
+                  fontSize: 'clamp(10px, 2.2vw, 14px)',
+                  height: 'clamp(32px, 6vh, 44px)',
+                  padding: '0 clamp(12px, 3vw, 20px)'
+                }}
+              >
                 REPLAY LEVEL
               </Button>
             </>
           ) : (
             <>
-              <Button variant="primary" onClick={handleTryAgain}>
+              <Button 
+                variant="primary" 
+                onClick={handleTryAgain}
+                style={{
+                  fontSize: 'clamp(10px, 2.2vw, 14px)',
+                  height: 'clamp(32px, 6vh, 44px)',
+                  padding: '0 clamp(12px, 3vw, 20px)'
+                }}
+              >
                 TRY AGAIN
               </Button>
-              <Button variant="secondary" onClick={handleGoToMenu}>
+              <Button 
+                variant="secondary" 
+                onClick={handleGoToMenu}
+                style={{
+                  fontSize: 'clamp(10px, 2.2vw, 14px)',
+                  height: 'clamp(32px, 6vh, 44px)',
+                  padding: '0 clamp(12px, 3vw, 20px)'
+                }}
+              >
                 CHANGE LEVEL
               </Button>
             </>
@@ -371,7 +432,16 @@ export default function ResultPage() {
         </div>
 
         {/* Main Menu Button */}
-        <Button variant="secondary" onClick={handleGoToMenu}>
+        <Button 
+          variant="secondary" 
+          onClick={handleGoToMenu}
+          style={{
+            fontSize: 'clamp(10px, 2.2vw, 14px)',
+            height: 'clamp(32px, 6vh, 44px)',
+            padding: '0 clamp(12px, 3vw, 20px)',
+            flexShrink: 0
+          }}
+        >
           MAIN MENU
         </Button>
       </div>
@@ -386,11 +456,9 @@ export default function ResultPage() {
         .btn-content {
           display: flex;
           align-items: center;
-          padding: 8px 24px;
           text-decoration: none;
           font-family: 'Inter', sans-serif;
           font-weight: 600;
-          font-size: clamp(14px, 3vw, 18px);
           color: var(--color-text);
           background: var(--color-background);
           transition: 1s;
@@ -411,12 +479,12 @@ export default function ResultPage() {
           transition: 0.5s;
           margin-right: 0px;
           transform: scale(0.6);
-          margin-left: 8px;
+          margin-left: clamp(4px, 1vw, 6px);
         }
 
         .btn-content:hover .icon-arrow {
           transition: 0.5s;
-          margin-right: 15px;
+          margin-right: clamp(8px, 2vw, 12px);
         }
 
         @keyframes btn-content {
@@ -459,21 +527,34 @@ export default function ResultPage() {
           90% { transform: translate3d(0, -3px, 0); }
         }
 
-        @media (max-width: 768px) {
+        @media (max-width: 480px) {
           .comparison-section {
             flex-direction: column;
-            gap: 12px;
+            gap: 8px;
+            align-items: center;
           }
 
           .action-buttons {
             flex-direction: column;
             width: 100%;
-            max-width: 300px;
+            max-width: 280px;
+            align-items: center;
           }
 
           .comparison-card {
-            min-width: 150px;
-            padding: 12px;
+            min-width: 140px;
+            max-width: 200px;
+            width: 100%;
+          }
+        }
+
+        @media (min-width: 481px) and (max-width: 768px) {
+          .comparison-section {
+            gap: 12px;
+          }
+          
+          .action-buttons {
+            gap: 8px;
           }
         }
       `}</style>

@@ -133,7 +133,7 @@ export default function MarketPage() {
   const handleClearBasket = () => { setBasketState([]); setBasket([]); };
 
   const getItemDetails = (itemId) => {
-    const { ITEM_ICONS } = require('../../components/Quest/utils/gameLogic');
+    const { ITEM_ICONS } = require('../utils/gameLogic');
     return {
       emoji: ITEM_ICONS[itemId] || '🔧',
       name: itemId.replace('-', ' ').replace(/\b\w/g, l => l.toUpperCase())
@@ -162,56 +162,77 @@ export default function MarketPage() {
         modifiers={[restrictToWindowEdges, snapCenterToCursor]}>
 
         <div className="market-scene" style={{
-          display: 'flex', flexDirection: 'column', height: '100%',
-          padding: 'clamp(6px, 1.5vw, 12px)', position: 'relative',
+          display: 'flex', flexDirection: 'column', height: '100vh',
+          padding: 'clamp(4px, 1vw, 8px)', position: 'relative',
           touchAction: activeId ? 'none' : 'pan-y', userSelect: 'none',
           WebkitUserSelect: 'none', WebkitTouchCallout: 'none', overflow: 'hidden',
-          background: 'rgba(255, 255, 255, 0.1)', backdropFilter: 'blur(10px)'
+          background: 'rgba(255, 255, 255, 0.1)', backdropFilter: 'blur(10px)',
+          maxHeight: '100vh', minHeight: '100vh'
         }}>
 
           {/* Header */}
           <div className="header" style={{
-            textAlign: 'center', marginBottom: 'clamp(6px, 1.5vw, 10px)', flexShrink: 0
+            textAlign: 'center', marginBottom: 'clamp(4px, 1vh, 8px)', flexShrink: 0,
+            paddingTop: 'clamp(2px, 0.5vh, 4px)'
           }}>
             <h1 style={{
-              fontSize: 'clamp(18px, 4vw, 28px)', fontWeight: '700', color: '#1e293b',
+              fontSize: 'clamp(16px, 3.5vw, 24px)', fontWeight: '700', color: '#1e293b',
               background: 'linear-gradient(135deg, #2563eb 0%, #7c3aed 100%)',
-              WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text'
+              WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text',
+              margin: 0, lineHeight: '1.2'
             }}>🔬 Lab Equipment Store</h1>
             <p style={{
-              fontSize: 'clamp(12px, 2.5vw, 16px)', fontWeight: '500', color: '#64748b'
+              fontSize: 'clamp(10px, 2vw, 14px)', fontWeight: '500', color: '#64748b',
+              margin: 0, lineHeight: '1.2'
             }}>
               {currentSubject.charAt(0).toUpperCase() + currentSubject.slice(1)} - Level {currentLevel}
             </p>
           </div>
 
-          {/* Items Grid */}
-          <div className="items-grid" style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(clamp(80px, 12vw, 120px), 1fr))',
-            gap: 'clamp(8px, 2vw, 16px)', flex: '1', padding: '0 clamp(8px, 2vw, 20px)',
-            paddingBottom: 'clamp(120px, 25vw, 200px)', overflow: 'auto',
-            alignContent: 'start', maxHeight: '100%'
+          {/* Items Grid Container */}
+          <div className="items-container" style={{
+            flex: '1', display: 'flex', flexDirection: 'column',
+            minHeight: 0, position: 'relative'
           }}>
-            {levelData.answers.filter(item => !basket.includes(item)).map((item, idx) => (
-              <div key={`${item}-${idx}`} className="item-slot fade-in" style={{
-                animation: `fadeIn 0.6s ease-out ${idx * 0.1}s both`,
-                touchAction: 'none', userSelect: 'none', display: 'flex',
-                alignItems: 'center', justifyContent: 'center'
-              }}>
-                <DraggableWrapper id={item} isDisabled={false} isDragging={activeId === item}>
-                  <DragItem item={item} onTap={handleItemTap} inBasket={false} disabled={false} />
-                </DraggableWrapper>
-              </div>
-            ))}
+            {/* Items Grid */}
+            <div className="items-grid" style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(clamp(60px, 10vw, 90px), 1fr))',
+              gap: 'clamp(4px, 1vw, 8px)', 
+              flex: '1',
+              padding: '0 clamp(4px, 1vw, 8px)',
+              paddingBottom: 'clamp(80px, 15vh, 120px)',
+              overflow: 'auto',
+              alignContent: 'start',
+              maxHeight: 'calc(100vh - 180px)',
+              scrollbarWidth: 'none',
+              msOverflowStyle: 'none'
+            }}>
+              {levelData.answers.filter(item => !basket.includes(item)).map((item, idx) => (
+                <div key={`${item}-${idx}`} className="item-slot fade-in" style={{
+                  animation: `fadeIn 0.6s ease-out ${idx * 0.05}s both`,
+                  touchAction: 'none', userSelect: 'none', display: 'flex',
+                  alignItems: 'center', justifyContent: 'center'
+                }}>
+                  <DraggableWrapper id={item} isDisabled={false} isDragging={activeId === item}>
+                    <DragItem item={item} onTap={handleItemTap} inBasket={false} disabled={false} />
+                  </DraggableWrapper>
+                </div>
+              ))}
+            </div>
           </div>
 
           {/* Floating Basket */}
           <div className="floating-basket" style={{
-            position: 'absolute', bottom: 'clamp(80px, 15vh, 120px)', left: '50%',
-            transform: 'translateX(-50%)', width: 'clamp(140px, 20vw, 220px)', touchAction: 'none',
+            position: 'absolute', 
+            bottom: 'clamp(60px, 12vh, 90px)', 
+            left: '50%',
+            transform: 'translateX(-50%)', 
+            width: 'clamp(100px, 18vw, 160px)', 
+            touchAction: 'none',
             filter: activeId ? 'drop-shadow(0 0 20px rgba(16,185,129,0.5))' : 'none',
-            transition: 'filter 0.3s ease', zIndex: 100
+            transition: 'filter 0.3s ease', 
+            zIndex: 100
           }}>
             <div onClick={() => basket.length && setShowBasketPopup(true)} style={{
               cursor: basket.length ? 'pointer' : 'default', transition: 'transform 0.3s ease',
@@ -223,25 +244,42 @@ export default function MarketPage() {
               <DroppableWrapper id="basket">
                 <div style={{ position: 'relative' }}>
                   <img src="/basketbox.svg" style={{
-                    marginLeft: '-100px', marginBottom: '-50px',
-                    width: '450px', height: 'auto', objectFit: 'contain'
+                    marginLeft: 'clamp(-60px, -12vw, -80px)', 
+                    marginBottom: 'clamp(-10px, -6vh, -20px)',
+                    width: 'clamp(280px, 50vw, 380px)', 
+                    height: 'auto', 
+                    objectFit: 'contain'
+                
                   }} alt="Equipment Basket" />
 
                   {/* Mini Items Inside Basket */}
                   <div ref={basketItemsContainerRef} style={{
-                    position: 'absolute', top: '25%', left: '25%', width: '50%', height: '50%',
-                    display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'center',
-                    gap: 'clamp(2px, 0.5vw, 4px)', pointerEvents: 'none'
+                    position: 'absolute', 
+                    top: '25%', 
+                    left: '25%', 
+                    width: '50%', 
+                    height: '50%',
+                    display: 'flex', 
+                    flexWrap: 'wrap', 
+                    alignItems: 'center', 
+                    justifyContent: 'center',
+                    gap: 'clamp(1px, 0.3vw, 2px)', 
+                    pointerEvents: 'none'
                   }}>
                     {basket.slice(0, 8).map((item, idx) => {
                       const itemDetails = getItemDetails(item);
                       return (
                         <div key={`mini-${item}-${idx}`} className="basket-mini-item" style={{
-                          fontSize: 'clamp(20.5px, 1.9vw, 20.5px)', background: 'rgba(255,255,255,0.9)',
-                          borderRadius: '50%', padding: 'clamp(1px, 0.3vw, 2px)',
-                          border: '1px solid rgba(0,0,0,0.1)', display: 'flex',
-                          alignItems: 'center', justifyContent: 'center',
-                          minWidth: 'clamp(12px, 2vw, 16px)', minHeight: 'clamp(12px, 2vw, 16px)',
+                          fontSize: 'clamp(8px, 1.5vw, 12px)', 
+                          background: 'rgba(255,255,255,0.9)',
+                          borderRadius: '50%', 
+                          padding: 'clamp(1px, 0.2vw, 2px)',
+                          border: '1px solid rgba(0,0,0,0.1)', 
+                          display: 'flex',
+                          alignItems: 'center', 
+                          justifyContent: 'center',
+                          minWidth: 'clamp(8px, 1.5vw, 12px)', 
+                          minHeight: 'clamp(8px, 1.5vw, 12px)',
                           boxShadow: '0 1px 3px rgba(0,0,0,0.2)'
                         }}>{itemDetails.emoji}</div>
                       );
@@ -249,12 +287,19 @@ export default function MarketPage() {
                     {/* Overflow indicator */}
                     {basket.length > 8 && (
                       <div className="basket-mini-item" style={{
-                        fontSize: 'clamp(6px, 1vw, 8px)', background: 'rgba(239,68,68,0.9)',
-                        color: 'white', borderRadius: '50%', padding: 'clamp(1px, 0.3vw, 2px)',
-                        display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        minWidth: 'clamp(12px, 2vw, 16px)', minHeight: 'clamp(12px, 2vw, 16px)',
-                        fontWeight: 'bold', boxShadow: '0 1px 3px rgba(0,0,0,0.2)'
-                      }}>+{basket.length - 9}</div>
+                        fontSize: 'clamp(6px, 0.8vw, 8px)', 
+                        background: 'rgba(239,68,68,0.9)',
+                        color: 'white', 
+                        borderRadius: '50%', 
+                        padding: 'clamp(1px, 0.2vw, 2px)',
+                        display: 'flex', 
+                        alignItems: 'center', 
+                        justifyContent: 'center',
+                        minWidth: 'clamp(8px, 1.5vw, 12px)', 
+                        minHeight: 'clamp(8px, 1.5vw, 12px)',
+                        fontWeight: 'bold', 
+                        boxShadow: '0 1px 3px rgba(0,0,0,0.2)'
+                      }}>+{basket.length - 8}</div>
                     )}
                   </div>
                 </div>
@@ -262,28 +307,47 @@ export default function MarketPage() {
                 {/* Item count badge */}
                 {basket.length > 0 && (
                   <div style={{
-                    position: 'absolute', top: '-8px', right: '-8px', background: '#ef4444',
-                    color: 'white', borderRadius: '50%', width: 'clamp(20px, 4vw, 28px)',
-                    height: 'clamp(20px, 4vw, 28px)', display: 'flex',
-                    alignItems: 'center', justifyContent: 'center',
-                    fontSize: 'clamp(10px, 2vw, 14px)', fontWeight: '700',
-                    border: '2px solid white', boxShadow: '0 2px 8px rgba(0,0,0,0.2)'
+                    position: 'absolute', 
+                    top: 'clamp(-6px, -1vh, -4px)', 
+                    right: 'clamp(-6px, -1vw, -4px)', 
+                    background: '#ef4444',
+                    color: 'white', 
+                    borderRadius: '50%', 
+                    width: 'clamp(16px, 3vw, 22px)',
+                    height: 'clamp(16px, 3vw, 22px)', 
+                    display: 'flex',
+                    alignItems: 'center', 
+                    justifyContent: 'center',
+                    fontSize: 'clamp(8px, 1.5vw, 12px)', 
+                    fontWeight: '700',
+                    border: '2px solid white', 
+                    boxShadow: '0 2px 8px rgba(0,0,0,0.2)'
                   }}>{basket.length}</div>
                 )}
 
                 {/* Delete Button */}
                 {basket.length > 0 && (
                   <div onClick={(e) => { e.stopPropagation(); handleClearBasket(); }} style={{
-                    position: 'absolute', top: '-8px', left: 'clamp(236px, 8vw, 50px)',
-                    background: '#f0e9eaff', borderRadius: '50%',
-                    width: 'clamp(28px, 5vw, 36px)', height: 'clamp(28px, 5vw, 36px)',
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    boxShadow: '0 2px 8px rgba(0,0,0,0.2)', cursor: 'pointer',
+                    position: 'absolute', 
+                    top: 'clamp(-6px, -1vh, -4px)', 
+                    left: 'clamp(140px, 28vw, 200px)',
+                    background: '#f0e9eaff', 
+                    borderRadius: '50%',
+                    width: 'clamp(20px, 4vw, 28px)', 
+                    height: 'clamp(20px, 4vw, 28px)',
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    justifyContent: 'center',
+                    boxShadow: '0 2px 8px rgba(0,0,0,0.2)', 
+                    cursor: 'pointer',
                     transition: 'all 0.2s ease'
                   }}
                     onMouseEnter={(e) => e.target.style.transform = 'scale(1.1)'}
                     onMouseLeave={(e) => e.target.style.transform = 'scale(1)'}>
-                    <img style={{ height: '32px', width: '27px' }} src="/trash3.png" alt="" />
+                    <img style={{ 
+                      height: 'clamp(16px, 3vw, 22px)', 
+                      width: 'clamp(14px, 2.5vw, 18px)' 
+                    }} src="/trash3.png" alt="" />
                   </div>
                 )}
               </DroppableWrapper>
@@ -292,22 +356,52 @@ export default function MarketPage() {
 
           {/* Bottom Navigation */}
           <div className="bottom-nav" style={{
-            display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-            gap: 'clamp(6px, 1.5vw, 12px)', marginTop: 'clamp(8px, 2vw, 16px)',
-            flexWrap: 'wrap', flexShrink: 0, paddingBottom: 'clamp(4px, 1vh, 8px)'
+            display: 'flex', 
+            justifyContent: 'space-between', 
+            alignItems: 'center',
+            gap: 'clamp(4px, 1vw, 8px)', 
+            marginTop: 'auto',
+            flexWrap: 'nowrap', 
+            flexShrink: 0, 
+            paddingBottom: 'clamp(4px, 1vh, 8px)',
+            position: 'absolute',
+            bottom: 'clamp(8px, 2vh, 16px)',
+            left: 'clamp(4px, 1vw, 8px)',
+            right: 'clamp(4px, 1vw, 8px)'
           }}>
             <button className="back-button" onClick={() => router.push('/restaurant')} style={{
-              display: 'flex', height: 'clamp(32px, 5vw, 48px)', width: 'clamp(80px, 15vw, 120px)',
-              alignItems: 'center', justifyContent: 'center', backgroundColor: '#2563eb',
-              color: 'white', borderRadius: '8px', border: 'none', fontWeight: '600',
-              fontSize: 'clamp(10px, 2vw, 14px)', cursor: 'pointer', transition: 'all 0.2s ease'
+              display: 'flex', 
+              height: 'clamp(28px, 5vh, 40px)', 
+              width: 'clamp(60px, 12vw, 90px)',
+              alignItems: 'center', 
+              justifyContent: 'center', 
+              backgroundColor: '#2563eb',
+              color: 'white', 
+              borderRadius: 'clamp(4px, 1vw, 6px)', 
+              border: 'none', 
+              fontWeight: '600',
+              fontSize: 'clamp(8px, 1.5vw, 12px)', 
+              cursor: 'pointer', 
+              marginTop:'-140px',
+              transition: 'all 0.2s ease'
             }}>← Back</button>
-            <div style={{
-              display: 'flex', gap: 'clamp(6px, 1.5vw, 12px)', flex: '1',
-              justifyContent: 'center', alignItems: 'center'
-            }}></div>
-            <Button variant={basket.length ? 'primary' : 'secondary'} disabled={!basket.length}
-              onClick={handleSubmitOrder}>Submit ({basket.length})</Button>
+            
+            <div style={{ flex: '1' }}></div>
+            
+            <Button 
+              variant={basket.length ? 'primary' : 'secondary'} 
+              disabled={!basket.length}
+              onClick={handleSubmitOrder}
+              style={{
+                marginTop:'-170px',
+                // marginLeft:'140px',
+                height: 'clamp(28px, 5vh, 40px)',
+                fontSize: 'clamp(8px, 1.5vw, 12px)',
+                padding: '0 clamp(8px, 2vw, 16px)'
+              }}
+            >
+              Submit ({basket.length})
+            </Button>
           </div>
 
           {/* Basket Popup */}
@@ -315,46 +409,85 @@ export default function MarketPage() {
             <div className="basket-popup-overlay" style={{
               position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
               backgroundColor: 'rgba(0,0,0,0.7)', display: 'flex',
-              alignItems: 'center', justifyContent: 'center', zIndex: 2000
+              alignItems: 'center', justifyContent: 'center', zIndex: 2000,
+              padding: 'clamp(8px, 2vw, 20px)'
             }} onClick={() => setShowBasketPopup(false)}>
               <div className="basket-popup" style={{
-                backgroundColor: '#fff', borderRadius: '20px', padding: '24px',
-                maxWidth: '400px', maxHeight: '80vh', overflow: 'auto',
-                margin: '20px', border: '2px solid #10b981'
+                backgroundColor: '#fff', 
+                borderRadius: 'clamp(8px, 2vw, 16px)', 
+                padding: 'clamp(12px, 3vw, 20px)',
+                maxWidth: 'min(90vw, 350px)', 
+                maxHeight: '80vh', 
+                overflow: 'auto',
+                border: '2px solid #10b981',
+                width: '100%'
               }} onClick={(e) => e.stopPropagation()}>
                 <h3 style={{
-                  color: '#1e293b', marginBottom: '16px', fontSize: '20px',
-                  fontWeight: '700', textAlign: 'center'
+                  color: '#1e293b', 
+                  marginBottom: 'clamp(8px, 2vw, 12px)', 
+                  fontSize: 'clamp(14px, 3vw, 18px)',
+                  fontWeight: '700', 
+                  textAlign: 'center'
                 }}>🧰 Your Equipment Basket ({basket.length})</h3>
-                <div style={{ marginBottom: '20px' }}>
+                <div style={{ marginBottom: 'clamp(12px, 3vw, 16px)' }}>
                   {basket.map((item, idx) => {
                     const itemDetails = getItemDetails(item);
                     return (
                       <div key={`basket-${item}-${idx}`} style={{
-                        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                        padding: '8px 12px', marginBottom: '6px', backgroundColor: '#f8f9fa',
-                        borderRadius: '8px', border: '1px solid #e9ecef'
+                        display: 'flex', 
+                        alignItems: 'center', 
+                        justifyContent: 'space-between',
+                        padding: 'clamp(4px, 1vw, 6px) clamp(6px, 1.5vw, 8px)', 
+                        marginBottom: 'clamp(3px, 0.8vw, 4px)', 
+                        backgroundColor: '#f8f9fa',
+                        borderRadius: 'clamp(4px, 1vw, 6px)', 
+                        border: '1px solid #e9ecef'
                       }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                          <span style={{ fontSize: '18px' }}>{itemDetails.emoji}</span>
+                        <div style={{ 
+                          display: 'flex', 
+                          alignItems: 'center', 
+                          gap: 'clamp(4px, 1vw, 6px)'
+                        }}>
+                          <span style={{ fontSize: 'clamp(12px, 2.5vw, 16px)' }}>
+                            {itemDetails.emoji}
+                          </span>
                           <span style={{
-                            fontSize: '14px', fontWeight: '500', color: '#495057'
+                            fontSize: 'clamp(10px, 2vw, 12px)', 
+                            fontWeight: '500', 
+                            color: '#495057'
                           }}>{itemDetails.name}</span>
                         </div>
                         <button onClick={() => handleRemoveItem(idx)} style={{
-                          background: 'none', border: 'none', cursor: 'pointer',
-                          fontSize: '16px', color: '#dc3545', padding: '4px',
-                          borderRadius: '4px', display: 'flex', alignItems: 'center',
+                          background: 'none', 
+                          border: 'none', 
+                          cursor: 'pointer',
+                          fontSize: 'clamp(10px, 2vw, 14px)', 
+                          color: '#dc3545', 
+                          padding: 'clamp(2px, 0.5vw, 3px)',
+                          borderRadius: 'clamp(2px, 0.5vw, 3px)', 
+                          display: 'flex', 
+                          alignItems: 'center',
                           justifyContent: 'center'
                         }}
                           onMouseEnter={(e) => e.target.style.backgroundColor = '#f8d7da'}
-                          onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}>❌</button>
+                          onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}>
+                          ❌
+                        </button>
                       </div>
                     );
                   })}
                 </div>
-                <Button variant="primary" onClick={() => setShowBasketPopup(false)}
-                  style={{ width: '100%' }}>Close</Button>
+                <Button 
+                  variant="primary" 
+                  onClick={() => setShowBasketPopup(false)}
+                  style={{ 
+                    width: '100%',
+                    fontSize: 'clamp(10px, 2vw, 14px)',
+                    height: 'clamp(32px, 6vh, 40px)'
+                  }}
+                >
+                  Close
+                </Button>
               </div>
             </div>
           )}
@@ -363,10 +496,14 @@ export default function MarketPage() {
         <DragOverlay dropAnimation={{ duration: 400, easing: 'cubic-bezier(0.18,0.67,0.6,1.22)' }}>
           {activeId ? (
             <div style={{
-              opacity: 0.95, transform: 'rotate(8deg) scale(1.1)', cursor: 'grabbing',
-              pointerEvents: 'none', zIndex: 9999,
+              opacity: 0.95, 
+              transform: 'rotate(8deg) scale(1.1)', 
+              cursor: 'grabbing',
+              pointerEvents: 'none', 
+              zIndex: 9999,
               filter: 'drop-shadow(0 8px 16px rgba(0,0,0,0.3))',
-              willChange: 'transform', backfaceVisibility: 'hidden'
+              willChange: 'transform', 
+              backfaceVisibility: 'hidden'
             }}>
               <DragItem item={activeId} disabled={false} inBasket={false} />
             </div>
@@ -375,25 +512,55 @@ export default function MarketPage() {
       </DndContext>
 
       <style jsx>{`
+        .items-grid::-webkit-scrollbar {
+          display: none;
+        }
+        
         @keyframes fadeIn {
           from { opacity: 0; transform: translateY(20px) scale(0.8); }
           to { opacity: 1; transform: translateY(0) scale(1); }
         }
+        
         .back-button:hover {
-          background-color: #1d4ed8; transform: translateY(-2px);
+          background-color: #1d4ed8; 
+          transform: translateY(-1px);
           box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
         }
-        @media (max-width: 768px) {
+        
+        @media (max-width: 480px) {
           .items-grid {
-            grid-template-columns: repeat(auto-fit, minmax(clamp(70px, 15vw, 100px), 1fr)) !important;
-            gap: clamp(6px, 2vw, 12px) !important; padding: 0 clamp(4px, 1vw, 8px) !important;
-            paddingBottom: clamp(100px, 20vh, 150px) !important;
+            grid-template-columns: repeat(auto-fit, minmax(50px, 1fr)) !important;
+            gap: 3px !important;
+            padding: 0 4px !important;
+            paddingBottom: 70px !important;
           }
+          
           .floating-basket {
-            bottom: clamp(60px, 12vh, 100px) !important;
-            width: clamp(120px, 25vw, 180px) !important;
+            bottom: 50px !important;
+            width: 80px !important;
           }
-          .bottom-nav { flex-direction: column !important; gap: clamp(6px, 2vw, 12px) !important; }
+          
+          .bottom-nav {
+            bottom: 6px !important;
+            left: 4px !important;
+            right: 4px !important;
+          }
+        }
+        
+        @media (min-width: 481px) and (max-width: 768px) {
+          .items-grid {
+            grid-template-columns: repeat(auto-fit, minmax(65px, 1fr)) !important;
+            gap: 6px !important;
+            paddingBottom: 90px !important;
+          }
+        }
+        
+        @media (min-width: 769px) {
+          .items-grid {
+            grid-template-columns: repeat(auto-fit, minmax(80px, 1fr)) !important;
+            gap: 8px !important;
+            paddingBottom: 110px !important;
+          }
         }
       `}</style>
     </Layout>

@@ -3,8 +3,8 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import Layout from '../../Layout';
-import Button from '../../Button';
+import Layout from '../Layout';
+import Button from '../Button';
 import { getCurrentLevel, getBasket, clearBasket, getCurrentSubject } from '../utils/storage';
 import { getLevelData } from '../utils/gameLogic';
 
