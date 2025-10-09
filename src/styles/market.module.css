@@ -76,6 +76,7 @@
   opacity: 0;
   padding: clamp(4px, 1vw, 8px) 0;
   justify-items: center;
+  
 }
 
 .itemSlot {

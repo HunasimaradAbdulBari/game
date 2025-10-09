@@ -1,20 +1,28 @@
-// src/app/result/page.js - Enhanced Results with Next Level Button
-'use client'
+'use client';
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-
 import Layout from '../Layout';
 import Button from '../Button';
-import { getCurrentLevel, setCurrentLevel, getBasket, clearBasket, getCurrentSubject, setMaxUnlockedLevel } from '../utils/storage';
-import { getLevelData, checkWin, updateProgress } from '../utils/gameLogic';
+import { 
+  getCurrentLevel, 
+  setCurrentLevel, 
+  getBasket, 
+  clearBasket 
+} from '../utils/storage';
+import { getCurrentExperiment, checkWin, updateProgress, clearCurrentExperiment } from '../utils/gameLogic';
+import { 
+  saveToLeaderboard, 
+  generateUserId,
+  formatDate 
+} from '../../../services/labGameStorageService';
 
 export default function ResultPage() {
   const router = useRouter();
   const [currentLevel, setCurrentLevelState] = useState(1);
-  const [currentSubject, setCurrentSubject] = useState('physics');
   const [levelData, setLevelData] = useState(null);
   const [basket, setBasket] = useState([]);
   const [isWin, setIsWin] = useState(false);
+  const [userId, setUserId] = useState('');
 
   const playSound = (soundType) => {
     if (typeof window !== 'undefined') {
@@ -29,13 +37,6 @@ export default function ResultPage() {
             })
             .catch((error) => {
               console.log(`Audio autoplay prevented: ${error.message}`);
-              const playOnInteraction = () => {
-                audio.play().catch(e => console.log('Audio play failed:', e));
-                document.removeEventListener('click', playOnInteraction);
-                document.removeEventListener('touchstart', playOnInteraction);
-              };
-              document.addEventListener('click', playOnInteraction);
-              document.addEventListener('touchstart', playOnInteraction);
             });
         }
       } catch (error) {
@@ -46,20 +47,58 @@ export default function ResultPage() {
 
   useEffect(() => {
     const level = getCurrentLevel();
-    const subject = getCurrentSubject();
-    const data = getLevelData(level, subject);
+    const data = getCurrentExperiment();
+    if (!data) {
+      router.push('/restaurant');
+      return;
+    }
     const currentBasket = getBasket();
     const won = checkWin(currentBasket, data);
 
+    let currentUserId = localStorage.getItem('lab_quest_user_id');
+    if (!currentUserId) {
+      currentUserId = generateUserId();
+      localStorage.setItem('lab_quest_user_id', currentUserId);
+    }
+    setUserId(currentUserId);
+
     setCurrentLevelState(level);
-    setCurrentSubject(subject);
     setLevelData(data);
     setBasket(currentBasket);
     setIsWin(won);
 
+    const score = won ? (level * 100) : 0;
+    const totalQuestions = data.correctAnswer.length;
+    const correctAnswers = won ? totalQuestions : currentBasket.filter(item => 
+      data.correctAnswer.includes(item)
+    ).length;
+    const percentage = Math.round((correctAnswers / totalQuestions) * 100);
+
     if (won) {
-      updateProgress(level, subject);
+      updateProgress(level);
+
+      const gameData = {
+        userId: currentUserId,
+        gameId: `game_${level}`,
+        score: score,
+        level: level,
+        playerName: `Player ${currentUserId.slice(-4)}`,
+        correctAnswers: correctAnswers,
+        totalQuestions: totalQuestions,
+        percentage: percentage,
+        passed: true
+      };
+
+      saveToLeaderboard(gameData);
+
+      setTimeout(() => {
+        clearCurrentExperiment();
+      }, 1000);
     }
+
+    setTimeout(() => {
+      clearBasket();
+    }, 100);
 
     setTimeout(() => {
       if (won) {
@@ -68,496 +107,444 @@ export default function ResultPage() {
         playSound('lose');
       }
     }, 800);
-  }, []);
+  }, [router]);
 
   const handleNextLevel = () => {
     const nextLevel = currentLevel + 1;
-    if (nextLevel <= 3) {
+    if (nextLevel <= 10) {
       setCurrentLevel(nextLevel);
-      clearBasket();
+      clearCurrentExperiment();
       router.push('/restaurant');
     }
   };
 
   const handleTryAgain = () => {
-    clearBasket();
     router.push('/restaurant');
   };
 
   const handleReplayLevel = () => {
-    clearBasket();
     router.push('/restaurant');
   };
 
   const handlePlayFromStart = () => {
     setCurrentLevel(1);
-    clearBasket();
+    clearCurrentExperiment();
     router.push('/restaurant');
   };
 
   const handleGoToMenu = () => {
-    clearBasket();
+    clearCurrentExperiment();
     router.push('/');
+  };
+
+  const handleGoToLeaderboard = () => {
+    router.push('/leaderboard'); // Updated to navigate to external leaderboard scene
   };
 
   if (!levelData) return null;
 
-  return (
-    <Layout scene="result" subject={currentSubject}>
-      <div
-        className="result-scene"
-        style={{
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          justifyContent: 'center',
-          height: '100vh',
-          width: '100vw',
-          padding: 'clamp(8px, 2vw, 16px)',
-          textAlign: 'center',
-          position: 'relative',
-          borderRadius: 'clamp(6px, 1.5vw, 8px)',
-          background: isWin 
-            ? 'linear-gradient(135deg, rgba(110, 231, 183, 0.9) 0%, rgba(16, 185, 129, 0.9) 100%)'
-            : 'linear-gradient(145deg, rgba(248, 180, 180, 0.9) 0%, rgba(239, 68, 68, 0.9) 100%)',
-          maxHeight: '100vh',
-          overflow: 'hidden'
+  // Success Icon SVG
+  const SuccessIcon = () => (
+    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="12" cy="12" r="10" fill="#22C55E" stroke="#16A34A" strokeWidth="2"/>
+      <path d="m9 12 2 2 4-4" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+    </svg>
+  );
+
+  // Failure Icon SVG
+  const FailureIcon = () => (
+    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="12" cy="12" r="10" fill="#F87171" stroke="#EF4444" strokeWidth="2"/>
+      <path d="m15 9-6 6" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+      <path d="m9 9 6 6" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+    </svg>
+  );
+
+  // Custom Banner Component
+  const CustomBanner = ({ title }) => (
+    <div style={{ 
+      display: 'flex', 
+      justifyContent: 'center', 
+      alignItems: 'center',
+      height: '100%',
+      position: 'relative'
+    }}>
+      <svg 
+        viewBox="0 0 317.113 100" 
+        style={{ 
+          width: '100%', 
+          height: 'auto',
+          minWidth: '200px',
+          maxWidth: '320px'
         }}
+        preserveAspectRatio="xMidYMid meet"
       >
-        {/* Celebration Particles */}
-        {isWin && (
-          <div
-            className="celebration-particles"
-            style={{
-              position: 'absolute',
-              top: 0,
-              left: 0,
-              right: 0,
-              bottom: 0,
-              overflow: 'hidden',
-              pointerEvents: 'none',
-            }}
-          >
-            {Array.from({ length: 20 }, (_, i) => (
-              <div
-                key={i}
-                className="celebration-particle"
-                style={{
-                  position: 'absolute',
-                  left: `${Math.random() * 100}%`,
-                  top: `${Math.random() * 100}%`,
-                  width: `${Math.random() * 6 + 3}px`,
-                  height: `${Math.random() * 6 + 3}px`,
-                  backgroundColor: ['#fbbf24', '#34d399', '#60a5fa', '#a78bfa'][
-                    Math.floor(Math.random() * 4)
-                  ],
-                  borderRadius: '50%',
-                  animation: `celebrate ${Math.random() * 3 + 2}s ease-out forwards`,
-                  animationDelay: `${Math.random() * 2}s`,
-                }}
-              />
-            ))}
-          </div>
-        )}
-
-        {/* Title */}
-        <div
-          className="result-title"
+        <defs>
+          <linearGradient id={`bannerGradient-${isWin ? 'win' : 'lose'}`} x1="0%" y1="0%" x2="0%" y2="100%">
+            <stop offset="0%" style={{ stopColor: isWin ? '#22C55E' : '#F87171', stopOpacity: 0.95 }} />
+            <stop offset="50%" style={{ stopColor: isWin ? '#16A34A' : '#EF4444', stopOpacity: 0.9 }} />
+            <stop offset="100%" style={{ stopColor: isWin ? '#15803D' : '#DC2626', stopOpacity: 0.85 }} />
+          </linearGradient>
+          <linearGradient id={`highlightGradient-${isWin ? 'win' : 'lose'}`} x1="0%" y1="0%" x2="0%" y2="100%">
+            <stop offset="0%" style={{ stopColor: '#FFFFFF', stopOpacity: 0.9 }} />
+            <stop offset="100%" style={{ stopColor: '#FFFFFF', stopOpacity: 0.4 }} />
+          </linearGradient>
+        </defs>
+        
+        <g fill={`url(#bannerGradient-${isWin ? 'win' : 'lose'})`}>
+          <polygon points="291.927,30 291.927,70 317.113,70 306.509,50 317.113,30" />
+          <polygon points="262.484,75 286.624,75 286.624,70 286.624,30 286.624,25 262.484,25" />
+          <polygon points="25.187,70 25.187,30 0,30 10.604,50 0,70" />
+          <polygon points="30.489,70 30.489,75 54.629,75 54.629,25 30.489,25 30.489,30" />
+          <polygon points="59.932,20 59.932,22 59.932,25 59.932,75 59.932,77 59.932,80 59.932,85 257.182,85 257.182,80 257.182,77 257.182,75 257.182,25 257.182,22 257.182,20 257.182,15 59.932,15" />
+        </g>
+        
+        <g fill={`url(#highlightGradient-${isWin ? 'win' : 'lose'})`} opacity="0.4">
+          <polygon points="59.932,20 59.932,35 257.182,35 257.182,20 257.182,15 59.932,15" />
+        </g>
+        
+        <text 
+          x="158.5" 
+          y="50"
+          textAnchor="middle" 
+          dominantBaseline="central"
           style={{
-            marginBottom: 'clamp(12px, 3vh, 20px)',
-            flexShrink: 0
+            fontSize: 'clamp(16px, 4vw, 20px)',
+            fontWeight: 'bold',
+            fill: '#FFFFFF',
+            fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, sans-serif',
+            letterSpacing: '1px'
           }}
         >
-          <h1
-            style={{
-              fontSize: 'clamp(18px, 4.5vw, 32px)',
-              fontWeight: '900',
-              color: '#1e293b',
-              textShadow: '0 2px 4px rgba(226, 232, 240, 0.8)',
-              marginBottom: 'clamp(4px, 1vh, 6px)',
-              background: 'linear-gradient(135deg, #2563eb 0%, #7c3aed 100%)',
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
-              backgroundClip: 'text',
-              lineHeight: '1.2'
-            }}
-          >
-            {isWin ? 'EXPERIMENT COMPLETE! 🎉' : 'TRY AGAIN! 💪'}
-          </h1>
-          <h2
-            style={{
-              fontSize: 'clamp(12px, 2.5vw, 18px)',
-              fontWeight: '700',
-              color: '#475569',
-              margin: 0,
-              lineHeight: '1.2'
-            }}
-          >
-            {currentSubject.charAt(0).toUpperCase() + currentSubject.slice(1)} - Level {currentLevel}
-          </h2>
-        </div>
+          {title}
+        </text>
+      </svg>
+    </div>
+  );
 
-        {/* Comparison Section */}
-        <div
-          className="comparison-section"
-          style={{
-            display: 'flex',
-            gap: 'clamp(8px, 2vw, 16px)',
-            alignItems: 'stretch',
-            marginBottom: 'clamp(12px, 3vh, 20px)',
-            flexWrap: 'wrap',
-            justifyContent: 'center',
-            width: '100%',
-            maxWidth: '90vw',
-            flexShrink: 0
-          }}
-        >
-          {/* Required Items */}
-          <div
-            className="comparison-card required-card"
-            style={{
-              background: 'rgba(255, 255, 255, 0.95)',
-              borderRadius: 'clamp(6px, 1.5vw, 10px)',
-              padding: 'clamp(8px, 2vw, 14px)',
-              minWidth: 'clamp(120px, 25vw, 160px)',
-              maxWidth: 'clamp(160px, 30vw, 200px)',
-              backdropFilter: 'blur(10px)',
-              boxShadow: '0 4px 16px rgba(0, 0, 0, 0.1)',
-              border: '2px solid #2563eb',
-              flex: '1'
-            }}
-          >
-            <h3
-              style={{
-                fontSize: 'clamp(10px, 2.2vw, 14px)',
-                fontWeight: '800',
-                color: '#1e293b',
-                marginBottom: 'clamp(4px, 1vh, 8px)',
-                margin: '0 0 clamp(4px, 1vh, 8px) 0'
-              }}
-            >
-              Required Equipment:
-            </h3>
-            <div
-              style={{
-                fontSize: 'clamp(8px, 1.8vw, 11px)',
-                fontWeight: '600',
-                color: '#475569',
-                lineHeight: '1.3',
-              }}
-            >
-              {levelData.correctAnswer.map((item, index) => (
-                <div key={index} style={{ padding: '1px 0' }}>
-                  {item}
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Result Icon */}
-          <div
-            className={`result-icon ${isWin ? 'win' : ''}`}
-            style={{
-              fontSize: 'clamp(20px, 4vw, 28px)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              flexShrink: 0
-            }}
-          >
-            {isWin ? '✅' : '❌'}
-          </div>
-
-          {/* Your Basket */}
-          <div
-            className={`comparison-card basket-card ${isWin ? 'win' : 'lose'}`}
-            style={{
-              background: 'rgba(255, 255, 255, 0.95)',
-              borderRadius: 'clamp(6px, 1.5vw, 10px)',
-              padding: 'clamp(8px, 2vw, 14px)',
-              minWidth: 'clamp(120px, 25vw, 160px)',
-              maxWidth: 'clamp(160px, 30vw, 200px)',
-              backdropFilter: 'blur(10px)',
-              boxShadow: '0 4px 16px rgba(0, 0, 0, 0.1)',
-              border: `2px solid ${isWin ? '#10b981' : '#f87171'}`,
-              flex: '1'
-            }}
-          >
-            <h3
-              style={{
-                fontSize: 'clamp(10px, 2.2vw, 14px)',
-                fontWeight: '800',
-                color: '#1e293b',
-                marginBottom: 'clamp(4px, 1vh, 8px)',
-                margin: '0 0 clamp(4px, 1vh, 8px) 0'
-              }}
-            >
-              Your Equipment:
-            </h3>
-            <div
-              style={{
-                fontSize: 'clamp(8px, 1.8vw, 11px)',
-                fontWeight: '600',
-                color: '#475569',
-                lineHeight: '1.3',
-              }}
-            >
-              {basket.length > 0 ? basket.map((item, index) => (
-                <div key={index} style={{ padding: '1px 0' }}>
-                  {item}
-                </div>
-              )) : 'Empty'}
-            </div>
-          </div>
-        </div>
-
-        {/* Progress Message */}
-        {isWin && currentLevel < 3 && (
-          <p
-            style={{
-              fontSize: 'clamp(12px, 2.5vw, 16px)',
-              fontWeight: '700',
-              color: '#fbbf24',
-              marginBottom: 'clamp(8px, 2vh, 12px)',
-              margin: '0 0 clamp(8px, 2vh, 12px) 0',
-              flexShrink: 0
-            }}
-          >
-            Next level unlocked! 🌟
-          </p>
-        )}
-
-        {isWin && currentLevel === 3 && (
-          <p
-            style={{
-              fontSize: 'clamp(14px, 3vw, 18px)',
-              fontWeight: '800',
-              color: '#fbbf24',
-              marginBottom: 'clamp(8px, 2vh, 12px)',
-              margin: '0 0 clamp(8px, 2vh, 12px) 0',
-              flexShrink: 0
-            }}
-          >
-            You mastered {currentSubject.charAt(0).toUpperCase() + currentSubject.slice(1)}! 👑
-          </p>
-        )}
-
-        {/* Action Buttons */}
-        <div
-          className="action-buttons"
-          style={{
-            display: 'flex',
-            gap: 'clamp(6px, 1.5vw, 10px)',
-            flexWrap: 'wrap',
-            justifyContent: 'center',
-            marginBottom: 'clamp(8px, 2vh, 12px)',
-            flexShrink: 0,
-            width: '100%',
-            maxWidth: '90vw'
-          }}
-        >
-          {isWin ? (
-            <>
-              {currentLevel < 3 ? (
-                <div className="btn-conteiner">
-                  <div 
-                    className="btn-content"
-                    onClick={handleNextLevel}
-                    style={{
-                      '--color-text': '#ffffff',
-                      '--color-background': '#2563eb',
-                      '--color-outline': '#2563eb80',
-                      '--color-shadow': '#00000080',
-                      cursor: 'pointer',
-                      fontSize: 'clamp(10px, 2.2vw, 14px)',
-                      padding: 'clamp(6px, 1.5vw, 10px) clamp(12px, 3vw, 20px)',
-                      height: 'clamp(32px, 6vh, 44px)'
-                    }}
-                  >
-                    NEXT LEVEL
-                    <div className="icon-arrow">▶</div>
-                  </div>
-                </div>
-              ) : (
-                <Button 
-                  variant="primary" 
-                  onClick={handlePlayFromStart}
-                  style={{
-                    fontSize: 'clamp(10px, 2.2vw, 14px)',
-                    height: 'clamp(32px, 6vh, 44px)',
-                    padding: '0 clamp(12px, 3vw, 20px)'
-                  }}
-                >
-                  PLAY AGAIN
-                </Button>
-              )}
-              <Button 
-                variant="secondary" 
-                onClick={handleReplayLevel}
-                style={{
-                  fontSize: 'clamp(10px, 2.2vw, 14px)',
-                  height: 'clamp(32px, 6vh, 44px)',
-                  padding: '0 clamp(12px, 3vw, 20px)'
-                }}
-              >
-                REPLAY LEVEL
-              </Button>
-            </>
-          ) : (
-            <>
-              <Button 
-                variant="primary" 
-                onClick={handleTryAgain}
-                style={{
-                  fontSize: 'clamp(10px, 2.2vw, 14px)',
-                  height: 'clamp(32px, 6vh, 44px)',
-                  padding: '0 clamp(12px, 3vw, 20px)'
-                }}
-              >
-                TRY AGAIN
-              </Button>
-              <Button 
-                variant="secondary" 
-                onClick={handleGoToMenu}
-                style={{
-                  fontSize: 'clamp(10px, 2.2vw, 14px)',
-                  height: 'clamp(32px, 6vh, 44px)',
-                  padding: '0 clamp(12px, 3vw, 20px)'
-                }}
-              >
-                CHANGE LEVEL
-              </Button>
-            </>
-          )}
-        </div>
-
-        {/* Main Menu Button */}
-        <Button 
-          variant="secondary" 
-          onClick={handleGoToMenu}
-          style={{
-            fontSize: 'clamp(10px, 2.2vw, 14px)',
-            height: 'clamp(32px, 6vh, 44px)',
-            padding: '0 clamp(12px, 3vw, 20px)',
-            flexShrink: 0
-          }}
-        >
-          MAIN MENU
-        </Button>
+  // Status Display
+  const renderOverallStatusOnly = () => {
+    return (
+      <div style={{
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: 'clamp(20px, 5vw, 28px)',
+        borderRadius: 'clamp(16px, 4vw, 20px)',
+        background: isWin ? '#E6FFFA' : '#FEF2F2',
+        border: `3px solid ${isWin ? '#22C55E' : '#F87171'}`,
+        color: isWin ? '#065F46' : '#7F1D1D',
+        fontWeight: 700,
+        fontSize: 'clamp(20px, 5vw, 26px)',
+        gap: '20px',
+        textTransform: 'uppercase',
+        letterSpacing: '1.5px',
+        boxShadow: `0 8px 32px ${isWin ? 'rgba(34, 197, 94, 0.2)' : 'rgba(248, 113, 113, 0.2)'}`,
+      }}>
+        {isWin ? <SuccessIcon /> : <FailureIcon />}
+        <span>{isWin ? 'Success' : 'Failed'}</span>
       </div>
+    );
+  };
 
-      <style jsx>{`
-        .btn-conteiner {
-          display: flex;
-          justify-content: center;
-          align-items: center;
+  return (
+    <Layout scene="result">
+      <style jsx global>{`
+        .perfect-scroll {
+          scrollbar-width: thin;
+          scrollbar-color: rgba(156, 163, 175, 0.6) transparent;
+        }
+        
+        .perfect-scroll::-webkit-scrollbar {
+          width: 8px;
+        }
+        
+        .perfect-scroll::-webkit-scrollbar-track {
+          background: transparent;
+          border-radius: 4px;
+        }
+        
+        .perfect-scroll::-webkit-scrollbar-thumb {
+          background: rgba(156, 163, 175, 0.6);
+          border-radius: 4px;
+        }
+        
+        .perfect-scroll::-webkit-scrollbar-thumb:hover {
+          background: rgba(156, 163, 175, 0.8);
         }
 
-        .btn-content {
-          display: flex;
-          align-items: center;
-          text-decoration: none;
-          font-family: 'Inter', sans-serif;
-          font-weight: 600;
-          color: var(--color-text);
-          background: var(--color-background);
-          transition: 1s;
-          border-radius: 50px;
-          box-shadow: 0 0 0.2em 0 var(--color-background);
-          border: none;
-        }
-
-        .btn-content:hover, .btn-content:focus {
-          transition: 0.5s;
-          animation: btn-content 1s;
-          outline: 0.1em solid transparent;
-          outline-offset: 0.2em;
-          box-shadow: 0 0 0.4em 0 var(--color-background);
-        }
-
-        .btn-content .icon-arrow {
-          transition: 0.5s;
-          margin-right: 0px;
-          transform: scale(0.6);
-          margin-left: clamp(4px, 1vw, 6px);
-        }
-
-        .btn-content:hover .icon-arrow {
-          transition: 0.5s;
-          margin-right: clamp(8px, 2vw, 12px);
-        }
-
-        @keyframes btn-content {
-          0% { transform: scale(1); }
-          50% { transform: scale(1.05); }
-          100% { transform: scale(1); }
-        }
-
-        @keyframes celebrate {
-          0% {
-            transform: translateY(0) translateX(0) scale(1);
-            opacity: 0.8;
-          }
-          50% {
-            opacity: 1;
-          }
-          100% {
-            transform: translateY(-100px) translateX(var(--random-x, 0px)) scale(0);
-            opacity: 0;
-          }
-        }
-
-        .result-icon {
-          animation: pulse 1.5s ease-in-out infinite;
-        }
-
-        .result-icon.win {
-          animation: bounce 1s ease-in-out, pulse 1.5s ease-in-out 1s infinite;
-        }
-
-        @keyframes pulse {
-          0%, 100% { transform: scale(1); }
-          50% { transform: scale(1.1); }
-        }
-
-        @keyframes bounce {
-          0%, 20%, 53%, 80%, 100% { transform: translate3d(0, 0, 0); }
-          40%, 43% { transform: translate3d(0, -15px, 0); }
-          70% { transform: translate3d(0, -8px, 0); }
-          90% { transform: translate3d(0, -3px, 0); }
-        }
-
-        @media (max-width: 480px) {
-          .comparison-section {
-            flex-direction: column;
-            gap: 8px;
-            align-items: center;
-          }
-
-          .action-buttons {
-            flex-direction: column;
-            width: 100%;
-            max-width: 280px;
-            align-items: center;
-          }
-
-          .comparison-card {
-            min-width: 140px;
-            max-width: 200px;
-            width: 100%;
-          }
-        }
-
-        @media (min-width: 481px) and (max-width: 768px) {
-          .comparison-section {
-            gap: 12px;
-          }
-          
-          .action-buttons {
-            gap: 8px;
-          }
+        @keyframes slideIn {
+          from { opacity: 0; transform: translateY(30px) scale(0.95); }
+          to { opacity: 1; transform: translateY(0) scale(1); }
         }
       `}</style>
+
+      {/* Blurred Background Overlay */}
+      <div style={{
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        width: '100vw',
+        height: '100vh',
+        backdropFilter: 'blur(8px)',
+        background: 'rgba(255, 255, 255, 0.1)',
+        zIndex: 0
+      }} />
+
+      <div style={{
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        width: '100vw',
+        height: '100vh',
+        display: 'flex',
+        flexDirection: 'column',
+        justifyContent: 'center',
+        alignItems: 'center',
+        padding: 'clamp(16px, 4vw, 24px)',
+        color: '#111827',
+        overflow: 'auto',
+        zIndex: 1
+      }}>
+
+        {/* Main Result Card */}
+        <div style={{
+          background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.98) 0%, rgba(248, 250, 252, 0.95) 100%)',
+          borderRadius: 'clamp(20px, 5vw, 28px)',
+          width: 'clamp(360px, 92vw, 620px)',
+          height: 'clamp(440px, 82vh, 540px)',
+          maxWidth: '95vw',
+          maxHeight: '90vh',
+          position: 'relative',
+          zIndex: 1,
+          overflow: 'hidden',
+          animation: 'slideIn 1s ease-out',
+          border: '3px solid rgba(229, 231, 235, 0.8)',
+          boxShadow: '0 25px 80px rgba(0, 0, 0, 0.12), 0 8px 32px rgba(0, 0, 0, 0.08)'
+        }}>
+          <div style={{
+            position: 'relative',
+            zIndex: 2,
+            height: '100%',
+            display: 'flex',
+            flexDirection: 'column',
+            padding: 'clamp(20px, 5vw, 28px)'
+          }}>
+            {/* Banner */}
+            <div style={{ height: 'clamp(80px, 18vw, 100px)', flexShrink: 0 }}>
+              <CustomBanner title={isWin ? 'SUCCESS' : 'TRY AGAIN'} />
+            </div>
+
+            {/* Challenge Info */}
+            <div style={{
+              textAlign: 'center',
+              marginBottom: 'clamp(16px, 4vh, 20px)',
+              flexShrink: 0
+            }}>
+              <h2 style={{
+                fontSize: 'clamp(16px, 3.5vw, 20px)',
+                fontWeight: '700',
+                color: '#111827',
+                margin: 0,
+                letterSpacing: '0.5px'
+              }}>
+                Challenge {currentLevel} - {levelData.title}
+              </h2>
+            </div>
+
+            {/* Status Display */}
+            <div style={{
+              display: 'flex',
+              justifyContent: 'center',
+              marginBottom: 'clamp(16px, 4vh, 20px)',
+              flexShrink: 0
+            }}>
+              {renderOverallStatusOnly()}
+            </div>
+
+            {/* Progress Messages */}
+            {isWin && currentLevel < 10 && (
+              <p style={{
+                fontSize: 'clamp(14px, 3vw, 18px)',
+                fontWeight: '600',
+                color: '#059669',
+                textAlign: 'center',
+                marginBottom: 'clamp(12px, 3vh, 16px)',
+                margin: '0 0 clamp(12px, 3vh, 16px) 0',
+                flexShrink: 0,
+                letterSpacing: '0.5px'
+              }}>
+                Next challenge unlocked!
+              </p>
+            )}
+
+            {isWin && currentLevel === 10 && (
+              <p style={{
+                fontSize: 'clamp(16px, 3.5vw, 20px)',
+                fontWeight: '700',
+                color: '#059669',
+                textAlign: 'center',
+                marginBottom: 'clamp(12px, 3vh, 16px)',
+                margin: '0 0 clamp(12px, 3vh, 16px) 0',
+                flexShrink: 0,
+                letterSpacing: '0.5px'
+              }}>
+                All challenges completed!
+              </p>
+            )}
+
+            {/* Action Buttons */}
+            <div style={{
+              display: 'flex',
+              gap: 'clamp(10px, 2.5vw, 14px)',
+              justifyContent: 'center',
+              alignItems: 'center',
+              flexWrap: 'wrap',
+              marginTop: 'auto',
+              flexShrink: 0
+            }}>
+              {isWin ? (
+                <>
+                  {currentLevel < 10 ? (
+                    <button
+                      onClick={handleNextLevel}
+                      style={{
+                        padding: 'clamp(10px, 2.5vw, 14px) clamp(20px, 5vw, 28px)',
+                        fontSize: 'clamp(11px, 2.2vw, 14px)',
+                        fontWeight: '700',
+                        background: '#3B82F6',
+                        color: '#FFFFFF',
+                        border: '2px solid #2563EB',
+                        borderRadius: 'clamp(10px, 2.5vw, 14px)',
+                        cursor: 'pointer',
+                        transition: 'all 0.3s ease',
+                        minWidth: 'clamp(120px, 30vw, 160px)',
+                        height: 'clamp(38px, 9vh, 48px)',
+                        letterSpacing: '0.5px',
+                        boxShadow: '0 4px 16px rgba(59, 130, 246, 0.3)'
+                      }}
+                      onMouseEnter={(e) => {
+                        e.target.style.background = '#2563EB';
+                        e.target.style.transform = 'translateY(-2px)';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.target.style.background = '#3B82F6';
+                        e.target.style.transform = 'translateY(0)';
+                      }}
+                    >
+                      NEXT CHALLENGE
+                    </button>
+                  ) : (
+                    <button
+                      onClick={handlePlayFromStart}
+                      style={{
+                        padding: 'clamp(10px, 2.5vw, 14px) clamp(20px, 5vw, 28px)',
+                        fontSize: 'clamp(11px, 2.2vw, 14px)',
+                        fontWeight: '700',
+                        background: '#3B82F6',
+                        color: '#FFFFFF',
+                        border: '2px solid #2563EB',
+                        borderRadius: 'clamp(10px, 2.5vw, 14px)',
+                        cursor: 'pointer',
+                        transition: 'all 0.3s ease',
+                        minWidth: 'clamp(120px, 30vw, 160px)',
+                        height: 'clamp(38px, 9vh, 48px)',
+                        letterSpacing: '0.5px',
+                        boxShadow: '0 4px 16px rgba(59, 130, 246, 0.3)'
+                      }}
+                    >
+                      PLAY AGAIN
+                    </button>
+                  )}
+                  <button
+                    onClick={handleReplayLevel}
+                    style={{
+                      padding: 'clamp(10px, 2.5vw, 14px) clamp(20px, 5vw, 28px)',
+                      fontSize: 'clamp(11px, 2.2vw, 14px)',
+                      fontWeight: '700',
+                      background: '#6B7280',
+                      color: '#FFFFFF',
+                      border: '2px solid #4B5563',
+                      borderRadius: 'clamp(10px, 2.5vw, 14px)',
+                      cursor: 'pointer',
+                      transition: 'all 0.3s ease',
+                      minWidth: 'clamp(120px, 30vw, 160px)',
+                      height: 'clamp(38px, 9vh, 48px)',
+                      letterSpacing: '0.5px',
+                      boxShadow: '0 2px 8px rgba(0, 0, 0, 0.2)'
+                    }}
+                  >
+                    REPLAY
+                  </button>
+                </>
+              ) : (
+                <>
+                  <button
+                    onClick={handleTryAgain}
+                    style={{
+                      padding: 'clamp(10px, 2.5vw, 14px) clamp(20px, 5vw, 28px)',
+                      fontSize: 'clamp(11px, 2.2vw, 14px)',
+                      fontWeight: '700',
+                      background: '#F87171',
+                      color: '#FFFFFF',
+                      border: '2px solid #EF4444',
+                      borderRadius: 'clamp(10px, 2.5vw, 14px)',
+                      cursor: 'pointer',
+                      transition: 'all 0.3s ease',
+                      minWidth: 'clamp(120px, 30vw, 160px)',
+                      height: 'clamp(38px, 9vh, 48px)',
+                      letterSpacing: '0.5px',
+                      boxShadow: '0 4px 16px rgba(248, 113, 113, 0.3)'
+                    }}
+                  >
+                    TRY AGAIN
+                  </button>
+                  <button
+                    onClick={handleGoToMenu}
+                    style={{
+                      padding: 'clamp(10px, 2.5vw, 14px) clamp(20px, 5vw, 28px)',
+                      fontSize: 'clamp(11px, 2.2vw, 14px)',
+                      fontWeight: '700',
+                      background: '#6B7280',
+                      color: '#FFFFFF',
+                      border: '2px solid #4B5563',
+                      borderRadius: 'clamp(10px, 2.5vw, 14px)',
+                      cursor: 'pointer',
+                      transition: 'all 0.3s ease',
+                      minWidth: 'clamp(120px, 30vw, 160px)',
+                      height: 'clamp(38px, 9vh, 48px)',
+                      letterSpacing: '0.5px',
+                      boxShadow: '0 2px 8px rgba(0, 0, 0, 0.2)'
+                    }}
+                  >
+                    MENU
+                  </button>
+                </>
+              )}
+              <button
+                onClick={handleGoToLeaderboard}
+                style={{
+                  padding: 'clamp(10px, 2.5vw, 14px) clamp(20px, 5vw, 28px)',
+                  fontSize: 'clamp(11px, 2.2vw, 14px)',
+                  fontWeight: '700',
+                  background: '#8B5CF6',
+                  color: '#FFFFFF',
+                  border: '2px solid #7C3AED',
+                  borderRadius: 'clamp(10px, 2.5vw, 14px)',
+                  cursor: 'pointer',
+                  transition: 'all 0.3s ease',
+                  minWidth: 'clamp(120px, 30vw, 160px)',
+                  height: 'clamp(38px, 9vh, 48px)',
+                  letterSpacing: '0.5px',
+                  boxShadow: '0 4px 16px rgba(139, 92, 246, 0.3)'
+                }}
+              >
+                LEADERBOARD
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
     </Layout>
   );
 }
