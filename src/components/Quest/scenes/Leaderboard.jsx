@@ -1,3 +1,4 @@
+"use client";
 import React, { useEffect, useRef, useState } from "react";
 import { Home, BarChart3, Star } from "lucide-react";
 import confetti from "canvas-confetti";
@@ -9,45 +10,11 @@ import {
 } from '../utils/storage';
 import { getCurrentExperiment, checkWin, updateProgress, clearCurrentExperiment } from '../utils/gameLogic';
 import { 
-  saveToLeaderboard, 
-  generateUserId,
+  getLeaderboard,
   formatDate 
 } from '../../../services/labGameStorageService';
 
-
-// Types
-interface LeaderboardEntry {
-  userId: string;
-  score: number;
-  timestamp: number;
-}
-
-interface GameState {
-  score: number;
-  level: number;
-}
-
-interface Player {
-  id: number;
-  username: string;
-  score: number;
-}
-
-interface CongratulationsModalProps<T> {
-  showCongrats: boolean;
-  isMobile: boolean;
-  isLandscape: boolean;
-  screenSize: "mobile" | "tablet" | "desktop";
-  game: T;
-  setShowCongrats: React.Dispatch<React.SetStateAction<boolean>>;
-  setGame: React.Dispatch<React.SetStateAction<T>>;
-  setShowStart: React.Dispatch<React.SetStateAction<boolean>>;
-  setShowGameOver: React.Dispatch<React.SetStateAction<boolean>>;
-  setGameOverLevel: React.Dispatch<React.SetStateAction<number | null>>;
-  setGameOverPattern: React.Dispatch<React.SetStateAction<number | null>>;
-}
-
-const CongratulationsModal: React.FC<CongratulationsModalProps<any>> = ({
+const CongratulationsModal = ({
   showCongrats,
   isMobile,
   isLandscape,
@@ -60,9 +27,9 @@ const CongratulationsModal: React.FC<CongratulationsModalProps<any>> = ({
   setGameOverLevel,
   setGameOverPattern,
 }) => {
-  const confettiIntervalRef = useRef<number | null>(null);
+  const confettiIntervalRef = useRef(null);
   const [showStats, setShowStats] = useState(false);
-  const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
+  const [leaderboard, setLeaderboard] = useState([]);
 
   const getIconSize = () => {
     if (isMobile) return 'w-4 h-4';
@@ -71,29 +38,29 @@ const CongratulationsModal: React.FC<CongratulationsModalProps<any>> = ({
   };
 
   // Helper function to determine font size based on score length
-  const getScoreFontSize = (score: number, isMobile: boolean) => {
+  const getScoreFontSize = (score, isMobile) => {
     const scoreLength = score.toString().length;
     if (isMobile) {
       if (scoreLength > 5) return 'text-xs';
-      if (scoreLength > 2) return 'text-xs'; // Changed from 3 to 2
+      if (scoreLength > 2) return 'text-xs';
       return 'text-sm';
     } else {
       if (scoreLength > 5) return 'text-sm';
-      if (scoreLength > 2) return 'text-sm'; // Changed from 3 to 2
+      if (scoreLength > 2) return 'text-sm';
       return 'text-base';
     }
   };
 
   // Helper function to determine padding based on score length
-  const getScorePadding = (score: number, isMobile: boolean) => {
+  const getScorePadding = (score, isMobile) => {
     const scoreLength = score.toString().length;
     if (isMobile) {
       if (scoreLength > 5) return 'px-2 py-1';
-      if (scoreLength > 2) return 'px-2 py-1'; // Changed from 3 to 2
+      if (scoreLength > 2) return 'px-2 py-1';
       return 'px-3 py-1';
     } else {
       if (scoreLength > 5) return 'px-2 py-1';
-      if (scoreLength > 2) return 'px-3 py-1'; // Changed from 3 to 2
+      if (scoreLength > 2) return 'px-3 py-1';
       return 'px-4 py-1';
     }
   };
@@ -101,9 +68,8 @@ const CongratulationsModal: React.FC<CongratulationsModalProps<any>> = ({
   useEffect(() => {
     if (showCongrats) {
       startConfettiFireworks();
-      const gameId = "snake-game";
-      const leaderboardData = getLeaderboardData(gameId);
-      const transformedData: LeaderboardEntry[] = leaderboardData.map(entry => ({
+      const leaderboardData = getLeaderboard();
+      const transformedData = leaderboardData.map(entry => ({
         userId: entry.userId,
         score: entry.score || 0,
         timestamp: entry.timestamp
@@ -134,7 +100,7 @@ const CongratulationsModal: React.FC<CongratulationsModalProps<any>> = ({
       drift: 0
     };
 
-    const randomInRange = (min: number, max: number) =>
+    const randomInRange = (min, max) =>
       Math.random() * (max - min) + min;
 
     if (confettiIntervalRef.current !== null) {
@@ -188,37 +154,36 @@ const CongratulationsModal: React.FC<CongratulationsModalProps<any>> = ({
     return null;
   }
 
-  const players: Player[] = leaderboard.map((entry, index) => ({
+  const players = leaderboard.map((entry, index) => ({
     id: index + 1,
     username: entry.userId,
     score: entry.score,
   }));
 
-  const getAvatarSrc = (): string => {
+  const getAvatarSrc = () => {
     return "/assets/games/snakegame/male-avatar.png";
   };
 
-  const handleAvatarError = (e: React.SyntheticEvent<HTMLImageElement, Event>, player: Player): void => {
+  const handleAvatarError = (e, player) => {
     if (e.currentTarget.src.includes("/assets/games/snakegame/male-avatar.png")) {
       return;
     }
     e.currentTarget.src = "/assets/games/snakegame/female-avatar.png";
   };
 
-  const containerStyle: React.CSSProperties = {
+  const containerStyle = {
     backgroundImage: "url(/assets/games/snakegame/backgroundimg.png)",
     backgroundSize: "cover",
     backgroundPosition: "center",
     backgroundRepeat: "no-repeat",
   };
 
-  const mainContainerStyle: React.CSSProperties = {
+  const mainContainerStyle = {
     width: isMobile ? (isLandscape ? "90%" : "95%") : "100%",
     maxWidth: isMobile ? (isLandscape ? "600px" : "450px") : "500px",
     height: isMobile ? (isLandscape ? "90vh" : "85vh") : "auto",
     maxHeight: isMobile ? (isLandscape ? "90vh" : "85vh") : "none",
     overflow: "hidden",
-    // Add background for landscape mode to replace SVG
     ...(isMobile && isLandscape && {
       backgroundColor: "#FFDCB8",
       borderRadius: "20px",
@@ -244,7 +209,7 @@ const CongratulationsModal: React.FC<CongratulationsModalProps<any>> = ({
           <span 
             className="text-[#ffcc00] font-bold whitespace-nowrap"
             style={{
-              fontSize: game.score.toString().length > 2 ? '16px' : '20px' // Changed from 3 to 2
+              fontSize: game.score.toString().length > 2 ? '16px' : '20px'
             }}
           >
             SCORE: {game.score}
@@ -318,9 +283,9 @@ const CongratulationsModal: React.FC<CongratulationsModalProps<any>> = ({
                 scrollbarColor: "none",
               }}
             >
-              {players.map((player: Player, index: number) => {
+              {players.map((player, index) => {
                 const rank = index + 1;
-                let rowStyle: React.CSSProperties = {};
+                let rowStyle = {};
 
                 if (rank === 1) {
                   rowStyle = {
@@ -430,7 +395,7 @@ const CongratulationsModal: React.FC<CongratulationsModalProps<any>> = ({
                         className={`flex items-center justify-center bg-black bg-opacity-30 rounded-2xl shadow-md ${isMobile ? 'pl-7' : 'pl-8'} ${getScorePadding(player.score, isMobile)}`}
                         style={{
                           height: isMobile ? '28px' : '32px',
-                          width: isMobile ? '70px' : '75px', // Reduced width for 2-digit optimization
+                          width: isMobile ? '70px' : '75px',
                         }}
                       >
                         <img
