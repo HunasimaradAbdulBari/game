@@ -3,11 +3,13 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
-    "build": "next build",
-    "start": "next start",
-    "lint": "next lint"
-  },
+  "dev": "node scripts/create-fallback-manifest.js && next dev",
+  "build": "node scripts/create-fallback-manifest.js && next build",
+  "start": "next start",
+  "lint": "next lint",
+  "clean": "rm -rf .next node_modules/.cache",
+  "fix": "node scripts/create-fallback-manifest.js"
+},
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",
     "@dnd-kit/modifiers": "^9.0.0",
