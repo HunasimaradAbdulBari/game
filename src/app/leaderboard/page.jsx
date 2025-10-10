@@ -1,5 +1,5 @@
-import Leaderboard from '../../components/Quest/scenes/Leaderboard'; // adjust path as needed
+import LeaderboardScene from '../../components/Quest/scenes/Leaderboard';
 
 export default function LeaderboardPage() {
-  return <Leaderboard />;
+  return <LeaderboardScene />;
 }
