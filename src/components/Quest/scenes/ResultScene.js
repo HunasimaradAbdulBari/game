@@ -1,513 +1,537 @@
-"use client";
-import React, { useEffect, useRef, useState } from "react";
-import { Home, BarChart3, Star } from "lucide-react";
-import confetti from "canvas-confetti";
+'use client';
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import Layout from '../Layout';
+import Button from '../Button';
+import { BarChart3 } from "lucide-react"
 import { 
-  getLeaderboard,
+  getCurrentLevel, 
+  setCurrentLevel, 
+  getBasket, 
+  clearBasket 
+} from '../utils/storage';
+import { getCurrentExperiment, checkWin, updateProgress, clearCurrentExperiment } from '../utils/gameLogic';
+import { 
+  saveToLeaderboard, 
+  generateUserId,
   formatDate 
 } from '../../../services/labGameStorageService';
-import { useRouter } from 'next/navigation';
 
-const LeaderboardScene = () => {
+export default function ResultPage() {
   const router = useRouter();
-  const confettiIntervalRef = useRef(null);
-  const [leaderboard, setLeaderboard] = useState([]);
-  const [isMobile, setIsMobile] = useState(false);
-  const [isLandscape, setIsLandscape] = useState(false);
-  const [screenSize, setScreenSize] = useState('desktop');
+  const [currentLevel, setCurrentLevelState] = useState(1);
+  const [levelData, setLevelData] = useState(null);
+  const [basket, setBasket] = useState([]);
+  const [isWin, setIsWin] = useState(false);
+  const [userId, setUserId] = useState('');
 
-  const getIconSize = () => {
-    if (isMobile) return 'w-4 h-4';
-    if (isLandscape) return 'w-5 h-5';
-    return 'w-6 h-6';
-  };
-
-  // Helper function to determine font size based on score length
-  const getScoreFontSize = (score, isMobile) => {
-    const scoreLength = score.toString().length;
-    if (isMobile) {
-      if (scoreLength > 5) return 'text-xs';
-      if (scoreLength > 2) return 'text-xs';
-      return 'text-sm';
-    } else {
-      if (scoreLength > 5) return 'text-sm';
-      if (scoreLength > 2) return 'text-sm';
-      return 'text-base';
-    }
-  };
-
-  // Helper function to determine padding based on score length
-  const getScorePadding = (score, isMobile) => {
-    const scoreLength = score.toString().length;
-    if (isMobile) {
-      if (scoreLength > 5) return 'px-2 py-1';
-      if (scoreLength > 2) return 'px-2 py-1';
-      return 'px-3 py-1';
-    } else {
-      if (scoreLength > 5) return 'px-2 py-1';
-      if (scoreLength > 2) return 'px-3 py-1';
-      return 'px-4 py-1';
+  const playSound = (soundType) => {
+    if (typeof window !== 'undefined') {
+      try {
+        const audio = new Audio(`/sounds/${soundType}.mp3`);
+        audio.volume = 0.6;
+        const playPromise = audio.play();
+        if (playPromise !== undefined) {
+          playPromise
+            .then(() => {
+              console.log(`${soundType} sound played successfully`);
+            })
+            .catch((error) => {
+              console.log(`Audio autoplay prevented: ${error.message}`);
+            });
+        }
+      } catch (error) {
+        console.error('Error playing sound:', error);
+      }
     }
   };
 
   useEffect(() => {
-    // Check if mobile and landscape
-    const checkIfMobile = () => {
-      const mobile = window.innerWidth < 1024;
-      const landscape = window.innerHeight < window.innerWidth;
-      setIsMobile(mobile);
-      setIsLandscape(landscape);
-      
-      if (mobile) {
-        setScreenSize(landscape ? 'mobile-landscape' : 'mobile-portrait');
-      } else {
-        setScreenSize('desktop');
-      }
-    };
+    const level = getCurrentLevel();
+    const data = getCurrentExperiment();
+    if (!data) {
+      router.push('/restaurant');
+      return;
+    }
+    const currentBasket = getBasket();
+    const won = checkWin(currentBasket, data);
 
-    checkIfMobile();
-    window.addEventListener('resize', checkIfMobile);
+    let currentUserId = localStorage.getItem('lab_quest_user_id');
+    if (!currentUserId) {
+      currentUserId = generateUserId();
+      localStorage.setItem('lab_quest_user_id', currentUserId);
+    }
+    setUserId(currentUserId);
 
-    // Load leaderboard
-    const leaderboardData = getLeaderboard();
-    const transformedData = leaderboardData.map(entry => ({
-      userId: entry.userId,
-      playerName: entry.playerName,
-      score: entry.score || 0,
-      timestamp: entry.timestamp
-    }));
-    setLeaderboard(transformedData.sort((a, b) => b.score - a.score));
+    setCurrentLevelState(level);
+    setLevelData(data);
+    setBasket(currentBasket);
+    setIsWin(won);
 
-    return () => {
-      window.removeEventListener('resize', checkIfMobile);
-      if (confettiIntervalRef.current !== null) {
-        clearInterval(confettiIntervalRef.current);
-        confettiIntervalRef.current = null;
-      }
-    };
-  }, []);
+    const score = won ? (level * 100) : 0;
+    const totalQuestions = data.correctAnswer.length;
+    const correctAnswers = won ? totalQuestions : currentBasket.filter(item => 
+      data.correctAnswer.includes(item)
+    ).length;
+    const percentage = Math.round((correctAnswers / totalQuestions) * 100);
 
-  const startConfettiFireworks = () => {
-    const duration = 5 * 1000;
-    const animationEnd = Date.now() + duration;
-    const colors = ['#FFD700', '#FF4500', '#FF69B4', '#00BFFF', '#9370DB', '#FFFFFF'];
-    const defaults = { 
-      startVelocity: 30, 
-      spread: 360, 
-      ticks: 60, 
-      zIndex: 3000,
-      colors: colors,
-      gravity: 1,
-      scalar: 1.2,
-      drift: 0
-    };
+    if (won) {
+      updateProgress(level);
 
-    const randomInRange = (min, max) =>
-      Math.random() * (max - min) + min;
+      const gameData = {
+        userId: currentUserId,
+        gameId: `game_${level}`,
+        score: score,
+        level: level,
+        playerName: `Player ${currentUserId.slice(-4)}`,
+        correctAnswers: correctAnswers,
+        totalQuestions: totalQuestions,
+        percentage: percentage,
+        passed: true
+      };
 
-    if (confettiIntervalRef.current !== null) {
-      clearInterval(confettiIntervalRef.current);
+      saveToLeaderboard(gameData);
+
+      setTimeout(() => {
+        clearCurrentExperiment();
+      }, 1000);
     }
 
-    confettiIntervalRef.current = window.setInterval(() => {
-      const timeLeft = animationEnd - Date.now();
+    setTimeout(() => {
+      clearBasket();
+    }, 100);
 
-      if (timeLeft <= 0) {
-        if (confettiIntervalRef.current !== null) {
-          clearInterval(confettiIntervalRef.current);
-          confettiIntervalRef.current = null;
-        }
-        return;
+    setTimeout(() => {
+      if (won) {
+        playSound('win');
+      } else {
+        playSound('lose');
       }
+    }, 800);
+  }, [router]);
 
-      const particleCount = 50 * (timeLeft / duration);
-      
-      confetti({
-        ...defaults,
-        particleCount,
-        origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 },
-        colors: colors,
-        shapes: ['circle', 'square', 'star']
-      });
-      
-      confetti({
-        ...defaults,
-        particleCount,
-        origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 },
-        colors: colors,
-        shapes: ['circle', 'square', 'star']
-      });
-      
-      confetti({
-        ...defaults,
-        particleCount: particleCount / 2,
-        origin: { x: 0.5, y: Math.random() - 0.2 },
-        colors: colors,
-        shapes: ['circle', 'square', 'star']
-      });
-    }, 250);
+  const handleNextLevel = () => {
+    const nextLevel = currentLevel + 1;
+    if (nextLevel <= 10) {
+      setCurrentLevel(nextLevel);
+      clearCurrentExperiment();
+      router.push('/restaurant');
+    }
   };
 
-  const goHome = () => {
+  const handleTryAgain = () => {
+    router.push('/restaurant');
+  };
+
+  const handleReplayLevel = () => {
+    router.push('/restaurant');
+  };
+
+  const handlePlayFromStart = () => {
+    setCurrentLevel(1);
+    clearCurrentExperiment();
+    router.push('/restaurant');
+  };
+
+  const handleGoToMenu = () => {
+    clearCurrentExperiment();
     router.push('/');
   };
 
-  const players = leaderboard.map((entry, index) => ({
-    id: index + 1,
-    username: entry.playerName,
-    score: entry.score,
-  }));
-
-  const getAvatarSrc = () => {
-    return "/assets/games/snakegame/male-avatar.png";
+  const handleGoToLeaderboard = () => {
+    router.push('/leaderboard'); // Updated to navigate to external leaderboard scene
   };
 
-  const handleAvatarError = (e, player) => {
-    if (e.currentTarget.src.includes("/assets/games/snakegame/male-avatar.png")) {
-      return;
-    }
-    e.currentTarget.src = "/assets/games/snakegame/female-avatar.png";
-  };
+  if (!levelData) return null;
 
-  const containerStyle = {
-    backgroundImage: "url(/assets/games/snakegame/backgroundimg.png)",
-    backgroundSize: "cover",
-    backgroundPosition: "center",
-    backgroundRepeat: "no-repeat",
-  };
+  // Success Icon SVG
+  const SuccessIcon = () => (
+    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="12" cy="12" r="10" fill="#22C55E" stroke="#16A34A" strokeWidth="2"/>
+      <path d="m9 12 2 2 4-4" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+    </svg>
+  );
 
-  const mainContainerStyle = {
-    width: isMobile ? (isLandscape ? "90%" : "95%") : "100%",
-    maxWidth: isMobile ? (isLandscape ? "600px" : "450px") : "500px",
-    height: isMobile ? (isLandscape ? "90vh" : "85vh") : "auto",
-    maxHeight: isMobile ? (isLandscape ? "90vh" : "85vh") : "none",
-    overflow: "hidden",
-    ...(isMobile && isLandscape && {
-      backgroundColor: "#FFDCB8",
-      borderRadius: "20px",
-      border: "8px solid #a0522d",
-    })
-  };
+  // Failure Icon SVG
+  const FailureIcon = () => (
+    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="12" cy="12" r="10" fill="#F87171" stroke="#EF4444" strokeWidth="2"/>
+      <path d="m15 9-6 6" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+      <path d="m9 9 6 6" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+    </svg>
+  );
 
-  const svgViewBox = isMobile ? (isLandscape ? "0 0 700 900" : "0 0 700 1000") : "0 0 900 1200";
-  const leaderboardHeight = isMobile ? (isLandscape ? "calc(90vh - 200px)" : "400px") : "537px";
+  // Custom Banner Component
+  const CustomBanner = ({ title }) => (
+    <div style={{ 
+      display: 'flex', 
+      justifyContent: 'center', 
+      alignItems: 'center',
+      height: '100%',
+      position: 'relative'
+    }}>
+      <svg 
+        viewBox="0 0 317.113 100" 
+        style={{ 
+          width: '100%', 
+          height: 'auto',
+          minWidth: '200px',
+          maxWidth: '320px'
+        }}
+        preserveAspectRatio="xMidYMid meet"
+      >
+        <defs>
+          <linearGradient id={`bannerGradient-${isWin ? 'win' : 'lose'}`} x1="0%" y1="0%" x2="0%" y2="100%">
+            <stop offset="0%" style={{ stopColor: isWin ? '#22C55E' : '#F87171', stopOpacity: 0.95 }} />
+            <stop offset="50%" style={{ stopColor: isWin ? '#16A34A' : '#EF4444', stopOpacity: 0.9 }} />
+            <stop offset="100%" style={{ stopColor: isWin ? '#15803D' : '#DC2626', stopOpacity: 0.85 }} />
+          </linearGradient>
+          <linearGradient id={`highlightGradient-${isWin ? 'win' : 'lose'}`} x1="0%" y1="0%" x2="0%" y2="100%">
+            <stop offset="0%" style={{ stopColor: '#FFFFFF', stopOpacity: 0.9 }} />
+            <stop offset="100%" style={{ stopColor: '#FFFFFF', stopOpacity: 0.4 }} />
+          </linearGradient>
+        </defs>
+        
+        <g fill={`url(#bannerGradient-${isWin ? 'win' : 'lose'})`}>
+          <polygon points="291.927,30 291.927,70 317.113,70 306.509,50 317.113,30" />
+          <polygon points="262.484,75 286.624,75 286.624,70 286.624,30 286.624,25 262.484,25" />
+          <polygon points="25.187,70 25.187,30 0,30 10.604,50 0,70" />
+          <polygon points="30.489,70 30.489,75 54.629,75 54.629,25 30.489,25 30.489,30" />
+          <polygon points="59.932,20 59.932,22 59.932,25 59.932,75 59.932,77 59.932,80 59.932,85 257.182,85 257.182,80 257.182,77 257.182,75 257.182,25 257.182,22 257.182,20 257.182,15 59.932,15" />
+        </g>
+        
+        <g fill={`url(#highlightGradient-${isWin ? 'win' : 'lose'})`} opacity="0.4">
+          <polygon points="59.932,20 59.932,35 257.182,35 257.182,20 257.182,15 59.932,15" />
+        </g>
+        
+        <text 
+          x="158.5" 
+          y="50"
+          textAnchor="middle" 
+          dominantBaseline="central"
+          style={{
+            fontSize: 'clamp(16px, 4vw, 20px)',
+            fontWeight: 'bold',
+            fill: '#FFFFFF',
+            fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, sans-serif',
+            letterSpacing: '1px'
+          }}
+        >
+          {title}
+        </text>
+      </svg>
+    </div>
+  );
+
+  // Status Display
+  const renderOverallStatusOnly = () => {
+    return (
+      <div style={{
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: 'clamp(20px, 5vw, 28px)',
+        borderRadius: 'clamp(16px, 4vw, 20px)',
+        background: isWin ? '#E6FFFA' : '#FEF2F2',
+        border: `3px solid ${isWin ? '#22C55E' : '#F87171'}`,
+        color: isWin ? '#065F46' : '#7F1D1D',
+        fontWeight: 700,
+        fontSize: 'clamp(20px, 5vw, 26px)',
+        gap: '20px',
+        textTransform: 'uppercase',
+        letterSpacing: '1.5px',
+        boxShadow: `0 8px 32px ${isWin ? 'rgba(34, 197, 94, 0.2)' : 'rgba(248, 113, 113, 0.2)'}`,
+      }}>
+        {isWin ? <SuccessIcon /> : <FailureIcon />}
+        <span>{isWin ? 'Success' : 'Failed'}</span>
+      </div>
+    );
+  };
 
   return (
-    <Layout scene="leaderboard">
-      <div 
-        className={`fixed top-0 left-0 w-screen h-screen flex flex-col items-center justify-center z-[2000] backdrop-blur-md p-2 ${isMobile ? 'p-2' : 'p-4'}`}
-        style={containerStyle}
-      >
-        {/* Score Display */}
-        <div className="score-display absolute" style={{ 
-          right: '10px',
-          left: 'auto',
+    <Layout scene="result">
+      <style jsx global>{`
+        .perfect-scroll {
+          scrollbar-width: thin;
+          scrollbar-color: rgba(156, 163, 175, 0.6) transparent;
+        }
+        
+        .perfect-scroll::-webkit-scrollbar {
+          width: 8px;
+        }
+        
+        .perfect-scroll::-webkit-scrollbar-track {
+          background: transparent;
+          border-radius: 4px;
+        }
+        
+        .perfect-scroll::-webkit-scrollbar-thumb {
+          background: rgba(156, 163, 175, 0.6);
+          border-radius: 4px;
+        }
+        
+        .perfect-scroll::-webkit-scrollbar-thumb:hover {
+          background: rgba(156, 163, 175, 0.8);
+        }
+
+        @keyframes slideIn {
+          from { opacity: 0; transform: translateY(30px) scale(0.95); }
+          to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+      `}</style>
+
+      {/* Blurred Background Overlay */}
+      <div style={{
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        width: '100vw',
+        height: '100vh',
+        backdropFilter: 'blur(8px)',
+        background: 'rgba(255, 255, 255, 0.1)',
+        zIndex: 0
+      }} />
+
+      <div style={{
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        width: '100vw',
+        height: '100vh',
+        display: 'flex',
+        flexDirection: 'column',
+        justifyContent: 'center',
+        alignItems: 'center',
+        padding: 'clamp(16px, 4vw, 24px)',
+        color: '#111827',
+        overflow: 'auto',
+        zIndex: 1
+      }}>
+
+        {/* Main Result Card */}
+        <div style={{
+          background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.98) 0%, rgba(248, 250, 252, 0.95) 100%)',
+          borderRadius: 'clamp(20px, 5vw, 28px)',
+          width: 'clamp(360px, 92vw, 620px)',
+          height: 'clamp(440px, 82vh, 540px)',
+          maxWidth: '95vw',
+          maxHeight: '90vh',
+          position: 'relative',
+          zIndex: 1,
+          overflow: 'hidden',
+          animation: 'slideIn 1s ease-out',
+          border: '3px solid rgba(229, 231, 235, 0.8)',
+          boxShadow: '0 25px 80px rgba(0, 0, 0, 0.12), 0 8px 32px rgba(0, 0, 0, 0.08)'
         }}>
-          <div className="score-item flex items-center">
-            <Star className={`${getIconSize()} mr-1 text-[#ffcc00]`} />
-            <span 
-              className="text-[#ffcc00] font-bold whitespace-nowrap"
-              style={{
-                fontSize: leaderboard.length > 0 ? '16px' : '20px'
-              }}
-            >
-              LEADERBOARD
-            </span>
-          </div>
-        </div>
-
-        {/* Main Container */}
-        <div className="relative" style={mainContainerStyle}>
-          {/* SVG Background - Only render if not in landscape mode on mobile */}
-          {!isMobile || !isLandscape ? (
-            <svg
-              viewBox={svgViewBox}
-              className="w-full h-full"
-              preserveAspectRatio="xMidYMid meet"
-            >
-              <rect
-                x="50"
-                y="40"
-                width={isMobile ? (isLandscape ? "600" : "600") : "800"}
-                height={isMobile ? (isLandscape ? "820" : "920") : "1120"}
-                rx="40"
-                fill="#a0522d"
-              />
-              <path
-                d={isMobile 
-                  ? (isLandscape 
-                    ? "M 90 130 Q 350 175 610 130 L 610 810 Q 610 835 585 835 L 115 835 Q 90 835 90 810 Z"
-                    : "M 90 130 Q 350 175 610 130 L 610 910 Q 610 935 585 935 L 115 935 Q 90 935 90 910 Z")
-                  : "M 90 130 Q 450 175 810 130 L 810 1110 Q 810 1135 785 1135 L 115 1135 Q 90 1135 90 1110 Z"
-                }
-                fill="#FFDCB8"
-              />
-            </svg>
-          ) : null}
-
-          {/* Content Overlay */}
-          <div className={`absolute inset-0 ${isMobile ? 'p-4' : 'p-8'}`}>
-            {/* PNG Banner Image */}
-            <div className="flex justify-center">
-              <img
-                src="/assets/games/snakegame/leaderboard.png"
-                alt="Leaderboard Banner"
-                className="w-full h-auto drop-shadow-2xl"
-                style={{
-                  maxHeight: isMobile ? (isLandscape ? "150px" : "300px") : "670px",
-                  objectFit: "contain",
-                  marginTop: isMobile ? (isLandscape ? "10px" : "-20px") : "-40px",
-                  marginBottom: "0px",
-                }}
-              />
+          <div style={{
+            position: 'relative',
+            zIndex: 2,
+            height: '100%',
+            display: 'flex',
+            flexDirection: 'column',
+            padding: 'clamp(20px, 5vw, 28px)'
+          }}>
+            {/* Banner */}
+            <div style={{ height: 'clamp(80px, 18vw, 100px)', flexShrink: 0 }}>
+              <CustomBanner title={isWin ? 'SUCCESS' : 'TRY AGAIN'} />
             </div>
 
-            {/* Leaderboard Container */}
-            <div
-              className="rounded-2xl p-2 opacity-90"
-              style={{
-                background: "linear-gradient(180deg, #D17836 0%, #B86A30 50%, #A0592A 100%)",
-                boxShadow: `inset 0 -4px 0px rgba(125, 60, 10, 0.2)`,
-                height: leaderboardHeight,
-                marginTop: "0px",
-                marginLeft: isMobile && isLandscape ? "10px" : "22px",
-                marginRight: isMobile && isLandscape ? "10px" : "22px",
-              }}
-            >
-              {/* Scrollable Content Area */}
-              <div
-                className="h-full overflow-y-auto px-0 space-y-2 scrollbar-custom"
-                style={{
-                  scrollbarWidth: "none",
-                  scrollbarColor: "none",
-                }}
-              >
-                {players.length > 0 ? (
-                  players.map((player, index) => {
-                    const rank = index + 1;
-                    let rowStyle = {};
+            {/* Challenge Info */}
+            <div style={{
+              textAlign: 'center',
+              marginBottom: 'clamp(16px, 4vh, 20px)',
+              flexShrink: 0
+            }}>
+              <h2 style={{
+                fontSize: 'clamp(16px, 3.5vw, 20px)',
+                fontWeight: '700',
+                color: '#111827',
+                margin: 0,
+                letterSpacing: '0.5px'
+              }}>
+                Challenge {currentLevel} - {levelData.title}
+              </h2>
+            </div>
 
-                    if (rank === 1) {
-                      rowStyle = {
-                        background: "linear-gradient(90deg, #FDD95Cff 0%, #FDD95Cff 50%, #FDD95Cff 100%)",
-                        boxShadow: "inset 0 -4px 2px #D0762Eff,inset 0 4px 8px #ddccbeff",
-                        position: "relative",
-                      };
-                    } else if (rank === 2) {
-                      rowStyle = {
-                        background: "linear-gradient(90deg, #91ECF5ff 0%, #68E5F4ff 50%, #64E6F4ff 100%)",
-                        boxShadow: "inset 0 -3px 8px rgba(16, 113, 249, 0.88),inset 0 -4px 0 #1071F9",
-                        position: "relative",
-                      };
-                    } else if (rank === 3) {
-                      rowStyle = {
-                        background: "linear-gradient(90deg, #ef4150ff 0%, #ef4150ff 50%, #ef4150ff 100%)",
-                        boxShadow: "inset 0 -3px 8px rgba(213, 17, 17, 0.95),inset 0 -4px 0 #e40c0cff",
-                        position: "relative",
-                      };
-                    } else {
-                      rowStyle = {
-                        background: "linear-gradient(90deg, #FAAB70ff 0%, #FAAB70ff 50%, #FAAB70ff 100%)",
-                        boxShadow: "inset 0 -3px 0 #e40c0c88,inset 0 2px 8px #ddccbeff",
-                        position: "relative",
-                      };
-                    }
+            {/* Status Display */}
+            <div style={{
+              display: 'flex',
+              justifyContent: 'center',
+              marginBottom: 'clamp(16px, 4vh, 20px)',
+              flexShrink: 0
+            }}>
+              {renderOverallStatusOnly()}
+            </div>
 
-                    return (
-                      <div
-                        key={player.id || index}
-                        className="rounded-xl px-3 py-2 flex items-center shadow-md opacity-85 hover:opacity-100 transition-opacity duration-200 flex-shrink-0"
-                        style={{
-                          ...rowStyle,
-                          minHeight: isMobile ? "50px" : "60px",
-                        }}
-                      >
-                        {/* Rank Medal - Touch top and bottom for top 3 */}
-                        <div className="flex-shrink-0 mr-1" style={{ marginTop: rank <= 3 ? '-8px' : '-8px', marginBottom: rank <= 3 ? '-8px' : '-8px' }}>
-                          {rank === 1 && (
-                            <div className={`${isMobile ? 'w-14 h-14' : 'w-16 h-16'} flex items-center justify-center`}>
-                              <img
-                                src="/assets/games/snakegame/gold-trophy.png"
-                                alt="Gold Trophy"
-                                className={`${isMobile ? 'w-14 h-16' : 'w-16 h-18'} object-contain drop-shadow-lg`}
-                                style={{
-                                  filter: "drop-shadow(2px 3px 6px rgba(0, 0, 0, 0.4))",
-                                }}
-                              />
-                            </div>
-                          )}
-                          {rank === 2 && (
-                            <div className={`${isMobile ? 'w-14 h-14' : 'w-16 h-16'} flex items-center justify-center`}>
-                              <img
-                                src="/assets/games/snakegame/silver-trophy.png"
-                                alt="Silver Trophy"
-                                className={`${isMobile ? 'w-14 h-16' : 'w-16 h-18'} object-contain drop-shadow-lg`}
-                                style={{
-                                  filter: "drop-shadow(2px 3px 6px rgba(0, 0, 0, 0.4))",
-                                }}
-                              />
-                            </div>
-                          )}
-                          {rank === 3 && (
-                            <div className={`${isMobile ? 'w-14 h-14' : 'w-16 h-16'} flex items-center justify-center`}>
-                              <img
-                                src="/assets/games/snakegame/bronze-trophy.png"
-                                alt="Bronze Trophy"
-                                className={`${isMobile ? 'w-14 h-16' : 'w-16 h-18'} object-contain drop-shadow-lg`}
-                                style={{
-                                  filter: "drop-shadow(2px 3px 6px rgba(0, 0, 0, 0.4))",
-                                }}
-                              />
-                            </div>
-                          )}
-                          {rank > 3 && (
-                            <div className={`${isMobile ? 'w-14 h-14' : 'w-16 h-16'} rounded-full flex items-center justify-center font-black ${isMobile ? 'text-xl' : 'text-2xl'} text-amber-800`}>
-                              {rank}
-                            </div>
-                          )}
-                        </div>
+            {/* Progress Messages */}
+            {isWin && currentLevel < 10 && (
+              <p style={{
+                fontSize: 'clamp(14px, 3vw, 18px)',
+                fontWeight: '600',
+                color: '#059669',
+                textAlign: 'center',
+                marginBottom: 'clamp(12px, 3vh, 16px)',
+                margin: '0 0 clamp(12px, 3vh, 16px) 0',
+                flexShrink: 0,
+                letterSpacing: '0.5px'
+              }}>
+                Next challenge unlocked!
+              </p>
+            )}
 
-                        {/* Avatar */}
-                        <div className="flex-shrink-0 mr-2" style={{ marginTop: '-8px', marginBottom: '-8px' }}>
-                          <div
-                            className={`${isMobile ? 'w-7 h-7' : 'w-8 h-8'} rounded-full flex items-center justify-center shadow-md border-2 border-white overflow-hidden`}
-                            style={{ backgroundColor: "#2C5282" }}
-                          >
-                            <img
-                              src={getAvatarSrc()}
-                              alt="Avatar"
-                              className="w-full h-full object-cover"
-                              onError={(e) => handleAvatarError(e, player)}
-                            />
-                          </div>
-                        </div>
+            {isWin && currentLevel === 10 && (
+              <p style={{
+                fontSize: 'clamp(16px, 3.5vw, 20px)',
+                fontWeight: '700',
+                color: '#059669',
+                textAlign: 'center',
+                marginBottom: 'clamp(12px, 3vh, 16px)',
+                margin: '0 0 clamp(12px, 3vh, 16px) 0',
+                flexShrink: 0,
+                letterSpacing: '0.5px'
+              }}>
+                All challenges completed!
+              </p>
+            )}
 
-                        {/* Username */}
-                        <div className="flex-grow min-w-0 mr-2">
-                          <p className={`text-white font-bold ${isMobile ? 'text-base' : 'text-lg'} tracking-wide drop-shadow-sm break-words`}>
-                            {player.username}
-                          </p>
-                        </div>
-
-                        {/* Score with Coin - Fixed width with dynamic font size */}
-                        <div className="flex-shrink-0 relative">
-                          <div 
-                            className={`flex items-center justify-center bg-black bg-opacity-30 rounded-2xl shadow-md ${isMobile ? 'pl-7' : 'pl-8'} ${getScorePadding(player.score, isMobile)}`}
-                            style={{
-                              height: isMobile ? '28px' : '32px',
-                              width: isMobile ? '70px' : '75px',
-                            }}
-                          >
-                            <img
-                              src="/assets/games/snakegame/coin1.png"
-                              alt="Coin"
-                              className={`absolute ${isMobile ? '-left-1.5 w-6 h-6' : '-left-2 w-9 h-9'} top-1/2 transform -translate-y-1/2 rounded-full shadow-sm`}
-                            />
-                            <span className={`text-white font-black text-center drop-shadow-sm whitespace-nowrap ${getScoreFontSize(player.score, isMobile)}`}>
-                              {player.score?.toLocaleString() || "0"}
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-                    );
-                  })
-                ) : (
-                  <div style={{
-                    textAlign: 'center',
-                    padding: '40px 20px',
-                    color: '#FFFFFF',
-                    fontSize: '18px',
-                    fontWeight: 'bold'
-                  }}>
-                    No leaderboard data yet
-                  </div>
-                )}
-              </div>
+            {/* Action Buttons */}
+            <div style={{
+              display: 'flex',
+              gap: 'clamp(10px, 2.5vw, 14px)',
+              justifyContent: 'center',
+              alignItems: 'center',
+              flexWrap: 'wrap',
+              marginTop: 'auto',
+              flexShrink: 0
+            }}>
+              {isWin ? (
+                <>
+                  {currentLevel < 10 ? (
+                    <button
+                      onClick={handleNextLevel}
+                      style={{
+                        padding: 'clamp(10px, 2.5vw, 14px) clamp(20px, 5vw, 28px)',
+                        fontSize: 'clamp(11px, 2.2vw, 14px)',
+                        fontWeight: '700',
+                        background: '#3B82F6',
+                        color: '#FFFFFF',
+                        border: '2px solid #2563EB',
+                        borderRadius: 'clamp(10px, 2.5vw, 14px)',
+                        cursor: 'pointer',
+                        transition: 'all 0.3s ease',
+                        minWidth: 'clamp(120px, 30vw, 160px)',
+                        height: 'clamp(38px, 9vh, 48px)',
+                        letterSpacing: '0.5px',
+                        boxShadow: '0 4px 16px rgba(59, 130, 246, 0.3)'
+                      }}
+                      onMouseEnter={(e) => {
+                        e.target.style.background = '#2563EB';
+                        e.target.style.transform = 'translateY(-2px)';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.target.style.background = '#3B82F6';
+                        e.target.style.transform = 'translateY(0)';
+                      }}
+                    >
+                      NEXT CHALLENGE
+                    </button>
+                  ) : (
+                    <button
+                      onClick={handlePlayFromStart}
+                      style={{
+                        padding: 'clamp(10px, 2.5vw, 14px) clamp(20px, 5vw, 28px)',
+                        fontSize: 'clamp(11px, 2.2vw, 14px)',
+                        fontWeight: '700',
+                        background: '#3B82F6',
+                        color: '#FFFFFF',
+                        border: '2px solid #2563EB',
+                        borderRadius: 'clamp(10px, 2.5vw, 14px)',
+                        cursor: 'pointer',
+                        transition: 'all 0.3s ease',
+                        minWidth: 'clamp(120px, 30vw, 160px)',
+                        height: 'clamp(38px, 9vh, 48px)',
+                        letterSpacing: '0.5px',
+                        boxShadow: '0 4px 16px rgba(59, 130, 246, 0.3)'
+                      }}
+                    >
+                      PLAY AGAIN
+                    </button>
+                  )}
+                  <button
+                    onClick={handleReplayLevel}
+                    style={{
+                      padding: 'clamp(10px, 2.5vw, 14px) clamp(20px, 5vw, 28px)',
+                      fontSize: 'clamp(11px, 2.2vw, 14px)',
+                      fontWeight: '700',
+                      background: '#6B7280',
+                      color: '#FFFFFF',
+                      border: '2px solid #4B5563',
+                      borderRadius: 'clamp(10px, 2.5vw, 14px)',
+                      cursor: 'pointer',
+                      transition: 'all 0.3s ease',
+                      minWidth: 'clamp(120px, 30vw, 160px)',
+                      height: 'clamp(38px, 9vh, 48px)',
+                      letterSpacing: '0.5px',
+                      boxShadow: '0 2px 8px rgba(0, 0, 0, 0.2)'
+                    }}
+                  >
+                    REPLAY
+                  </button>
+                </>
+              ) : (
+                <>
+                  <button
+                    onClick={handleTryAgain}
+                    style={{
+                      padding: 'clamp(10px, 2.5vw, 14px) clamp(20px, 5vw, 28px)',
+                      fontSize: 'clamp(11px, 2.2vw, 14px)',
+                      fontWeight: '700',
+                      background: '#F87171',
+                      color: '#FFFFFF',
+                      border: '2px solid #EF4444',
+                      borderRadius: 'clamp(10px, 2.5vw, 14px)',
+                      cursor: 'pointer',
+                      transition: 'all 0.3s ease',
+                      minWidth: 'clamp(120px, 30vw, 160px)',
+                      height: 'clamp(38px, 9vh, 48px)',
+                      letterSpacing: '0.5px',
+                      boxShadow: '0 4px 16px rgba(248, 113, 113, 0.3)'
+                    }}
+                  >
+                    TRY AGAIN
+                  </button>
+                  <button
+                    onClick={handleGoToMenu}
+                    style={{
+                      padding: 'clamp(10px, 2.5vw, 14px) clamp(20px, 5vw, 28px)',
+                      fontSize: 'clamp(11px, 2.2vw, 14px)',
+                      fontWeight: '700',
+                      background: '#6B7280',
+                      color: '#FFFFFF',
+                      border: '2px solid #4B5563',
+                      borderRadius: 'clamp(10px, 2.5vw, 14px)',
+                      cursor: 'pointer',
+                      transition: 'all 0.3s ease',
+                      minWidth: 'clamp(120px, 30vw, 160px)',
+                      height: 'clamp(38px, 9vh, 48px)',
+                      letterSpacing: '0.5px',
+                      boxShadow: '0 2px 8px rgba(0, 0, 0, 0.2)'
+                    }}
+                  >
+                    MENU
+                  </button>
+                </>
+              )}
+              <button
+  onClick={() => router.push('/leaderboard')}
+  className="flex items-center justify-center py-3 px-8 text-lg bg-[#a0522d] hover:bg-[#8b4513] text-[#f5e6ca] border-none font-bold rounded-md cursor-pointer transition-all duration-300 shadow-lg hover:scale-105"
+>
+  <BarChart3 className="w-6 h-6 mr-1" /> Leaderboard
+</button>
             </div>
           </div>
         </div>
-
-        {/* Buttons */}
-        <div className={`mt-2 flex justify-center ${isMobile ? 'space-x-2' : 'space-x-4'}`}>
-          <button
-            onClick={goHome}
-            className={`flex items-center justify-center ${isMobile ? 'py-2 px-4 text-sm' : 'py-3 px-8 text-lg'} bg-[#a0522d] hover:bg-[#8b4513] text-[#f5e6ca] border-none font-bold rounded-md cursor-pointer transition-all duration-300 shadow-lg hover:scale-105`}
-          >
-            <Home className={`${getIconSize()} mr-1`} /> Go Home
-          </button>
-        </div>
-
-        {/* Global styles */}
-        <style jsx global>{`
-          .scrollbar-custom {
-            scrollbar-width: none;
-            -ms-overflow-style: none;
-          }
-
-          .scrollbar-custom::-webkit-scrollbar {
-            width: 6px;
-            background: transparent;
-          }
-
-          .scrollbar-custom::-webkit-scrollbar-track {
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 3px;
-          }
-
-          .scrollbar-custom::-webkit-scrollbar-thumb {
-            background: rgba(255, 255, 255, 0.3);
-            border-radius: 3px;
-            border: none;
-          }
-
-          .scrollbar-custom::-webkit-scrollbar-thumb:hover {
-            background: rgba(255, 255, 255, 0.5);
-          }
-
-          .scrollbar-custom::-webkit-scrollbar-button,
-          .scrollbar-custom::-webkit-scrollbar-button:start,
-          .scrollbar-custom::-webkit-scrollbar-button:end,
-          .scrollbar-custom::-webkit-scrollbar-button:vertical:start,
-          .scrollbar-custom::-webkit-scrollbar-button:vertical:end,
-          .scrollbar-custom::-webkit-scrollbar-button:horizontal:start,
-          .scrollbar-custom::-webkit-scrollbar-button:horizontal:end {
-            display: none !important;
-            width: 0 !important;
-            height: 0 !important;
-          }
-
-          .scrollbar-custom::-webkit-scrollbar-button {
-            width: 0px !important;
-            height: 0px !important;
-            background: transparent !important;
-          }
-
-          .scrollbar-custom::-webkit-scrollbar-button:vertical:start:decrement,
-          .scrollbar-custom::-webkit-scrollbar-button:vertical:end:increment {
-            display: none !important;
-            height: 0px !important;
-            width: 0px !important;
-          }
-
-          img[alt*="Trophy"] {
-            border: none !important;
-            background: transparent !important;
-            box-shadow: none !important;
-            filter: drop-shadow(2px 3px 6px rgba(255, 255, 255, 0.8)) !important;
-            -webkit-filter: drop-shadow(2px 3px 6px rgba(255, 255, 255, 0.8)) !important;
-          }
-
-          img[alt*="Trophy"]:hover {
-            filter: drop-shadow(3px 4px 8px rgba(0, 0, 0, 0.6)) !important;
-            -webkit-filter: drop-shadow(3px 4px 8px rgba(0, 0, 0, 0.6)) !important;
-            transform: scale(1.05);
-            transition: all 0.2s ease-in-out;
-          }
-        `}</style>
       </div>
     </Layout>
   );
-};
-
-export default LeaderboardScene;
+}

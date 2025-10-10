@@ -1,77 +1,18 @@
+"use client";
 import React, { useEffect, useRef, useState } from "react";
 import { Home, BarChart3, Star } from "lucide-react";
 import confetti from "canvas-confetti";
-import { getLeaderboardData } from "./services/leaderboardService";
-import "./SnakeGameStyles.css";
-import { 
-  getCurrentLevel, 
-  setCurrentLevel, 
-  getBasket, 
-  clearBasket 
-} from '../utils/storage';
-import { getCurrentExperiment, checkWin, updateProgress, clearCurrentExperiment } from '../utils/gameLogic';
-import { 
-  saveToLeaderboard, 
-  generateUserId,
-  formatDate 
-} from '../../../services/labGameStorageService';
+import { useRouter } from 'next/navigation';
+import { getLeaderboard, formatDate } from '../../../services/labGameStorageService';
 
-export default function ResultPage() {
+const LeaderboardScene = () => {
   const router = useRouter();
-  const [currentLevel, setCurrentLevelState] = useState(1);
-  const [levelData, setLevelData] = useState(null);
-  const [basket, setBasket] = useState([]);
-  const [isWin, setIsWin] = useState(false);
-  const [userId, setUserId] = useState('');
-
-// Types
-interface LeaderboardEntry {
-  userId: string;
-  score: number;
-  timestamp: number;
-}
-
-interface GameState {
-  score: number;
-  level: number;
-}
-
-interface Player {
-  id: number;
-  username: string;
-  score: number;
-}
-
-interface CongratulationsModalProps<T> {
-  showCongrats: boolean;
-  isMobile: boolean;
-  isLandscape: boolean;
-  screenSize: "mobile" | "tablet" | "desktop";
-  game: T;
-  setShowCongrats: React.Dispatch<React.SetStateAction<boolean>>;
-  setGame: React.Dispatch<React.SetStateAction<T>>;
-  setShowStart: React.Dispatch<React.SetStateAction<boolean>>;
-  setShowGameOver: React.Dispatch<React.SetStateAction<boolean>>;
-  setGameOverLevel: React.Dispatch<React.SetStateAction<number | null>>;
-  setGameOverPattern: React.Dispatch<React.SetStateAction<number | null>>;
-}
-
-const CongratulationsModal: React.FC<CongratulationsModalProps<any>> = ({
-  showCongrats,
-  isMobile,
-  isLandscape,
-  screenSize,
-  game,
-  setShowCongrats,
-  setGame,
-  setShowStart,
-  setShowGameOver,
-  setGameOverLevel,
-  setGameOverPattern,
-}) => {
-  const confettiIntervalRef = useRef<number | null>(null);
+  const confettiIntervalRef = useRef(null);
   const [showStats, setShowStats] = useState(false);
-  const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
+  const [leaderboard, setLeaderboard] = useState([]);
+  const [isMobile, setIsMobile] = useState(false);
+  const [isLandscape, setIsLandscape] = useState(false);
+  const basketItemsContainerRef = useRef(null);
 
   const getIconSize = () => {
     if (isMobile) return 'w-4 h-4';
@@ -80,53 +21,66 @@ const CongratulationsModal: React.FC<CongratulationsModalProps<any>> = ({
   };
 
   // Helper function to determine font size based on score length
-  const getScoreFontSize = (score: number, isMobile: boolean) => {
+  const getScoreFontSize = (score, isMobile) => {
     const scoreLength = score.toString().length;
     if (isMobile) {
       if (scoreLength > 5) return 'text-xs';
-      if (scoreLength > 2) return 'text-xs'; // Changed from 3 to 2
+      if (scoreLength > 2) return 'text-xs';
       return 'text-sm';
     } else {
       if (scoreLength > 5) return 'text-sm';
-      if (scoreLength > 2) return 'text-sm'; // Changed from 3 to 2
+      if (scoreLength > 2) return 'text-sm';
       return 'text-base';
     }
   };
 
   // Helper function to determine padding based on score length
-  const getScorePadding = (score: number, isMobile: boolean) => {
+  const getScorePadding = (score, isMobile) => {
     const scoreLength = score.toString().length;
     if (isMobile) {
       if (scoreLength > 5) return 'px-2 py-1';
-      if (scoreLength > 2) return 'px-2 py-1'; // Changed from 3 to 2
+      if (scoreLength > 2) return 'px-2 py-1';
       return 'px-3 py-1';
     } else {
       if (scoreLength > 5) return 'px-2 py-1';
-      if (scoreLength > 2) return 'px-3 py-1'; // Changed from 3 to 2
+      if (scoreLength > 2) return 'px-3 py-1';
       return 'px-4 py-1';
     }
   };
 
   useEffect(() => {
-    if (showCongrats) {
-      startConfettiFireworks();
-      const gameId = "snake-game";
-      const leaderboardData = getLeaderboardData(gameId);
-      const transformedData: LeaderboardEntry[] = leaderboardData.map(entry => ({
-        userId: entry.userId,
-        score: entry.score || 0,
-        timestamp: entry.timestamp
-      }));
-      setLeaderboard(transformedData.sort((a, b) => b.score - a.score));
-    }
-    
+    // Detect mobile and landscape
+    const handleResize = () => {
+      const mobile = window.innerWidth < 1024;
+      const landscape = window.innerHeight < window.innerWidth;
+      setIsMobile(mobile);
+      setIsLandscape(landscape);
+    };
+
+    handleResize();
+    window.addEventListener('resize', handleResize);
+
+    // Start confetti
+    startConfettiFireworks();
+
+    // Load leaderboard data
+    const leaderboardData = getLeaderboard();
+    const transformedData = leaderboardData.map(entry => ({
+      userId: entry.userId,
+      playerName: entry.playerName,
+      score: entry.score || 0,
+      timestamp: entry.timestamp
+    }));
+    setLeaderboard(transformedData.sort((a, b) => b.score - a.score));
+
     return () => {
+      window.removeEventListener('resize', handleResize);
       if (confettiIntervalRef.current !== null) {
         clearInterval(confettiIntervalRef.current);
         confettiIntervalRef.current = null;
       }
     };
-  }, [showCongrats]);
+  }, []);
 
   const startConfettiFireworks = () => {
     const duration = 5 * 1000;
@@ -143,7 +97,7 @@ const CongratulationsModal: React.FC<CongratulationsModalProps<any>> = ({
       drift: 0
     };
 
-    const randomInRange = (min: number, max: number) =>
+    const randomInRange = (min, max) =>
       Math.random() * (max - min) + min;
 
     if (confettiIntervalRef.current !== null) {
@@ -190,44 +144,39 @@ const CongratulationsModal: React.FC<CongratulationsModalProps<any>> = ({
   };
 
   const goHome = () => {
-    window.location.reload();
+    router.push('/');
   };
 
-  if (!showCongrats) {
-    return null;
-  }
-
-  const players: Player[] = leaderboard.map((entry, index) => ({
+  const players = leaderboard.map((entry, index) => ({
     id: index + 1,
-    username: entry.userId,
+    username: entry.playerName,
     score: entry.score,
   }));
 
-  const getAvatarSrc = (): string => {
+  const getAvatarSrc = () => {
     return "/assets/games/snakegame/male-avatar.png";
   };
 
-  const handleAvatarError = (e: React.SyntheticEvent<HTMLImageElement, Event>, player: Player): void => {
+  const handleAvatarError = (e, player) => {
     if (e.currentTarget.src.includes("/assets/games/snakegame/male-avatar.png")) {
       return;
     }
     e.currentTarget.src = "/assets/games/snakegame/female-avatar.png";
   };
 
-  const containerStyle: React.CSSProperties = {
+  const containerStyle = {
     backgroundImage: "url(/assets/games/snakegame/backgroundimg.png)",
     backgroundSize: "cover",
     backgroundPosition: "center",
     backgroundRepeat: "no-repeat",
   };
 
-  const mainContainerStyle: React.CSSProperties = {
+  const mainContainerStyle = {
     width: isMobile ? (isLandscape ? "90%" : "95%") : "100%",
     maxWidth: isMobile ? (isLandscape ? "600px" : "450px") : "500px",
     height: isMobile ? (isLandscape ? "90vh" : "85vh") : "auto",
     maxHeight: isMobile ? (isLandscape ? "90vh" : "85vh") : "none",
     overflow: "hidden",
-    // Add background for landscape mode to replace SVG
     ...(isMobile && isLandscape && {
       backgroundColor: "#FFDCB8",
       borderRadius: "20px",
@@ -253,10 +202,10 @@ const CongratulationsModal: React.FC<CongratulationsModalProps<any>> = ({
           <span 
             className="text-[#ffcc00] font-bold whitespace-nowrap"
             style={{
-              fontSize: game.score.toString().length > 2 ? '16px' : '20px' // Changed from 3 to 2
+              fontSize: '20px'
             }}
           >
-            SCORE: {game.score}
+            LEADERBOARD
           </span>
         </div>
       </div>
@@ -327,134 +276,146 @@ const CongratulationsModal: React.FC<CongratulationsModalProps<any>> = ({
                 scrollbarColor: "none",
               }}
             >
-              {players.map((player: Player, index: number) => {
-                const rank = index + 1;
-                let rowStyle: React.CSSProperties = {};
+              {players.length > 0 ? (
+                players.map((player, index) => {
+                  const rank = index + 1;
+                  let rowStyle = {};
 
-                if (rank === 1) {
-                  rowStyle = {
-                    background: "linear-gradient(90deg, #FDD95Cff 0%, #FDD95Cff 50%, #FDD95Cff 100%)",
-                    boxShadow: "inset 0 -4px 2px #D0762Eff,inset 0 4px 8px #ddccbeff",
-                    position: "relative",
-                  };
-                } else if (rank === 2) {
-                  rowStyle = {
-                    background: "linear-gradient(90deg, #91ECF5ff 0%, #68E5F4ff 50%, #64E6F4ff 100%)",
-                    boxShadow: "inset 0 -3px 8px rgba(16, 113, 249, 0.88),inset 0 -4px 0 #1071F9",
-                    position: "relative",
-                  };
-                } else if (rank === 3) {
-                  rowStyle = {
-                    background: "linear-gradient(90deg, #ef4150ff 0%, #ef4150ff 50%, #ef4150ff 100%)",
-                    boxShadow: "inset 0 -3px 8px rgba(213, 17, 17, 0.95),inset 0 -4px 0 #e40c0cff",
-                    position: "relative",
-                  };
-                } else {
-                  rowStyle = {
-                    background: "linear-gradient(90deg, #FAAB70ff 0%, #FAAB70ff 50%, #FAAB70ff 100%)",
-                    boxShadow: "inset 0 -3px 0 #e40c0c88,inset 0 2px 8px #ddccbeff",
-                    position: "relative",
-                  };
-                }
+                  if (rank === 1) {
+                    rowStyle = {
+                      background: "linear-gradient(90deg, #FDD95Cff 0%, #FDD95Cff 50%, #FDD95Cff 100%)",
+                      boxShadow: "inset 0 -4px 2px #D0762Eff,inset 0 4px 8px #ddccbeff",
+                      position: "relative",
+                    };
+                  } else if (rank === 2) {
+                    rowStyle = {
+                      background: "linear-gradient(90deg, #91ECF5ff 0%, #68E5F4ff 50%, #64E6F4ff 100%)",
+                      boxShadow: "inset 0 -3px 8px rgba(16, 113, 249, 0.88),inset 0 -4px 0 #1071F9",
+                      position: "relative",
+                    };
+                  } else if (rank === 3) {
+                    rowStyle = {
+                      background: "linear-gradient(90deg, #ef4150ff 0%, #ef4150ff 50%, #ef4150ff 100%)",
+                      boxShadow: "inset 0 -3px 8px rgba(213, 17, 17, 0.95),inset 0 -4px 0 #e40c0cff",
+                      position: "relative",
+                    };
+                  } else {
+                    rowStyle = {
+                      background: "linear-gradient(90deg, #FAAB70ff 0%, #FAAB70ff 50%, #FAAB70ff 100%)",
+                      boxShadow: "inset 0 -3px 0 #e40c0c88,inset 0 2px 8px #ddccbeff",
+                      position: "relative",
+                    };
+                  }
 
-                return (
-                  <div
-                    key={player.id || index}
-                    className="rounded-xl px-3 py-2 flex items-center shadow-md opacity-85 hover:opacity-100 transition-opacity duration-200 flex-shrink-0"
-                    style={{
-                      ...rowStyle,
-                      minHeight: isMobile ? "50px" : "60px",
-                    }}
-                  >
-                    {/* Rank Medal - Touch top and bottom for top 3 */}
-                    <div className="flex-shrink-0 mr-1" style={{ marginTop: rank <= 3 ? '-8px' : '-8px', marginBottom: rank <= 3 ? '-8px' : '-8px' }}>
-                      {rank === 1 && (
-                        <div className={`${isMobile ? 'w-14 h-14' : 'w-16 h-16'} flex items-center justify-center`}>
+                  return (
+                    <div
+                      key={player.id || index}
+                      className="rounded-xl px-3 py-2 flex items-center shadow-md opacity-85 hover:opacity-100 transition-opacity duration-200 flex-shrink-0"
+                      style={{
+                        ...rowStyle,
+                        minHeight: isMobile ? "50px" : "60px",
+                      }}
+                    >
+                      {/* Rank Medal - Touch top and bottom for top 3 */}
+                      <div className="flex-shrink-0 mr-1" style={{ marginTop: rank <= 3 ? '-8px' : '-8px', marginBottom: rank <= 3 ? '-8px' : '-8px' }}>
+                        {rank === 1 && (
+                          <div className={`${isMobile ? 'w-14 h-14' : 'w-16 h-16'} flex items-center justify-center`}>
+                            <img
+                              src="/assets/games/snakegame/gold-trophy.png"
+                              alt="Gold Trophy"
+                              className={`${isMobile ? 'w-14 h-16' : 'w-16 h-18'} object-contain drop-shadow-lg`}
+                              style={{
+                                filter: "drop-shadow(2px 3px 6px rgba(0, 0, 0, 0.4))",
+                              }}
+                            />
+                          </div>
+                        )}
+                        {rank === 2 && (
+                          <div className={`${isMobile ? 'w-14 h-14' : 'w-16 h-16'} flex items-center justify-center`}>
+                            <img
+                              src="/assets/games/snakegame/silver-trophy.png"
+                              alt="Silver Trophy"
+                              className={`${isMobile ? 'w-14 h-16' : 'w-16 h-18'} object-contain drop-shadow-lg`}
+                              style={{
+                                filter: "drop-shadow(2px 3px 6px rgba(0, 0, 0, 0.4))",
+                              }}
+                            />
+                          </div>
+                        )}
+                        {rank === 3 && (
+                          <div className={`${isMobile ? 'w-14 h-14' : 'w-16 h-16'} flex items-center justify-center`}>
+                            <img
+                              src="/assets/games/snakegame/bronze-trophy.png"
+                              alt="Bronze Trophy"
+                              className={`${isMobile ? 'w-14 h-16' : 'w-16 h-18'} object-contain drop-shadow-lg`}
+                              style={{
+                                filter: "drop-shadow(2px 3px 6px rgba(0, 0, 0, 0.4))",
+                              }}
+                            />
+                          </div>
+                        )}
+                        {rank > 3 && (
+                          <div className={`${isMobile ? 'w-14 h-14' : 'w-16 h-16'} rounded-full flex items-center justify-center font-black ${isMobile ? 'text-xl' : 'text-2xl'} text-amber-800`}>
+                            {rank}
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Avatar */}
+                      <div className="flex-shrink-0 mr-2" style={{ marginTop: '-8px', marginBottom: '-8px' }}>
+                        <div
+                          className={`${isMobile ? 'w-7 h-7' : 'w-8 h-8'} rounded-full flex items-center justify-center shadow-md border-2 border-white overflow-hidden`}
+                          style={{ backgroundColor: "#2C5282" }}
+                        >
                           <img
-                            src="/assets/games/snakegame/gold-trophy.png"
-                            alt="Gold Trophy"
-                            className={`${isMobile ? 'w-14 h-16' : 'w-16 h-18'} object-contain drop-shadow-lg`}
-                            style={{
-                              filter: "drop-shadow(2px 3px 6px rgba(0, 0, 0, 0.4))",
-                            }}
+                            src={getAvatarSrc()}
+                            alt="Avatar"
+                            className="w-full h-full object-cover"
+                            onError={(e) => handleAvatarError(e, player)}
                           />
                         </div>
-                      )}
-                      {rank === 2 && (
-                        <div className={`${isMobile ? 'w-14 h-14' : 'w-16 h-16'} flex items-center justify-center`}>
-                          <img
-                            src="/assets/games/snakegame/silver-trophy.png"
-                            alt="Silver Trophy"
-                            className={`${isMobile ? 'w-14 h-16' : 'w-16 h-18'} object-contain drop-shadow-lg`}
-                            style={{
-                              filter: "drop-shadow(2px 3px 6px rgba(0, 0, 0, 0.4))",
-                            }}
-                          />
-                        </div>
-                      )}
-                      {rank === 3 && (
-                        <div className={`${isMobile ? 'w-14 h-14' : 'w-16 h-16'} flex items-center justify-center`}>
-                          <img
-                            src="/assets/games/snakegame/bronze-trophy.png"
-                            alt="Bronze Trophy"
-                            className={`${isMobile ? 'w-14 h-16' : 'w-16 h-18'} object-contain drop-shadow-lg`}
-                            style={{
-                              filter: "drop-shadow(2px 3px 6px rgba(0, 0, 0, 0.4))",
-                            }}
-                          />
-                        </div>
-                      )}
-                      {rank > 3 && (
-                        <div className={`${isMobile ? 'w-14 h-14' : 'w-16 h-16'} rounded-full flex items-center justify-center font-black ${isMobile ? 'text-xl' : 'text-2xl'} text-amber-800`}>
-                          {rank}
-                        </div>
-                      )}
-                    </div>
+                      </div>
 
-                    {/* Avatar */}
-                    <div className="flex-shrink-0 mr-2" style={{ marginTop: '-8px', marginBottom: '-8px' }}>
-                      <div
-                        className={`${isMobile ? 'w-7 h-7' : 'w-8 h-8'} rounded-full flex items-center justify-center shadow-md border-2 border-white overflow-hidden`}
-                        style={{ backgroundColor: "#2C5282" }}
-                      >
-                        <img
-                          src={getAvatarSrc()}
-                          alt="Avatar"
-                          className="w-full h-full object-cover"
-                          onError={(e) => handleAvatarError(e, player)}
-                        />
+                      {/* Username */}
+                      <div className="flex-grow min-w-0 mr-2">
+                        <p className={`text-white font-bold ${isMobile ? 'text-base' : 'text-lg'} tracking-wide drop-shadow-sm break-words`}>
+                          {player.username}
+                        </p>
+                      </div>
+
+                      {/* Score with Coin - Fixed width with dynamic font size */}
+                      <div className="flex-shrink-0 relative">
+                        <div 
+                          className={`flex items-center justify-center bg-black bg-opacity-30 rounded-2xl shadow-md ${isMobile ? 'pl-7' : 'pl-8'} ${getScorePadding(player.score, isMobile)}`}
+                          style={{
+                            height: isMobile ? '28px' : '32px',
+                            width: isMobile ? '70px' : '75px',
+                          }}
+                        >
+                          <img
+                            src="/assets/games/snakegame/coin1.png"
+                            alt="Coin"
+                            className={`absolute ${isMobile ? '-left-1.5 w-6 h-6' : '-left-2 w-9 h-9'} top-1/2 transform -translate-y-1/2 rounded-full shadow-sm`}
+                          />
+                          <span className={`text-white font-black text-center drop-shadow-sm whitespace-nowrap ${getScoreFontSize(player.score, isMobile)}`}>
+                            {player.score?.toLocaleString() || "0"}
+                          </span>
+                        </div>
                       </div>
                     </div>
-
-                    {/* Username */}
-                    <div className="flex-grow min-w-0 mr-2">
-                      <p className={`text-white font-bold ${isMobile ? 'text-base' : 'text-lg'} tracking-wide drop-shadow-sm break-words`}>
-                        {player.username}
-                      </p>
-                    </div>
-
-                    {/* Score with Coin - Fixed width with dynamic font size */}
-                    <div className="flex-shrink-0 relative">
-                      <div 
-                        className={`flex items-center justify-center bg-black bg-opacity-30 rounded-2xl shadow-md ${isMobile ? 'pl-7' : 'pl-8'} ${getScorePadding(player.score, isMobile)}`}
-                        style={{
-                          height: isMobile ? '28px' : '32px',
-                          width: isMobile ? '70px' : '75px', // Reduced width for 2-digit optimization
-                        }}
-                      >
-                        <img
-                          src="/assets/games/snakegame/coin1.png"
-                          alt="Coin"
-                          className={`absolute ${isMobile ? '-left-1.5 w-6 h-6' : '-left-2 w-9 h-9'} top-1/2 transform -translate-y-1/2 rounded-full shadow-sm`}
-                        />
-                        <span className={`text-white font-black text-center drop-shadow-sm whitespace-nowrap ${getScoreFontSize(player.score, isMobile)}`}>
-                          {player.score?.toLocaleString() || "0"}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
+                  );
+                })
+              ) : (
+                <div style={{
+                  textAlign: 'center',
+                  padding: '40px 20px',
+                  color: '#FFFFFF',
+                  fontSize: '18px',
+                  fontWeight: 'bold'
+                }}>
+                  No leaderboard data available yet!
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -548,4 +509,4 @@ const CongratulationsModal: React.FC<CongratulationsModalProps<any>> = ({
   );
 };
 
-export default CongratulationsModal;
+export default LeaderboardScene;

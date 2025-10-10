@@ -1,5 +1,6 @@
-import CongratulationsModal from '../../components/Quest/scenes/Leaderboard';
+"use client";
+import LeaderboardScene from '../../components/Quest/scenes/LeaderboardScene';
 
 export default function LeaderboardPage() {
-  return <CongratulationsModal />;
+  return <LeaderboardScene />;
 }
