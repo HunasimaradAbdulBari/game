@@ -1,95 +1,132 @@
-"use client";
 import React, { useEffect, useRef, useState } from "react";
 import { Home, BarChart3, Star } from "lucide-react";
 import confetti from "canvas-confetti";
+import { getLeaderboardData } from "./services/leaderboardService";
+import "./SnakeGameStyles.css";
 import { 
-  getLeaderboard,
+  getCurrentLevel, 
+  setCurrentLevel, 
+  getBasket, 
+  clearBasket 
+} from '../utils/storage';
+import { getCurrentExperiment, checkWin, updateProgress, clearCurrentExperiment } from '../utils/gameLogic';
+import { 
+  saveToLeaderboard, 
+  generateUserId,
   formatDate 
 } from '../../../services/labGameStorageService';
 
-const CongratulationsModal = ({
-  showCongrats = true,
-  isMobile = false,
-  isLandscape = false,
-  screenSize = 'desktop',
-  game = { score: 0 },
-  setShowCongrats = () => {},
-  setGame = () => {},
-  setShowStart = () => {},
-  setShowGameOver = () => {},
-  setGameOverLevel = () => {},
-  setGameOverPattern = () => {},
+export default function ResultPage() {
+  const router = useRouter();
+  const [currentLevel, setCurrentLevelState] = useState(1);
+  const [levelData, setLevelData] = useState(null);
+  const [basket, setBasket] = useState([]);
+  const [isWin, setIsWin] = useState(false);
+  const [userId, setUserId] = useState('');
+
+// Types
+interface LeaderboardEntry {
+  userId: string;
+  score: number;
+  timestamp: number;
+}
+
+interface GameState {
+  score: number;
+  level: number;
+}
+
+interface Player {
+  id: number;
+  username: string;
+  score: number;
+}
+
+interface CongratulationsModalProps<T> {
+  showCongrats: boolean;
+  isMobile: boolean;
+  isLandscape: boolean;
+  screenSize: "mobile" | "tablet" | "desktop";
+  game: T;
+  setShowCongrats: React.Dispatch<React.SetStateAction<boolean>>;
+  setGame: React.Dispatch<React.SetStateAction<T>>;
+  setShowStart: React.Dispatch<React.SetStateAction<boolean>>;
+  setShowGameOver: React.Dispatch<React.SetStateAction<boolean>>;
+  setGameOverLevel: React.Dispatch<React.SetStateAction<number | null>>;
+  setGameOverPattern: React.Dispatch<React.SetStateAction<number | null>>;
+}
+
+const CongratulationsModal: React.FC<CongratulationsModalProps<any>> = ({
+  showCongrats,
+  isMobile,
+  isLandscape,
+  screenSize,
+  game,
+  setShowCongrats,
+  setGame,
+  setShowStart,
+  setShowGameOver,
+  setGameOverLevel,
+  setGameOverPattern,
 }) => {
-  const confettiIntervalRef = useRef(null);
+  const confettiIntervalRef = useRef<number | null>(null);
   const [showStats, setShowStats] = useState(false);
-  const [leaderboard, setLeaderboard] = useState([]);
-  const [isMobileState, setIsMobileState] = useState(false);
-  const [isLandscapeState, setIsLandscapeState] = useState(false);
+  const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
 
   const getIconSize = () => {
-    if (isMobileState) return 'w-3 h-3';
-    if (isLandscapeState) return 'w-3.5 h-3.5';
-    return 'w-4 h-4';
+    if (isMobile) return 'w-4 h-4';
+    if (isLandscape) return 'w-5 h-5';
+    return 'w-6 h-6';
   };
 
   // Helper function to determine font size based on score length
-  const getScoreFontSize = (score, isMobile) => {
+  const getScoreFontSize = (score: number, isMobile: boolean) => {
     const scoreLength = score.toString().length;
     if (isMobile) {
       if (scoreLength > 5) return 'text-xs';
-      if (scoreLength > 2) return 'text-xs';
-      return 'text-xs';
+      if (scoreLength > 2) return 'text-xs'; // Changed from 3 to 2
+      return 'text-sm';
     } else {
-      if (scoreLength > 5) return 'text-xs';
-      if (scoreLength > 2) return 'text-xs';
+      if (scoreLength > 5) return 'text-sm';
+      if (scoreLength > 2) return 'text-sm'; // Changed from 3 to 2
       return 'text-base';
     }
   };
 
   // Helper function to determine padding based on score length
-  const getScorePadding = (score, isMobile) => {
+  const getScorePadding = (score: number, isMobile: boolean) => {
     const scoreLength = score.toString().length;
     if (isMobile) {
       if (scoreLength > 5) return 'px-2 py-1';
-      if (scoreLength > 2) return 'px-2 py-1';
+      if (scoreLength > 2) return 'px-2 py-1'; // Changed from 3 to 2
       return 'px-3 py-1';
     } else {
-      if (scoreLength > 5) return 'px-1.5 py-0.5';
-      if (scoreLength > 2) return 'px-2 py-0.5';
+      if (scoreLength > 5) return 'px-2 py-1';
+      if (scoreLength > 2) return 'px-3 py-1'; // Changed from 3 to 2
       return 'px-4 py-1';
     }
   };
 
   useEffect(() => {
-    // Detect mobile and landscape
-    const handleResize = () => {
-      const mobile = window.innerWidth < 1024;
-      const landscape = window.innerHeight < window.innerWidth;
-      setIsMobileState(mobile);
-      setIsLandscapeState(landscape);
-    };
-
-    handleResize();
-    window.addEventListener('resize', handleResize);
-
-    // Always load and display leaderboard
-    const leaderboardData = getLeaderboard();
-    const transformedData = leaderboardData.map(entry => ({
-      userId: entry.userId,
-      playerName: entry.playerName,
-      score: entry.score || 0,
-      timestamp: entry.timestamp
-    }));
-    setLeaderboard(transformedData.sort((a, b) => b.score - a.score));
-
+    if (showCongrats) {
+      startConfettiFireworks();
+      const gameId = "snake-game";
+      const leaderboardData = getLeaderboardData(gameId);
+      const transformedData: LeaderboardEntry[] = leaderboardData.map(entry => ({
+        userId: entry.userId,
+        score: entry.score || 0,
+        timestamp: entry.timestamp
+      }));
+      setLeaderboard(transformedData.sort((a, b) => b.score - a.score));
+    }
+    
     return () => {
-      window.removeEventListener('resize', handleResize);
       if (confettiIntervalRef.current !== null) {
         clearInterval(confettiIntervalRef.current);
         confettiIntervalRef.current = null;
       }
     };
-  }, []);
+  }, [showCongrats]);
 
   const startConfettiFireworks = () => {
     const duration = 5 * 1000;
@@ -106,7 +143,7 @@ const CongratulationsModal = ({
       drift: 0
     };
 
-    const randomInRange = (min, max) =>
+    const randomInRange = (min: number, max: number) =>
       Math.random() * (max - min) + min;
 
     if (confettiIntervalRef.current !== null) {
@@ -156,88 +193,105 @@ const CongratulationsModal = ({
     window.location.reload();
   };
 
-  const players = leaderboard.map((entry, index) => ({
+  if (!showCongrats) {
+    return null;
+  }
+
+  const players: Player[] = leaderboard.map((entry, index) => ({
     id: index + 1,
-    username: entry.playerName,
+    username: entry.userId,
     score: entry.score,
   }));
 
-  const getAvatarSrc = () => {
+  const getAvatarSrc = (): string => {
     return "/assets/games/snakegame/male-avatar.png";
   };
 
-  const handleAvatarError = (e, player) => {
+  const handleAvatarError = (e: React.SyntheticEvent<HTMLImageElement, Event>, player: Player): void => {
     if (e.currentTarget.src.includes("/assets/games/snakegame/male-avatar.png")) {
       return;
     }
     e.currentTarget.src = "/assets/games/snakegame/female-avatar.png";
   };
 
-  const containerStyle = {
+  const containerStyle: React.CSSProperties = {
     backgroundImage: "url(/assets/games/snakegame/backgroundimg.png)",
     backgroundSize: "cover",
     backgroundPosition: "center",
     backgroundRepeat: "no-repeat",
   };
 
-  const mainContainerStyle = {
-    width: isMobileState ? (isLandscapeState ? "90%" : "95%") : "100%",
-    maxWidth: isMobileState ? (isLandscapeState ? "600px" : "450px") : "500px",
-    height: isMobileState ? (isLandscapeState ? "90vh" : "85vh") : "auto",
-    maxHeight: isMobileState ? (isLandscapeState ? "90vh" : "85vh") : "none",
+  const mainContainerStyle: React.CSSProperties = {
+    width: isMobile ? (isLandscape ? "90%" : "95%") : "100%",
+    maxWidth: isMobile ? (isLandscape ? "600px" : "450px") : "500px",
+    height: isMobile ? (isLandscape ? "90vh" : "85vh") : "auto",
+    maxHeight: isMobile ? (isLandscape ? "90vh" : "85vh") : "none",
     overflow: "hidden",
+    // Add background for landscape mode to replace SVG
+    ...(isMobile && isLandscape && {
+      backgroundColor: "#FFDCB8",
+      borderRadius: "20px",
+      border: "8px solid #a0522d",
+    })
   };
 
-  const svgViewBox = isMobileState ? (isLandscapeState ? "0 0 700 900" : "0 0 700 1000") : "0 0 900 1200";
-  const leaderboardHeight = isMobileState ? (isLandscapeState ? "300px" : "400px") : "537px";
+  const svgViewBox = isMobile ? (isLandscape ? "0 0 700 900" : "0 0 700 1000") : "0 0 900 1200";
+  const leaderboardHeight = isMobile ? (isLandscape ? "calc(90vh - 200px)" : "400px") : "537px";
 
   return (
     <div 
-      className={`fixed top-0 left-0 w-screen h-screen flex flex-col items-center justify-center z-[2000] backdrop-blur-md p-2 ${isMobileState ? 'p-2' : 'p-4'}`}
+      className={`fixed top-0 left-0 w-screen h-screen flex flex-col items-center justify-center z-[2000] backdrop-blur-md p-2 ${isMobile ? 'p-2' : 'p-4'}`}
       style={containerStyle}
     >
       {/* Score Display */}
       <div className="score-display absolute" style={{ 
         right: '10px',
         left: 'auto',
-        fontSize: "16px",
       }}>
         <div className="score-item flex items-center">
           <Star className={`${getIconSize()} mr-1 text-[#ffcc00]`} />
-          <span className="text-[#ffcc00] font-bold">SCORE: {game.score}</span>
+          <span 
+            className="text-[#ffcc00] font-bold whitespace-nowrap"
+            style={{
+              fontSize: game.score.toString().length > 2 ? '16px' : '20px' // Changed from 3 to 2
+            }}
+          >
+            SCORE: {game.score}
+          </span>
         </div>
       </div>
 
       {/* Main Container */}
       <div className="relative" style={mainContainerStyle}>
-        {/* SVG Background */}
-        <svg
-          viewBox={svgViewBox}
-          className="w-full h-full"
-          preserveAspectRatio="xMidYMid meet"
-        >
-          <rect
-            x="50"
-            y="40"
-            width={isMobileState ? (isLandscapeState ? "600" : "600") : "800"}
-            height={isMobileState ? (isLandscapeState ? "820" : "920") : "1120"}
-            rx="40"
-            fill="#F0A872"
-          />
-          <path
-            d={
-              isMobileState
-                ? isLandscapeState
+        {/* SVG Background - Only render if not in landscape mode on mobile */}
+        {!isMobile || !isLandscape ? (
+          <svg
+            viewBox={svgViewBox}
+            className="w-full h-full"
+            preserveAspectRatio="xMidYMid meet"
+          >
+            <rect
+              x="50"
+              y="40"
+              width={isMobile ? (isLandscape ? "600" : "600") : "800"}
+              height={isMobile ? (isLandscape ? "820" : "920") : "1120"}
+              rx="40"
+              fill="#a0522d"
+            />
+            <path
+              d={isMobile 
+                ? (isLandscape 
                   ? "M 90 130 Q 350 175 610 130 L 610 810 Q 610 835 585 835 L 115 835 Q 90 835 90 810 Z"
-                  : "M 90 130 Q 350 175 610 130 L 610 910 Q 610 935 585 935 L 115 935 Q 90 935 90 910 Z"
+                  : "M 90 130 Q 350 175 610 130 L 610 910 Q 610 935 585 935 L 115 935 Q 90 935 90 910 Z")
                 : "M 90 130 Q 450 175 810 130 L 810 1110 Q 810 1135 785 1135 L 115 1135 Q 90 1135 90 1110 Z"
-            }
-            fill="#FFDCB8"
-          />
-        </svg>
+              }
+              fill="#FFDCB8"
+            />
+          </svg>
+        ) : null}
 
         {/* Content Overlay */}
-        <div className={`absolute inset-0 ${isMobileState ? "p-4" : "p-8"}`}>
+        <div className={`absolute inset-0 ${isMobile ? 'p-4' : 'p-8'}`}>
           {/* PNG Banner Image */}
           <div className="flex justify-center">
             <img
@@ -245,9 +299,9 @@ const CongratulationsModal = ({
               alt="Leaderboard Banner"
               className="w-full h-auto drop-shadow-2xl"
               style={{
-                maxHeight: isMobileState ? (isLandscapeState ? "20px" : "30px") : "67px",
+                maxHeight: isMobile ? (isLandscape ? "150px" : "300px") : "670px",
                 objectFit: "contain",
-                marginTop: isMobileState ? "-2px" : "-4px",
+                marginTop: isMobile ? (isLandscape ? "10px" : "-20px") : "-40px",
                 marginBottom: "0px",
               }}
             />
@@ -260,55 +314,45 @@ const CongratulationsModal = ({
               background: "linear-gradient(180deg, #D17836 0%, #B86A30 50%, #A0592A 100%)",
               boxShadow: `inset 0 -4px 0px rgba(125, 60, 10, 0.2)`,
               height: leaderboardHeight,
-              marginTop: "-630px",
-              marginLeft: "22px",
-              marginRight: "22px",
+              marginTop: "0px",
+              marginLeft: isMobile && isLandscape ? "10px" : "22px",
+              marginRight: isMobile && isLandscape ? "10px" : "22px",
             }}
           >
             {/* Scrollable Content Area */}
             <div
-              className="h-full overflow-y-auto px-0 space-y-1 scrollbar-custom"
+              className="h-full overflow-y-auto px-0 space-y-2 scrollbar-custom"
               style={{
                 scrollbarWidth: "none",
                 scrollbarColor: "none",
               }}
             >
-              {players.map((player, index) => {
+              {players.map((player: Player, index: number) => {
                 const rank = index + 1;
-                let rowStyle = {};
+                let rowStyle: React.CSSProperties = {};
 
                 if (rank === 1) {
                   rowStyle = {
-                    height:"10px",
-                    width:"10px",
-                    background:
-                      "linear-gradient(90deg, #FDD95Cff 0%, #FDD95Cff 50%, #FDD95Cff 100%)",
-                    boxShadow:
-                      "inset 0 -4px 2px #D0762Eff,inset 0 4px 8px #ddccbeff",
+                    background: "linear-gradient(90deg, #FDD95Cff 0%, #FDD95Cff 50%, #FDD95Cff 100%)",
+                    boxShadow: "inset 0 -4px 2px #D0762Eff,inset 0 4px 8px #ddccbeff",
                     position: "relative",
                   };
                 } else if (rank === 2) {
                   rowStyle = {
-                    background:
-                      "linear-gradient(90deg, #91ECF5ff 0%, #68E5F4ff 50%, #64E6F4ff 100%)",
-                    boxShadow:
-                      "inset 0 -3px 8px rgba(16, 113, 249, 0.88),inset 0 -4px 0 #1071F9",
+                    background: "linear-gradient(90deg, #91ECF5ff 0%, #68E5F4ff 50%, #64E6F4ff 100%)",
+                    boxShadow: "inset 0 -3px 8px rgba(16, 113, 249, 0.88),inset 0 -4px 0 #1071F9",
                     position: "relative",
                   };
                 } else if (rank === 3) {
                   rowStyle = {
-                    background:
-                      "linear-gradient(90deg, #ef4150ff 0%, #ef4150ff 50%, #ef4150ff 100%)",
-                    boxShadow:
-                      "inset 0 -3px 8px rgba(213, 17, 17, 0.95),inset 0 -4px 0 #e40c0cff",
+                    background: "linear-gradient(90deg, #ef4150ff 0%, #ef4150ff 50%, #ef4150ff 100%)",
+                    boxShadow: "inset 0 -3px 8px rgba(213, 17, 17, 0.95),inset 0 -4px 0 #e40c0cff",
                     position: "relative",
                   };
                 } else {
                   rowStyle = {
-                    background:
-                      "linear-gradient(90deg, #FAAB70ff 0%, #FAAB70ff 50%, #FAAB70ff 100%)",
-                    boxShadow:
-                      "inset 0 -3px 0 #e40c0c88,inset 0 2px 8px #ddccbeff",
+                    background: "linear-gradient(90deg, #FAAB70ff 0%, #FAAB70ff 50%, #FAAB70ff 100%)",
+                    boxShadow: "inset 0 -3px 0 #e40c0c88,inset 0 2px 8px #ddccbeff",
                     position: "relative",
                   };
                 }
@@ -316,111 +360,61 @@ const CongratulationsModal = ({
                 return (
                   <div
                     key={player.id || index}
-                    className="rounded-xl px-2 py-1 flex items-center shadow-md opacity-85 hover:opacity-100 transition-opacity duration-200 flex-shrink-0"
-                    style={{ ...rowStyle, minHeight: isMobileState ? "5px" : "6px" }}
+                    className="rounded-xl px-3 py-2 flex items-center shadow-md opacity-85 hover:opacity-100 transition-opacity duration-200 flex-shrink-0"
+                    style={{
+                      ...rowStyle,
+                      minHeight: isMobile ? "50px" : "60px",
+                    }}
                   >
-                    {/* Rank Medal */}
-                    <div
-                      className="flex-shrink-0 mr-0.5"
-                      style={{
-                        marginTop: "-0.8px",
-                        marginBottom: "-0.8px",
-                      }}
-                    >
+                    {/* Rank Medal - Touch top and bottom for top 3 */}
+                    <div className="flex-shrink-0 mr-1" style={{ marginTop: rank <= 3 ? '-8px' : '-8px', marginBottom: rank <= 3 ? '-8px' : '-8px' }}>
                       {rank === 1 && (
-                        <div
-                          style={{
-                            width: "6px",
-                            height: "6px",
-                            display: "flex",
-                            alignItems: "center",
-                            justifyContent: "center"
-                          }}
-                        >
+                        <div className={`${isMobile ? 'w-14 h-14' : 'w-16 h-16'} flex items-center justify-center`}>
                           <img
                             src="/assets/games/snakegame/gold-trophy.png"
                             alt="Gold Trophy"
+                            className={`${isMobile ? 'w-14 h-16' : 'w-16 h-18'} object-contain drop-shadow-lg`}
                             style={{
-                              width: "6px",
-                              height: "6.4px",
-                              objectFit: "contain",
                               filter: "drop-shadow(2px 3px 6px rgba(0, 0, 0, 0.4))",
                             }}
                           />
                         </div>
                       )}
                       {rank === 2 && (
-                        <div
-                          style={{
-                            width: "6px",
-                            height: "6px",
-                            display: "flex",
-                            alignItems: "center",
-                            justifyContent: "center"
-                          }}
-                        >
+                        <div className={`${isMobile ? 'w-14 h-14' : 'w-16 h-16'} flex items-center justify-center`}>
                           <img
                             src="/assets/games/snakegame/silver-trophy.png"
                             alt="Silver Trophy"
+                            className={`${isMobile ? 'w-14 h-16' : 'w-16 h-18'} object-contain drop-shadow-lg`}
                             style={{
-                              width: "6px",
-                              height: "6.4px",
-                              objectFit: "contain",
                               filter: "drop-shadow(2px 3px 6px rgba(0, 0, 0, 0.4))",
                             }}
                           />
                         </div>
                       )}
                       {rank === 3 && (
-                        <div
-                          style={{
-                            width: "6px",
-                            height: "6px",
-                            display: "flex",
-                            alignItems: "center",
-                            justifyContent: "center"
-                          }}
-                        >
+                        <div className={`${isMobile ? 'w-14 h-14' : 'w-16 h-16'} flex items-center justify-center`}>
                           <img
                             src="/assets/games/snakegame/bronze-trophy.png"
                             alt="Bronze Trophy"
+                            className={`${isMobile ? 'w-14 h-16' : 'w-16 h-18'} object-contain drop-shadow-lg`}
                             style={{
-                              width: "6px",
-                              height: "6.4px",
-                              objectFit: "contain",
                               filter: "drop-shadow(2px 3px 6px rgba(0, 0, 0, 0.4))",
                             }}
                           />
                         </div>
                       )}
                       {rank > 3 && (
-                        <div
-                          style={{
-                            width: "6px",
-                            height: "6px",
-                            borderRadius: "50%",
-                            display: "flex",
-                            alignItems: "center",
-                            justifyContent: "center",
-                            fontWeight: "900",
-                            fontSize: "4px",
-                            color: "#b45309"
-                          }}
-                        >
+                        <div className={`${isMobile ? 'w-14 h-14' : 'w-16 h-16'} rounded-full flex items-center justify-center font-black ${isMobile ? 'text-xl' : 'text-2xl'} text-amber-800`}>
                           {rank}
                         </div>
                       )}
                     </div>
 
                     {/* Avatar */}
-                    <div
-                      className="flex-shrink-0 mr-1"
-                      style={{ marginTop: "-0.8px", marginBottom: "-0.8px" }}
-                    >
+                    <div className="flex-shrink-0 mr-2" style={{ marginTop: '-8px', marginBottom: '-8px' }}>
                       <div
-                        className={`${
-                          isMobileState ? "w-1.5 h-1.5" : "w-2 h-2"
-                        } rounded-full flex items-center justify-center shadow-md border-1 border-white overflow-hidden`}
+                        className={`${isMobile ? 'w-7 h-7' : 'w-8 h-8'} rounded-full flex items-center justify-center shadow-md border-2 border-white overflow-hidden`}
                         style={{ backgroundColor: "#2C5282" }}
                       >
                         <img
@@ -433,37 +427,27 @@ const CongratulationsModal = ({
                     </div>
 
                     {/* Username */}
-                    <div className="flex-grow min-w-0 mr-1">
-                      <p
-                        className={`text-white font-bold ${
-                          isMobileState ? "text-xs" : "text-xs"
-                        } tracking-wide drop-shadow-sm break-words`}
-                      >
+                    <div className="flex-grow min-w-0 mr-2">
+                      <p className={`text-white font-bold ${isMobile ? 'text-base' : 'text-lg'} tracking-wide drop-shadow-sm break-words`}>
                         {player.username}
                       </p>
                     </div>
 
-                    {/* Score with Coin */}
+                    {/* Score with Coin - Fixed width with dynamic font size */}
                     <div className="flex-shrink-0 relative">
-                      <div
-                        className={`flex items-center justify-center bg-black bg-opacity-30 rounded-2xl ${
-                          isMobileState ? "px-1 py-0.5 h-3" : "px-1 py-0.5 h-3"
-                        } shadow-md ${isMobileState ? "pl-2" : "pl-2"} ${
-                          isMobileState ? "pr-1" : "pr-1"
-                        }`}
+                      <div 
+                        className={`flex items-center justify-center bg-black bg-opacity-30 rounded-2xl shadow-md ${isMobile ? 'pl-7' : 'pl-8'} ${getScorePadding(player.score, isMobile)}`}
+                        style={{
+                          height: isMobile ? '28px' : '32px',
+                          width: isMobile ? '70px' : '75px', // Reduced width for 2-digit optimization
+                        }}
                       >
                         <img
                           src="/assets/games/snakegame/coin1.png"
                           alt="Coin"
-                          className={`absolute ${
-                            isMobileState ? "-left-0.5 w-1.5 h-1.5" : "-left-0.5 w-1.5 h-1.5"
-                          } top-1/2 transform -translate-y-1/2 rounded-full shadow-sm`}
+                          className={`absolute ${isMobile ? '-left-1.5 w-6 h-6' : '-left-2 w-9 h-9'} top-1/2 transform -translate-y-1/2 rounded-full shadow-sm`}
                         />
-                        <span
-                          className={`text-white font-black ${
-                            isMobileState ? "text-xs" : "text-xs"
-                          } text-center drop-shadow-sm whitespace-nowrap`}
-                        >
+                        <span className={`text-white font-black text-center drop-shadow-sm whitespace-nowrap ${getScoreFontSize(player.score, isMobile)}`}>
                           {player.score?.toLocaleString() || "0"}
                         </span>
                       </div>
@@ -477,30 +461,19 @@ const CongratulationsModal = ({
       </div>
 
       {/* Buttons */}
-      <div
-        className={`mt-2 flex justify-center ${
-          isMobileState ? "space-x-1" : "space-x-2"
-        }`}
-      >
+      <div className={`mt-2 flex justify-center ${isMobile ? 'space-x-2' : 'space-x-4'}`}>
         <button
           onClick={goHome}
-          className={`flex items-center justify-center ${
-            isMobileState ? "py-1 px-2 text-xs" : "py-1.5 px-4 text-sm"
-          } bg-[#a0522d] hover:bg-[#8b4513] text-[#f5e6ca] border-none font-bold rounded-md cursor-pointer transition-all duration-300 shadow-lg hover:scale-105`}
+          className={`flex items-center justify-center ${isMobile ? 'py-2 px-4 text-sm' : 'py-3 px-8 text-lg'} bg-[#a0522d] hover:bg-[#8b4513] text-[#f5e6ca] border-none font-bold rounded-md cursor-pointer transition-all duration-300 shadow-lg hover:scale-105`}
         >
-          <Home className={`${isMobileState ? "w-3 h-3" : "w-3 h-3"} mr-0.5`} /> Go Home
+          <Home className={`${isMobile ? 'w-4 h-4' : 'w-6 h-6'} mr-1`} /> Go Home
         </button>
-
+        
         <button
           onClick={() => setShowStats(true)}
-          className={`flex items-center justify-center ${
-            isMobileState ? "py-1 px-2 text-xs" : "py-1.5 px-4 text-sm"
-          } bg-[#a0522d] hover:bg-[#8b4513] text-[#f5e6ca] border-none font-bold rounded-md cursor-pointer transition-all duration-300 shadow-lg hover:scale-105`}
+          className={`flex items-center justify-center ${isMobile ? 'py-2 px-4 text-sm' : 'py-3 px-8 text-lg'} bg-[#a0522d] hover:bg-[#8b4513] text-[#f5e6ca] border-none font-bold rounded-md cursor-pointer transition-all duration-300 shadow-lg hover:scale-105`}
         >
-          <BarChart3
-            className={`${isMobileState ? "w-3 h-3" : "w-3 h-3"} mr-0.5`}
-          />{" "}
-          View Stats
+          <BarChart3 className={`${isMobile ? 'w-4 h-4' : 'w-6 h-6'} mr-1`} /> View Stats
         </button>
       </div>
 
