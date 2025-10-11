@@ -1,0 +1,45 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Leaderboard specific styles - NO @apply directives */
+
+.scrollbar-custom {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.scrollbar-custom::-webkit-scrollbar {
+  width: 6px;
+  background: transparent;
+}
+
+.scrollbar-custom::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 3px;
+}
+
+.scrollbar-custom::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 3px;
+  border: none;
+}
+
+.scrollbar-custom::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.5);
+}
+
+img[alt*="Trophy"] {
+  border: none !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  filter: drop-shadow(2px 3px 6px rgba(255, 255, 255, 0.8)) !important;
+  -webkit-filter: drop-shadow(2px 3px 6px rgba(255, 255, 255, 0.8)) !important;
+}
+
+img[alt*="Trophy"]:hover {
+  filter: drop-shadow(3px 4px 8px rgba(0, 0, 0, 0.6)) !important;
+  -webkit-filter: drop-shadow(3px 4px 8px rgba(0, 0, 0, 0.6)) !important;
+  transform: scale(1.05);
+  transition: all 0.2s ease-in-out;
+}

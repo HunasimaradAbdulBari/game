@@ -630,27 +630,56 @@ export default function MarketPage() {
                       }}
                     >
                       {/* Enhanced Shuffle SVG Icon */}
-                      <svg 
-                        style={{ 
-                          borderRadius:'50%',
-                          width: 'clamp(18px, 3.6vw, 25px)', // Larger icon
-                          height: 'clamp(18px, 3.6vw, 25px)',
-                          color: '#475569' ,// Darker gray for better contrast
-                          background: 'linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%)'
-                        }} 
-                        aria-hidden="true" 
-                        xmlns="http://www.w3.org/2000/svg" 
-                        fill="none" 
-                        viewBox="0 0 24 24"
-                      >
-                        <path 
-                          stroke="currentColor" 
-                          strokeLinecap="round" 
-                          strokeLinejoin="round" 
-                          strokeWidth="2.5" // Thicker stroke
-                          d="M13.484 9.166 15 7h5m0 0-3-3m3 3-3 3M4 17h4l1.577-2.253M4 7h4l7 10h5m0 0-3 3m3-3-3-3"
-                        />
-                      </svg>
+                      <svg
+          className="transition-all duration-300 ease-out cursor-pointer"
+          style={{
+            borderRadius: '50%',
+            width: 'clamp(48px, 8vw, 64px)',
+            height: 'clamp(48px, 8vw, 64px)',
+            color: isClicked ? '#0f172a' : '#334155',
+            background: isHovered
+              ? 'linear-gradient(135deg, #bfdbfe 0%, #93c5fd 100%)'
+              : 'linear-gradient(135deg, #dbeafe 0%, #e0f2fe 100%)',
+            padding: '12px',
+            boxShadow: isHovered
+              ? '0 8px 24px rgba(59, 130, 246, 0.3), 0 0 0 4px rgba(191, 219, 254, 0.5)'
+              : '0 4px 12px rgba(148, 163, 184, 0.15)',
+            transform: isHovered
+              ? 'scale(1.15) translateY(-2px)'
+              : isClicked
+              ? 'scale(0.95)'
+              : 'scale(1)',
+            backfaceVisibility: 'hidden',
+          }}
+          aria-hidden="true"
+          xmlns="http://www.w3.org/2000/svg"
+          fill="none"
+          viewBox="0 0 24 24"
+          onMouseEnter={() => setIsHovered(true)}
+          onMouseLeave={() => setIsHovered(false)}
+          onClick={handleClick}
+        >
+          <defs>
+            <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+              <feGaussianBlur stdDeviation="2" result="coloredBlur" />
+              <feMerge>
+                <feMergeNode in="coloredBlur" />
+                <feMergeNode in="SourceGraphic" />
+              </feMerge>
+            </filter>
+          </defs>
+          <path
+            stroke="currentColor"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={isClicked ? '2.8' : '2.2'}
+            d="M13.484 9.166 15 7h5m0 0-3-3m3 3-3 3M4 17h4l1.577-2.253M4 7h4l7 10h5m0 0-3 3m3-3-3-3"
+            style={{
+              filter: isClicked ? 'url(#glow)' : 'none',
+              transition: 'all 0.3s ease-out',
+            }}
+          />
+        </svg>
                     </div>
                   )}
                 </div>

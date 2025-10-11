@@ -1,9 +1,11 @@
 "use client";
+import '../../../styles/leaderboard.css';
 import React, { useEffect, useRef, useState } from "react";
 import { Home, BarChart3, Star } from "lucide-react";
 import confetti from "canvas-confetti";
 import { useRouter } from 'next/navigation';
 import { getLeaderboard, formatDate } from '../../../services/labGameStorageService';
+
 
 const LeaderboardScene = () => {
   const router = useRouter();
@@ -20,7 +22,6 @@ const LeaderboardScene = () => {
     return 'w-6 h-6';
   };
 
-  // Helper function to determine font size based on score length
   const getScoreFontSize = (score, isMobile) => {
     const scoreLength = score.toString().length;
     if (isMobile) {
@@ -34,7 +35,6 @@ const LeaderboardScene = () => {
     }
   };
 
-  // Helper function to determine padding based on score length
   const getScorePadding = (score, isMobile) => {
     const scoreLength = score.toString().length;
     if (isMobile) {
@@ -49,7 +49,6 @@ const LeaderboardScene = () => {
   };
 
   useEffect(() => {
-    // Detect mobile and landscape
     const handleResize = () => {
       const mobile = window.innerWidth < 1024;
       const landscape = window.innerHeight < window.innerWidth;
@@ -60,10 +59,8 @@ const LeaderboardScene = () => {
     handleResize();
     window.addEventListener('resize', handleResize);
 
-    // Start confetti
     startConfettiFireworks();
 
-    // Load leaderboard data
     const leaderboardData = getLeaderboard();
     const transformedData = leaderboardData.map(entry => ({
       userId: entry.userId,
@@ -185,11 +182,11 @@ const LeaderboardScene = () => {
   };
 
   const svgViewBox = isMobile ? (isLandscape ? "0 0 700 900" : "0 0 700 1000") : "0 0 900 1200";
-  const leaderboardHeight = isMobile ? (isLandscape ? "calc(90vh - 200px)" : "400px") : "537px";
+  const leaderboardHeight = isMobile ? (isLandscape ? "calc(70vh - 130px)" : "325px") : "445px";
 
   return (
     <div 
-      className={`fixed top-0 left-0 w-screen h-screen flex flex-col items-center justify-center z-[2000] backdrop-blur-md p-2 ${isMobile ? 'p-2' : 'p-4'}`}
+      className={`fixed top-0 left-0 w-screen h-screen flex flex-col items-center justify-center z-[2000] backdrop-blur-md p-2 md:p-4`}
       style={containerStyle}
     >
       {/* Score Display */}
@@ -198,7 +195,7 @@ const LeaderboardScene = () => {
         left: 'auto',
       }}>
         <div className="score-item flex items-center">
-          <Star className={`${getIconSize()} mr-1 text-[#ffcc00]`} />
+          {/* <Star className={`${getIconSize()} mr-1 text-[#ffcc00]`} />
           <span 
             className="text-[#ffcc00] font-bold whitespace-nowrap"
             style={{
@@ -206,7 +203,7 @@ const LeaderboardScene = () => {
             }}
           >
             LEADERBOARD
-          </span>
+          </span> */}
         </div>
       </div>
 
@@ -240,7 +237,7 @@ const LeaderboardScene = () => {
         ) : null}
 
         {/* Content Overlay */}
-        <div className={`absolute inset-0 ${isMobile ? 'p-4' : 'p-8'}`}>
+        <div className={`absolute inset-0 ${isMobile ? 'p-8' : 'p-16'}`}>
           {/* PNG Banner Image */}
           <div className="flex justify-center">
             <img
@@ -248,9 +245,9 @@ const LeaderboardScene = () => {
               alt="Leaderboard Banner"
               className="w-full h-auto drop-shadow-2xl"
               style={{
-                maxHeight: isMobile ? (isLandscape ? "150px" : "300px") : "670px",
+                maxHeight: isMobile ? (isLandscape ? "120px" : "270px") : "630px",
                 objectFit: "contain",
-                marginTop: isMobile ? (isLandscape ? "10px" : "-20px") : "-40px",
+                marginTop: isMobile ? (isLandscape ? "50px" : "-55px") : "-75px",
                 marginBottom: "0px",
               }}
             />
@@ -263,15 +260,18 @@ const LeaderboardScene = () => {
               background: "linear-gradient(180deg, #D17836 0%, #B86A30 50%, #A0592A 100%)",
               boxShadow: `inset 0 -4px 0px rgba(125, 60, 10, 0.2)`,
               height: leaderboardHeight,
-              marginTop: "0px",
-              marginLeft: isMobile && isLandscape ? "10px" : "22px",
-              marginRight: isMobile && isLandscape ? "10px" : "22px",
+              width:"319px",
+              marginTop:"-2px",
+              marginLeft: isMobile && isLandscape ? "12px" : "26.5px",
+              marginRight: isMobile && isLandscape ? "38px" : "79px",
             }}
           >
             {/* Scrollable Content Area */}
             <div
               className="h-full overflow-y-auto px-0 space-y-2 scrollbar-custom"
               style={{
+                // marginTop:"20px",
+                
                 scrollbarWidth: "none",
                 scrollbarColor: "none",
               }}
@@ -279,10 +279,12 @@ const LeaderboardScene = () => {
               {players.length > 0 ? (
                 players.map((player, index) => {
                   const rank = index + 1;
-                  let rowStyle = {};
+                  let rowStyle = {
+                  };
 
                   if (rank === 1) {
                     rowStyle = {
+                      // height:"60px",
                       background: "linear-gradient(90deg, #FDD95Cff 0%, #FDD95Cff 50%, #FDD95Cff 100%)",
                       boxShadow: "inset 0 -4px 2px #D0762Eff,inset 0 4px 8px #ddccbeff",
                       position: "relative",
@@ -313,13 +315,13 @@ const LeaderboardScene = () => {
                       className="rounded-xl px-3 py-2 flex items-center shadow-md opacity-85 hover:opacity-100 transition-opacity duration-200 flex-shrink-0"
                       style={{
                         ...rowStyle,
-                        minHeight: isMobile ? "50px" : "60px",
+                        minHeight: isMobile ? "15px" : "17px",
                       }}
                     >
                       {/* Rank Medal - Touch top and bottom for top 3 */}
-                      <div className="flex-shrink-0 mr-1" style={{ marginTop: rank <= 3 ? '-8px' : '-8px', marginBottom: rank <= 3 ? '-8px' : '-8px' }}>
+                      <div className="flex-shrink-0 mr-1" style={{ marginTop: rank <= 3 ? '-8px' : '-8px', marginBottom: rank <= 3 ? '-4px' : '-5px' }}>
                         {rank === 1 && (
-                          <div className={`${isMobile ? 'w-14 h-14' : 'w-16 h-16'} flex items-center justify-center`}>
+                          <div className={`${isMobile ? 'w-10 h-10' : 'w-12 h-12'} flex items-center justify-center`}>
                             <img
                               src="/assets/games/snakegame/gold-trophy.png"
                               alt="Gold Trophy"
@@ -331,7 +333,7 @@ const LeaderboardScene = () => {
                           </div>
                         )}
                         {rank === 2 && (
-                          <div className={`${isMobile ? 'w-14 h-14' : 'w-16 h-16'} flex items-center justify-center`}>
+                          <div className={`${isMobile ? 'w-10 h-10' : 'w-12 h-12'} flex items-center justify-center`}>
                             <img
                               src="/assets/games/snakegame/silver-trophy.png"
                               alt="Silver Trophy"
@@ -343,7 +345,7 @@ const LeaderboardScene = () => {
                           </div>
                         )}
                         {rank === 3 && (
-                          <div className={`${isMobile ? 'w-14 h-14' : 'w-16 h-16'} flex items-center justify-center`}>
+                          <div className={`${isMobile ? 'w-10 h-10' : 'w-12 h-12'} flex items-center justify-center`}>
                             <img
                               src="/assets/games/snakegame/bronze-trophy.png"
                               alt="Bronze Trophy"
@@ -355,7 +357,7 @@ const LeaderboardScene = () => {
                           </div>
                         )}
                         {rank > 3 && (
-                          <div className={`${isMobile ? 'w-14 h-14' : 'w-16 h-16'} rounded-full flex items-center justify-center font-black ${isMobile ? 'text-xl' : 'text-2xl'} text-amber-800`}>
+                          <div className={`${isMobile ? 'w-10 h-10' : 'w-12 h-12'} rounded-full flex items-center justify-center font-black ${isMobile ? 'text-xl' : 'text-2xl'} text-amber-800`}>
                             {rank}
                           </div>
                         )}
@@ -364,7 +366,7 @@ const LeaderboardScene = () => {
                       {/* Avatar */}
                       <div className="flex-shrink-0 mr-2" style={{ marginTop: '-8px', marginBottom: '-8px' }}>
                         <div
-                          className={`${isMobile ? 'w-7 h-7' : 'w-8 h-8'} rounded-full flex items-center justify-center shadow-md border-2 border-white overflow-hidden`}
+                          className={`${isMobile ? 'w-6 h-6' : 'w-8 h-8'} rounded-full flex items-center justify-center shadow-md border-2 border-white overflow-hidden`}
                           style={{ backgroundColor: "#2C5282" }}
                         >
                           <img
@@ -378,7 +380,7 @@ const LeaderboardScene = () => {
 
                       {/* Username */}
                       <div className="flex-grow min-w-0 mr-2">
-                        <p className={`text-white font-bold ${isMobile ? 'text-base' : 'text-lg'} tracking-wide drop-shadow-sm break-words`}>
+                        <p className={`text-white font ${isMobile ? 'text-base' : 'text-lg'} tracking-wide drop-shadow-sm break-words`}>
                           {player.username}
                         </p>
                       </div>
@@ -388,14 +390,14 @@ const LeaderboardScene = () => {
                         <div 
                           className={`flex items-center justify-center bg-black bg-opacity-30 rounded-2xl shadow-md ${isMobile ? 'pl-7' : 'pl-8'} ${getScorePadding(player.score, isMobile)}`}
                           style={{
-                            height: isMobile ? '28px' : '32px',
-                            width: isMobile ? '70px' : '75px',
+                            height: isMobile ? '22px' : '23px',
+                            width: isMobile ? '65px' : '67px',
                           }}
                         >
                           <img
                             src="/assets/games/snakegame/coin1.png"
                             alt="Coin"
-                            className={`absolute ${isMobile ? '-left-1.5 w-6 h-6' : '-left-2 w-9 h-9'} top-1/2 transform -translate-y-1/2 rounded-full shadow-sm`}
+                            className={`absolute ${isMobile ? '-left-1.5 w-4 h-4' : '-left-2 w-7 h-7'} top-1/2 transform -translate-y-1/2 rounded-full shadow-sm`}
                           />
                           <span className={`text-white font-black text-center drop-shadow-sm whitespace-nowrap ${getScoreFontSize(player.score, isMobile)}`}>
                             {player.score?.toLocaleString() || "0"}
@@ -427,14 +429,14 @@ const LeaderboardScene = () => {
           onClick={goHome}
           className={`flex items-center justify-center ${isMobile ? 'py-2 px-4 text-sm' : 'py-3 px-8 text-lg'} bg-[#a0522d] hover:bg-[#8b4513] text-[#f5e6ca] border-none font-bold rounded-md cursor-pointer transition-all duration-300 shadow-lg hover:scale-105`}
         >
-          <Home className={`${isMobile ? 'w-4 h-4' : 'w-6 h-6'} mr-1`} /> Go Home
+          <Home className={`${isMobile ? 'w-1.7 h-1.7' : 'w-4 h-4'} mr-1`} /> Go Home
         </button>
         
         <button
           onClick={() => setShowStats(true)}
           className={`flex items-center justify-center ${isMobile ? 'py-2 px-4 text-sm' : 'py-3 px-8 text-lg'} bg-[#a0522d] hover:bg-[#8b4513] text-[#f5e6ca] border-none font-bold rounded-md cursor-pointer transition-all duration-300 shadow-lg hover:scale-105`}
         >
-          <BarChart3 className={`${isMobile ? 'w-4 h-4' : 'w-6 h-6'} mr-1`} /> View Stats
+          <BarChart3 className={`${isMobile ? 'w-1.7 h-1.7' : 'w-4 h-4'} mr-1`} /> View Stats
         </button>
       </div>
 
@@ -463,31 +465,6 @@ const LeaderboardScene = () => {
 
         .scrollbar-custom::-webkit-scrollbar-thumb:hover {
           background: rgba(255, 255, 255, 0.5);
-        }
-
-        .scrollbar-custom::-webkit-scrollbar-button,
-        .scrollbar-custom::-webkit-scrollbar-button:start,
-        .scrollbar-custom::-webkit-scrollbar-button:end,
-        .scrollbar-custom::-webkit-scrollbar-button:vertical:start,
-        .scrollbar-custom::-webkit-scrollbar-button:vertical:end,
-        .scrollbar-custom::-webkit-scrollbar-button:horizontal:start,
-        .scrollbar-custom::-webkit-scrollbar-button:horizontal:end {
-          display: none !important;
-          width: 0 !important;
-          height: 0 !important;
-        }
-
-        .scrollbar-custom::-webkit-scrollbar-button {
-          width: 0px !important;
-          height: 0px !important;
-          background: transparent !important;
-        }
-
-        .scrollbar-custom::-webkit-scrollbar-button:vertical:start:decrement,
-        .scrollbar-custom::-webkit-scrollbar-button:vertical:end:increment {
-          display: none !important;
-          height: 0px !important;
-          width: 0px !important;
         }
 
         img[alt*="Trophy"] {
