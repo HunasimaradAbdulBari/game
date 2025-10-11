@@ -182,7 +182,7 @@ const LeaderboardScene = () => {
   };
 
   const svgViewBox = isMobile ? (isLandscape ? "0 0 700 900" : "0 0 700 1000") : "0 0 900 1200";
-  const leaderboardHeight = isMobile ? (isLandscape ? "calc(70vh - 130px)" : "325px") : "445px";
+  const leaderboardHeight = isMobile ? (isLandscape ? "calc(62vh - 122px)" : "318px") : "438px";
 
   return (
     <div 
@@ -312,10 +312,11 @@ const LeaderboardScene = () => {
                   return (
                     <div
                       key={player.id || index}
-                      className="rounded-xl px-3 py-2 flex items-center shadow-md opacity-85 hover:opacity-100 transition-opacity duration-200 flex-shrink-0"
+                      className="rounded-xl px-2 py-2 flex items-center shadow-md opacity-85 hover:opacity-100 transition-opacity duration-200 flex-shrink-0"
                       style={{
                         ...rowStyle,
                         minHeight: isMobile ? "15px" : "17px",
+                         
                       }}
                     >
                       {/* Rank Medal - Touch top and bottom for top 3 */}
@@ -391,7 +392,7 @@ const LeaderboardScene = () => {
                           className={`flex items-center justify-center bg-black bg-opacity-30 rounded-2xl shadow-md ${isMobile ? 'pl-7' : 'pl-8'} ${getScorePadding(player.score, isMobile)}`}
                           style={{
                             height: isMobile ? '22px' : '23px',
-                            width: isMobile ? '65px' : '67px',
+                            width: isMobile ? '60px' : '63px',
                           }}
                         >
                           <img

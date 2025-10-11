@@ -51,6 +51,8 @@ export default function MarketPage() {
   const [itemsInBasket, setItemsInBasket] = useState([]); // Items currently in basket
   const [itemsOnBanner, setItemsOnBanner] = useState([]); // Items currently on banner - SEQUENTIAL ORDER
   const [showBasketPopup, setShowBasketPopup] = useState(false);
+  const [isHovered, setIsHovered] = useState(false);
+  const [isClicked, setIsClicked] = useState(false);
   const dropSoundRef = useRef(null);
   const [activeId, setActiveId] = useState(null);
   const basketItemsContainerRef = useRef(null);
@@ -164,6 +166,12 @@ export default function MarketPage() {
         );
       });
     }
+  };
+
+  const handleShuffleClick = () => {
+    setIsClicked(true);
+    setTimeout(() => setIsClicked(false), 600);
+    shuffleBasketItems();
   };
 
   /* ---------- SENSORS ---------- */
@@ -502,9 +510,9 @@ export default function MarketPage() {
               <DroppableWrapper id="basket">
                 <div style={{ position: 'relative' }}>
                   <img src="/basket(cart).png" style={{
-                    marginLeft: 'clamp(-60px, -12vw, -80px)', 
-                    marginBottom: 'clamp(-30px, -8vh, -40px)',
-                    width: 'clamp(280px, 50vw, 380px)', 
+                    marginLeft: '-80px',  // FIXED SIZE: Removed clamp()
+                    marginBottom: '-40px',  // FIXED SIZE: Removed clamp()
+                    width: '380px',  // FIXED SIZE: Removed clamp()
                     height: 'auto', 
                     objectFit: 'contain'
                   }} alt="Equipment Basket" />
@@ -598,88 +606,66 @@ export default function MarketPage() {
                   {/* Improved Shuffle Button - BETTER POSITIONING ON RIGHT SIDE */}
                   {itemsInBasket.length > 0 && (
                     <div 
-                      onClick={(e) => { e.stopPropagation(); shuffleBasketItems(); }} 
+                      onClick={(e) => { e.stopPropagation(); handleShuffleClick(); }} 
                       style={{
                         position: 'absolute', 
                         top: 'clamp(82px, 3.5vh, 76px)',
                         right: 'clamp(-152px, -2.5vw, -158px)', // Better right positioning
-                        background: 'linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%)', // Gradient background
-                        borderRadius: '50%',
-                        width: 'clamp(30px, 6vw, 42px)', // Slightly larger
-                        height: 'clamp(30px, 6vw, 42px)', // Slightly larger
-                        display: 'flex', 
-                        alignItems: 'center', 
-                        justifyContent: 'center',
-                        // boxShadow: '0 4px 16px rgba(0,0,0,0.12), inset 0 1px 0 rgba(255,255,255,0.4)', 
                         cursor: 'pointer',
                         transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
                         zIndex: 100,
-                        border: '2px solid #cbd5e1'
-                      }}
-                      onMouseEnter={(e) => {
-                        e.target.style.transform = 'scale(1.2) rotate(15deg)';
-                        e.target.style.background = 'linear-gradient(135deg, #e2e8f0 0%, #cbd5e1 100%)';
-                        e.target.style.boxShadow = '0 8px 25px rgba(0,0,0,0.18), inset 0 1px 0 rgba(255,255,255,0.5)';
-                        e.target.style.borderColor = '#94a3b8';
-                      }}
-                      onMouseLeave={(e) => {
-                        e.target.style.transform = 'scale(1) rotate(0deg)';
-                        e.target.style.background = 'linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%)';
-                        e.target.style.boxShadow = '0 4px 16px rgba(0,0,0,0.12), inset 0 1px 0 rgba(255,255,255,0.4)';
-                        e.target.style.borderColor = '#cbd5e1';
                       }}
                     >
                       {/* Enhanced Shuffle SVG Icon */}
                       <svg
-          className="transition-all duration-300 ease-out cursor-pointer"
-          style={{
-            borderRadius: '50%',
-            width: 'clamp(48px, 8vw, 64px)',
-            height: 'clamp(48px, 8vw, 64px)',
-            color: isClicked ? '#0f172a' : '#334155',
-            background: isHovered
-              ? 'linear-gradient(135deg, #bfdbfe 0%, #93c5fd 100%)'
-              : 'linear-gradient(135deg, #dbeafe 0%, #e0f2fe 100%)',
-            padding: '12px',
-            boxShadow: isHovered
-              ? '0 8px 24px rgba(59, 130, 246, 0.3), 0 0 0 4px rgba(191, 219, 254, 0.5)'
-              : '0 4px 12px rgba(148, 163, 184, 0.15)',
-            transform: isHovered
-              ? 'scale(1.15) translateY(-2px)'
-              : isClicked
-              ? 'scale(0.95)'
-              : 'scale(1)',
-            backfaceVisibility: 'hidden',
-          }}
-          aria-hidden="true"
-          xmlns="http://www.w3.org/2000/svg"
-          fill="none"
-          viewBox="0 0 24 24"
-          onMouseEnter={() => setIsHovered(true)}
-          onMouseLeave={() => setIsHovered(false)}
-          onClick={handleClick}
-        >
-          <defs>
-            <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
-              <feGaussianBlur stdDeviation="2" result="coloredBlur" />
-              <feMerge>
-                <feMergeNode in="coloredBlur" />
-                <feMergeNode in="SourceGraphic" />
-              </feMerge>
-            </filter>
-          </defs>
-          <path
-            stroke="currentColor"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={isClicked ? '2.8' : '2.2'}
-            d="M13.484 9.166 15 7h5m0 0-3-3m3 3-3 3M4 17h4l1.577-2.253M4 7h4l7 10h5m0 0-3 3m3-3-3-3"
-            style={{
-              filter: isClicked ? 'url(#glow)' : 'none',
-              transition: 'all 0.3s ease-out',
-            }}
-          />
-        </svg>
+                        className="transition-all duration-300 ease-out cursor-pointer"
+                        style={{
+                          borderRadius: '50%',
+                          width: 'clamp(38px, 8vw, 44px)',
+                          height: 'clamp(38px, 8vw, 44px)',
+                          color: isClicked ? '#0f172a' : '#334155',
+                          background: isHovered
+                            ? 'linear-gradient(135deg, #bfdbfe 0%, #93c5fd 100%)'
+                            : 'linear-gradient(135deg, #dbeafe 0%, #e0f2fe 100%)',
+                          padding: '12px',
+                          boxShadow: isHovered
+                            ? '0 8px 24px rgba(59, 130, 246, 0.3), 0 0 0 4px rgba(191, 219, 254, 0.5)'
+                            : '0 4px 12px rgba(148, 163, 184, 0.15)',
+                          transform: isHovered
+                            ? 'scale(1.15) translateY(-2px)'
+                            : isClicked
+                            ? 'scale(0.95)'
+                            : 'scale(1)',
+                          backfaceVisibility: 'hidden',
+                        }}
+                        aria-hidden="true"
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        onMouseEnter={() => setIsHovered(true)}
+                        onMouseLeave={() => setIsHovered(false)}
+                      >
+                        <defs>
+                          <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+                            <feGaussianBlur stdDeviation="2" result="coloredBlur" />
+                            <feMerge>
+                              <feMergeNode in="coloredBlur" />
+                              <feMergeNode in="SourceGraphic" />
+                            </feMerge>
+                          </filter>
+                        </defs>
+                        <path
+                          stroke="currentColor"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={isClicked ? '2.8' : '2.2'}
+                          d="M13.484 9.166 15 7h5m0 0-3-3m3 3-3 3M4 17h4l1.577-2.253M4 7h4l7 10h5m0 0-3 3m3-3-3-3"
+                          style={{
+                            filter: isClicked ? 'url(#glow)' : 'none',
+                            transition: 'all 0.3s ease-out',
+                          }}
+                        />
+                      </svg>
                     </div>
                   )}
                 </div>

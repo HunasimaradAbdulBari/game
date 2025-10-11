@@ -139,7 +139,7 @@ export default function ResultPage() {
   };
 
   const handleGoToLeaderboard = () => {
-    router.push('/leaderboard'); // Updated to navigate to external leaderboard scene
+    router.push('/leaderboard');
   };
 
   if (!levelData) return null;
@@ -175,8 +175,8 @@ export default function ResultPage() {
         style={{ 
           width: '100%', 
           height: 'auto',
-          minWidth: '200px',
-          maxWidth: '320px'
+          minWidth: '180px',
+          maxWidth: '280px'
         }}
         preserveAspectRatio="xMidYMid meet"
       >
@@ -210,7 +210,7 @@ export default function ResultPage() {
           textAnchor="middle" 
           dominantBaseline="central"
           style={{
-            fontSize: 'clamp(16px, 4vw, 20px)',
+            fontSize: 'clamp(14px, 3.5vw, 18px)',
             fontWeight: 'bold',
             fill: '#FFFFFF',
             fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, sans-serif',
@@ -230,17 +230,17 @@ export default function ResultPage() {
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        padding: 'clamp(20px, 5vw, 28px)',
-        borderRadius: 'clamp(16px, 4vw, 20px)',
+        padding: 'clamp(18px, 4vw, 24px)',
+        borderRadius: 'clamp(14px, 3vw, 18px)',
         background: isWin ? '#E6FFFA' : '#FEF2F2',
-        border: `3px solid ${isWin ? '#22C55E' : '#F87171'}`,
+        border: `2px solid ${isWin ? '#22C55E' : '#F87171'}`,
         color: isWin ? '#065F46' : '#7F1D1D',
         fontWeight: 700,
-        fontSize: 'clamp(20px, 5vw, 26px)',
-        gap: '20px',
+        fontSize: 'clamp(18px, 4vw, 22px)',
+        gap: '16px',
         textTransform: 'uppercase',
-        letterSpacing: '1.5px',
-        boxShadow: `0 8px 32px ${isWin ? 'rgba(34, 197, 94, 0.2)' : 'rgba(248, 113, 113, 0.2)'}`,
+        letterSpacing: '1.2px',
+        boxShadow: `0 6px 24px ${isWin ? 'rgba(34, 197, 94, 0.15)' : 'rgba(248, 113, 113, 0.15)'}`,
       }}>
         {isWin ? <SuccessIcon /> : <FailureIcon />}
         <span>{isWin ? 'Success' : 'Failed'}</span>
@@ -308,20 +308,20 @@ export default function ResultPage() {
         zIndex: 1
       }}>
 
-        {/* Main Result Card */}
+        {/* Main Result Card - Refined Design */}
         <div style={{
-          background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.98) 0%, rgba(248, 250, 252, 0.95) 100%)',
-          borderRadius: 'clamp(20px, 5vw, 28px)',
-          width: 'clamp(360px, 92vw, 620px)',
-          height: 'clamp(440px, 82vh, 540px)',
-          maxWidth: '95vw',
-          maxHeight: '90vh',
+          background: 'linear-gradient(135deg, #f5e6d3 0%, #e8d5be 50%, #d4c4a8 100%)',
+          borderRadius: 'clamp(12px, 3vw, 16px)',
+          width: 'clamp(320px, 85vw, 480px)',
+          height: 'clamp(420px, 78vh, 500px)',
+          maxWidth: '90vw',
+          maxHeight: '85vh',
           position: 'relative',
           zIndex: 1,
           overflow: 'hidden',
           animation: 'slideIn 1s ease-out',
-          border: '3px solid rgba(229, 231, 235, 0.8)',
-          boxShadow: '0 25px 80px rgba(0, 0, 0, 0.12), 0 8px 32px rgba(0, 0, 0, 0.08)'
+          border: '3px solid #8b6f47',
+          boxShadow: '0 20px 60px rgba(139, 111, 71, 0.3), 0 10px 30px rgba(139, 111, 71, 0.2), inset 0 1px 3px rgba(255, 255, 255, 0.3)'
         }}>
           <div style={{
             position: 'relative',
@@ -329,25 +329,26 @@ export default function ResultPage() {
             height: '100%',
             display: 'flex',
             flexDirection: 'column',
-            padding: 'clamp(20px, 5vw, 28px)'
+            padding: 'clamp(20px, 4vw, 26px)'
           }}>
             {/* Banner */}
-            <div style={{ height: 'clamp(80px, 18vw, 100px)', flexShrink: 0 }}>
+            <div style={{ height: 'clamp(70px, 16vw, 85px)', flexShrink: 0 }}>
               <CustomBanner title={isWin ? 'SUCCESS' : 'TRY AGAIN'} />
             </div>
 
             {/* Challenge Info */}
             <div style={{
               textAlign: 'center',
-              marginBottom: 'clamp(16px, 4vh, 20px)',
+              marginBottom: 'clamp(14px, 3vh, 18px)',
               flexShrink: 0
             }}>
               <h2 style={{
-                fontSize: 'clamp(16px, 3.5vw, 20px)',
+                fontSize: 'clamp(15px, 3.2vw, 18px)',
                 fontWeight: '700',
-                color: '#111827',
+                color: '#3e2723',
                 margin: 0,
-                letterSpacing: '0.5px'
+                letterSpacing: '0.5px',
+                textShadow: '0 1px 2px rgba(255, 255, 255, 0.5)'
               }}>
                 Challenge {currentLevel} - {levelData.title}
               </h2>
@@ -357,7 +358,7 @@ export default function ResultPage() {
             <div style={{
               display: 'flex',
               justifyContent: 'center',
-              marginBottom: 'clamp(16px, 4vh, 20px)',
+              marginBottom: 'clamp(14px, 3vh, 18px)',
               flexShrink: 0
             }}>
               {renderOverallStatusOnly()}
@@ -366,14 +367,15 @@ export default function ResultPage() {
             {/* Progress Messages */}
             {isWin && currentLevel < 10 && (
               <p style={{
-                fontSize: 'clamp(14px, 3vw, 18px)',
+                fontSize: 'clamp(13px, 2.8vw, 16px)',
                 fontWeight: '600',
                 color: '#059669',
                 textAlign: 'center',
-                marginBottom: 'clamp(12px, 3vh, 16px)',
-                margin: '0 0 clamp(12px, 3vh, 16px) 0',
+                marginBottom: 'clamp(10px, 2.5vh, 14px)',
+                margin: '0 0 clamp(10px, 2.5vh, 14px) 0',
                 flexShrink: 0,
-                letterSpacing: '0.5px'
+                letterSpacing: '0.5px',
+                textShadow: '0 1px 2px rgba(255, 255, 255, 0.8)'
               }}>
                 Next challenge unlocked!
               </p>
@@ -381,14 +383,15 @@ export default function ResultPage() {
 
             {isWin && currentLevel === 10 && (
               <p style={{
-                fontSize: 'clamp(16px, 3.5vw, 20px)',
+                fontSize: 'clamp(14px, 3.2vw, 18px)',
                 fontWeight: '700',
                 color: '#059669',
                 textAlign: 'center',
-                marginBottom: 'clamp(12px, 3vh, 16px)',
-                margin: '0 0 clamp(12px, 3vh, 16px) 0',
+                marginBottom: 'clamp(10px, 2.5vh, 14px)',
+                margin: '0 0 clamp(10px, 2.5vh, 14px) 0',
                 flexShrink: 0,
-                letterSpacing: '0.5px'
+                letterSpacing: '0.5px',
+                textShadow: '0 1px 2px rgba(255, 255, 255, 0.8)'
               }}>
                 All challenges completed!
               </p>
@@ -397,7 +400,7 @@ export default function ResultPage() {
             {/* Action Buttons */}
             <div style={{
               display: 'flex',
-              gap: 'clamp(10px, 2.5vw, 14px)',
+              gap: 'clamp(8px, 2vw, 12px)',
               justifyContent: 'center',
               alignItems: 'center',
               flexWrap: 'wrap',
@@ -410,27 +413,29 @@ export default function ResultPage() {
                     <button
                       onClick={handleNextLevel}
                       style={{
-                        padding: 'clamp(10px, 2.5vw, 14px) clamp(20px, 5vw, 28px)',
-                        fontSize: 'clamp(11px, 2.2vw, 14px)',
+                        padding: 'clamp(8px, 2vw, 12px) clamp(16px, 4vw, 22px)',
+                        fontSize: 'clamp(10px, 2vw, 13px)',
                         fontWeight: '700',
-                        background: '#3B82F6',
+                        background: 'linear-gradient(135deg, #3B82F6 0%, #2563EB 100%)',
                         color: '#FFFFFF',
-                        border: '2px solid #2563EB',
-                        borderRadius: 'clamp(10px, 2.5vw, 14px)',
+                        border: '2px solid #1e40af',
+                        borderRadius: 'clamp(8px, 2vw, 12px)',
                         cursor: 'pointer',
                         transition: 'all 0.3s ease',
-                        minWidth: 'clamp(120px, 30vw, 160px)',
-                        height: 'clamp(38px, 9vh, 48px)',
+                        minWidth: 'clamp(100px, 25vw, 140px)',
+                        height: 'clamp(36px, 8vh, 42px)',
                         letterSpacing: '0.5px',
-                        boxShadow: '0 4px 16px rgba(59, 130, 246, 0.3)'
+                        boxShadow: '0 3px 12px rgba(59, 130, 246, 0.3), 0 1px 6px rgba(0, 0, 0, 0.2)'
                       }}
                       onMouseEnter={(e) => {
-                        e.target.style.background = '#2563EB';
+                        e.target.style.background = 'linear-gradient(135deg, #2563EB 0%, #1e40af 100%)';
                         e.target.style.transform = 'translateY(-2px)';
+                        e.target.style.boxShadow = '0 4px 16px rgba(59, 130, 246, 0.4), 0 2px 8px rgba(0, 0, 0, 0.3)';
                       }}
                       onMouseLeave={(e) => {
-                        e.target.style.background = '#3B82F6';
+                        e.target.style.background = 'linear-gradient(135deg, #3B82F6 0%, #2563EB 100%)';
                         e.target.style.transform = 'translateY(0)';
+                        e.target.style.boxShadow = '0 3px 12px rgba(59, 130, 246, 0.3), 0 1px 6px rgba(0, 0, 0, 0.2)';
                       }}
                     >
                       NEXT CHALLENGE
@@ -439,19 +444,29 @@ export default function ResultPage() {
                     <button
                       onClick={handlePlayFromStart}
                       style={{
-                        padding: 'clamp(10px, 2.5vw, 14px) clamp(20px, 5vw, 28px)',
-                        fontSize: 'clamp(11px, 2.2vw, 14px)',
+                        padding: 'clamp(8px, 2vw, 12px) clamp(16px, 4vw, 22px)',
+                        fontSize: 'clamp(10px, 2vw, 13px)',
                         fontWeight: '700',
-                        background: '#3B82F6',
+                        background: 'linear-gradient(135deg, #3B82F6 0%, #2563EB 100%)',
                         color: '#FFFFFF',
-                        border: '2px solid #2563EB',
-                        borderRadius: 'clamp(10px, 2.5vw, 14px)',
+                        border: '2px solid #1e40af',
+                        borderRadius: 'clamp(8px, 2vw, 12px)',
                         cursor: 'pointer',
                         transition: 'all 0.3s ease',
-                        minWidth: 'clamp(120px, 30vw, 160px)',
-                        height: 'clamp(38px, 9vh, 48px)',
+                        minWidth: 'clamp(100px, 25vw, 140px)',
+                        height: 'clamp(36px, 8vh, 42px)',
                         letterSpacing: '0.5px',
-                        boxShadow: '0 4px 16px rgba(59, 130, 246, 0.3)'
+                        boxShadow: '0 3px 12px rgba(59, 130, 246, 0.3), 0 1px 6px rgba(0, 0, 0, 0.2)'
+                      }}
+                      onMouseEnter={(e) => {
+                        e.target.style.background = 'linear-gradient(135deg, #2563EB 0%, #1e40af 100%)';
+                        e.target.style.transform = 'translateY(-2px)';
+                        e.target.style.boxShadow = '0 4px 16px rgba(59, 130, 246, 0.4), 0 2px 8px rgba(0, 0, 0, 0.3)';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.target.style.background = 'linear-gradient(135deg, #3B82F6 0%, #2563EB 100%)';
+                        e.target.style.transform = 'translateY(0)';
+                        e.target.style.boxShadow = '0 3px 12px rgba(59, 130, 246, 0.3), 0 1px 6px rgba(0, 0, 0, 0.2)';
                       }}
                     >
                       PLAY AGAIN
@@ -460,19 +475,29 @@ export default function ResultPage() {
                   <button
                     onClick={handleReplayLevel}
                     style={{
-                      padding: 'clamp(10px, 2.5vw, 14px) clamp(20px, 5vw, 28px)',
-                      fontSize: 'clamp(11px, 2.2vw, 14px)',
+                      padding: 'clamp(8px, 2vw, 12px) clamp(16px, 4vw, 22px)',
+                      fontSize: 'clamp(10px, 2vw, 13px)',
                       fontWeight: '700',
-                      background: '#6B7280',
+                      background: 'linear-gradient(135deg, #6B7280 0%, #4B5563 100%)',
                       color: '#FFFFFF',
-                      border: '2px solid #4B5563',
-                      borderRadius: 'clamp(10px, 2.5vw, 14px)',
+                      border: '2px solid #374151',
+                      borderRadius: 'clamp(8px, 2vw, 12px)',
                       cursor: 'pointer',
                       transition: 'all 0.3s ease',
-                      minWidth: 'clamp(120px, 30vw, 160px)',
-                      height: 'clamp(38px, 9vh, 48px)',
+                      minWidth: 'clamp(100px, 25vw, 140px)',
+                      height: 'clamp(36px, 8vh, 42px)',
                       letterSpacing: '0.5px',
-                      boxShadow: '0 2px 8px rgba(0, 0, 0, 0.2)'
+                      boxShadow: '0 2px 6px rgba(0, 0, 0, 0.3)'
+                    }}
+                    onMouseEnter={(e) => {
+                      e.target.style.background = 'linear-gradient(135deg, #4B5563 0%, #374151 100%)';
+                      e.target.style.transform = 'translateY(-2px)';
+                      e.target.style.boxShadow = '0 3px 10px rgba(0, 0, 0, 0.4)';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.target.style.background = 'linear-gradient(135deg, #6B7280 0%, #4B5563 100%)';
+                      e.target.style.transform = 'translateY(0)';
+                      e.target.style.boxShadow = '0 2px 6px rgba(0, 0, 0, 0.3)';
                     }}
                   >
                     REPLAY
@@ -483,19 +508,29 @@ export default function ResultPage() {
                   <button
                     onClick={handleTryAgain}
                     style={{
-                      padding: 'clamp(10px, 2.5vw, 14px) clamp(20px, 5vw, 28px)',
-                      fontSize: 'clamp(11px, 2.2vw, 14px)',
+                      padding: 'clamp(8px, 2vw, 12px) clamp(16px, 4vw, 22px)',
+                      fontSize: 'clamp(10px, 2vw, 13px)',
                       fontWeight: '700',
-                      background: '#F87171',
+                      background: 'linear-gradient(135deg, #F87171 0%, #EF4444 100%)',
                       color: '#FFFFFF',
-                      border: '2px solid #EF4444',
-                      borderRadius: 'clamp(10px, 2.5vw, 14px)',
+                      border: '2px solid #DC2626',
+                      borderRadius: 'clamp(8px, 2vw, 12px)',
                       cursor: 'pointer',
                       transition: 'all 0.3s ease',
-                      minWidth: 'clamp(120px, 30vw, 160px)',
-                      height: 'clamp(38px, 9vh, 48px)',
+                      minWidth: 'clamp(100px, 25vw, 140px)',
+                      height: 'clamp(36px, 8vh, 42px)',
                       letterSpacing: '0.5px',
-                      boxShadow: '0 4px 16px rgba(248, 113, 113, 0.3)'
+                      boxShadow: '0 3px 12px rgba(248, 113, 113, 0.3), 0 1px 6px rgba(0, 0, 0, 0.2)'
+                    }}
+                    onMouseEnter={(e) => {
+                      e.target.style.background = 'linear-gradient(135deg, #EF4444 0%, #DC2626 100%)';
+                      e.target.style.transform = 'translateY(-2px)';
+                      e.target.style.boxShadow = '0 4px 16px rgba(248, 113, 113, 0.4), 0 2px 8px rgba(0, 0, 0, 0.3)';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.target.style.background = 'linear-gradient(135deg, #F87171 0%, #EF4444 100%)';
+                      e.target.style.transform = 'translateY(0)';
+                      e.target.style.boxShadow = '0 3px 12px rgba(248, 113, 113, 0.3), 0 1px 6px rgba(0, 0, 0, 0.2)';
                     }}
                   >
                     TRY AGAIN
@@ -503,19 +538,29 @@ export default function ResultPage() {
                   <button
                     onClick={handleGoToMenu}
                     style={{
-                      padding: 'clamp(10px, 2.5vw, 14px) clamp(20px, 5vw, 28px)',
-                      fontSize: 'clamp(11px, 2.2vw, 14px)',
+                      padding: 'clamp(8px, 2vw, 12px) clamp(16px, 4vw, 22px)',
+                      fontSize: 'clamp(10px, 2vw, 13px)',
                       fontWeight: '700',
-                      background: '#6B7280',
+                      background: 'linear-gradient(135deg, #6B7280 0%, #4B5563 100%)',
                       color: '#FFFFFF',
-                      border: '2px solid #4B5563',
-                      borderRadius: 'clamp(10px, 2.5vw, 14px)',
+                      border: '2px solid #374151',
+                      borderRadius: 'clamp(8px, 2vw, 12px)',
                       cursor: 'pointer',
                       transition: 'all 0.3s ease',
-                      minWidth: 'clamp(120px, 30vw, 160px)',
-                      height: 'clamp(38px, 9vh, 48px)',
+                      minWidth: 'clamp(100px, 25vw, 140px)',
+                      height: 'clamp(36px, 8vh, 42px)',
                       letterSpacing: '0.5px',
-                      boxShadow: '0 2px 8px rgba(0, 0, 0, 0.2)'
+                      boxShadow: '0 2px 6px rgba(0, 0, 0, 0.3)'
+                    }}
+                    onMouseEnter={(e) => {
+                      e.target.style.background = 'linear-gradient(135deg, #4B5563 0%, #374151 100%)';
+                      e.target.style.transform = 'translateY(-2px)';
+                      e.target.style.boxShadow = '0 3px 10px rgba(0, 0, 0, 0.4)';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.target.style.background = 'linear-gradient(135deg, #6B7280 0%, #4B5563 100%)';
+                      e.target.style.transform = 'translateY(0)';
+                      e.target.style.boxShadow = '0 2px 6px rgba(0, 0, 0, 0.3)';
                     }}
                   >
                     MENU
@@ -523,11 +568,40 @@ export default function ResultPage() {
                 </>
               )}
               <button
-  onClick={() => router.push('/leaderboard')}
-  className="flex items-center justify-center py-3 px-8 text-lg bg-[#a0522d] hover:bg-[#8b4513] text-[#f5e6ca] border-none font-bold rounded-md cursor-pointer transition-all duration-300 shadow-lg hover:scale-105"
->
-  <BarChart3 className="w-6 h-6 mr-1" /> Leaderboard
-</button>
+                onClick={() => router.push('/leaderboard')}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  padding: 'clamp(8px, 2vw, 12px) clamp(16px, 4vw, 22px)',
+                  fontSize: 'clamp(10px, 2vw, 13px)',
+                  background: '#a0522d',
+                  color: '#f5e6ca',
+                  border: 'none',
+                  fontWeight: 'bold',
+                  borderRadius: 'clamp(8px, 2vw, 12px)',
+                  cursor: 'pointer',
+                  transition: 'all 0.3s ease',
+                  boxShadow: '0 2px 6px rgba(0, 0, 0, 0.3)',
+                  minWidth: 'clamp(100px, 25vw, 140px)',
+                  height: 'clamp(36px, 8vh, 42px)',
+                  letterSpacing: '0.5px',
+                  gap: '4px'
+                }}
+                onMouseEnter={(e) => {
+                  e.target.style.background = '#8b4513';
+                  e.target.style.transform = 'translateY(-2px) scale(1.05)';
+                  e.target.style.boxShadow = '0 3px 10px rgba(0, 0, 0, 0.4)';
+                }}
+                onMouseLeave={(e) => {
+                  e.target.style.background = '#a0522d';
+                  e.target.style.transform = 'translateY(0) scale(1)';
+                  e.target.style.boxShadow = '0 2px 6px rgba(0, 0, 0, 0.3)';
+                }}
+              >
+                <BarChart3 style={{ width: 'clamp(16px, 3vw, 20px)', height: 'clamp(16px, 3vw, 20px)' }} />
+                <span>Leaderboard</span>
+              </button>
             </div>
           </div>
         </div>
