@@ -6,7 +6,6 @@ import confetti from "canvas-confetti";
 import { useRouter } from 'next/navigation';
 import { getLeaderboard, formatDate } from '../../../services/labGameStorageService';
 
-
 const LeaderboardScene = () => {
   const router = useRouter();
   const confettiIntervalRef = useRef(null);
@@ -182,11 +181,11 @@ const LeaderboardScene = () => {
   };
 
   const svgViewBox = isMobile ? (isLandscape ? "0 0 700 900" : "0 0 700 1000") : "0 0 900 1200";
-  const leaderboardHeight = isMobile ? (isLandscape ? "calc(62vh - 122px)" : "318px") : "438px";
+  const leaderboardHeight = isMobile ? (isLandscape ? "calc(62vh - 122px)" : "318px") : "510px";
 
   return (
     <div 
-      className={`fixed top-0 left-0 w-screen h-screen flex flex-col items-center justify-center z-[2000] backdrop-blur-md p-2 md:p-4`}
+      className={`fixed top-0 left-0 w-screen h-screen flex flex-col items-center justify-center z-[2000] backdrop-blur-md p-2 md:p-4 leaderboard-container`}
       style={containerStyle}
     >
       {/* Score Display */}
@@ -195,25 +194,17 @@ const LeaderboardScene = () => {
         left: 'auto',
       }}>
         <div className="score-item flex items-center">
-          {/* <Star className={`${getIconSize()} mr-1 text-[#ffcc00]`} />
-          <span 
-            className="text-[#ffcc00] font-bold whitespace-nowrap"
-            style={{
-              fontSize: '20px'
-            }}
-          >
-            LEADERBOARD
-          </span> */}
+          {/* Optional leaderboard title */}
         </div>
       </div>
 
       {/* Main Container */}
-      <div className="relative" style={mainContainerStyle}>
+      <div className="relative main-container" style={mainContainerStyle}>
         {/* SVG Background - Only render if not in landscape mode on mobile */}
         {!isMobile || !isLandscape ? (
           <svg
             viewBox={svgViewBox}
-            className="w-full h-full"
+            className="w-full h-full svg-background"
             preserveAspectRatio="xMidYMid meet"
           >
             <rect
@@ -237,13 +228,13 @@ const LeaderboardScene = () => {
         ) : null}
 
         {/* Content Overlay */}
-        <div className={`absolute inset-0 ${isMobile ? 'p-8' : 'p-16'}`}>
-          {/* PNG Banner Image */}
-          <div className="flex justify-center">
+        <div className={`absolute inset-0 content-overlay ${isMobile ? 'p-8' : 'p-16'}`}>
+          {/* PNG Banner Image - Only show on desktop/laptop */}
+          <div className={`flex justify-center banner-container ${isMobile ? 'mobile-hidden' : ''}`}>
             <img
               src="/assets/games/snakegame/leaderboard.png"
               alt="Leaderboard Banner"
-              className="w-full h-auto drop-shadow-2xl"
+              className="w-full h-auto drop-shadow-2xl banner-image"
               style={{
                 maxHeight: isMobile ? (isLandscape ? "120px" : "270px") : "630px",
                 objectFit: "contain",
@@ -255,23 +246,21 @@ const LeaderboardScene = () => {
 
           {/* Leaderboard Container */}
           <div
-            className="rounded-2xl p-2 opacity-90"
+            className="rounded-2xl p-2 opacity-90 leaderboard-list-container"
             style={{
               background: "linear-gradient(180deg, #D17836 0%, #B86A30 50%, #A0592A 100%)",
               boxShadow: `inset 0 -4px 0px rgba(125, 60, 10, 0.2)`,
               height: leaderboardHeight,
-              width:"319px",
-              marginTop:"-2px",
-              marginLeft: isMobile && isLandscape ? "12px" : "26.5px",
+              width:"370px",
+              marginTop:"10px",
+              marginLeft: isMobile && isLandscape ? "10px" : "1.65px",
               marginRight: isMobile && isLandscape ? "38px" : "79px",
             }}
           >
             {/* Scrollable Content Area */}
             <div
-              className="h-full overflow-y-auto px-0 space-y-2 scrollbar-custom"
+              className="h-full overflow-y-auto px-0 space-y-2 scrollbar-custom leaderboard-items"
               style={{
-                // marginTop:"20px",
-                
                 scrollbarWidth: "none",
                 scrollbarColor: "none",
               }}
@@ -279,12 +268,10 @@ const LeaderboardScene = () => {
               {players.length > 0 ? (
                 players.map((player, index) => {
                   const rank = index + 1;
-                  let rowStyle = {
-                  };
+                  let rowStyle = {};
 
                   if (rank === 1) {
                     rowStyle = {
-                      // height:"60px",
                       background: "linear-gradient(90deg, #FDD95Cff 0%, #FDD95Cff 50%, #FDD95Cff 100%)",
                       boxShadow: "inset 0 -4px 2px #D0762Eff,inset 0 4px 8px #ddccbeff",
                       position: "relative",
@@ -312,21 +299,20 @@ const LeaderboardScene = () => {
                   return (
                     <div
                       key={player.id || index}
-                      className="rounded-xl px-2 py-2 flex items-center shadow-md opacity-85 hover:opacity-100 transition-opacity duration-200 flex-shrink-0"
+                      className="rounded-xl px-2 py-2 flex items-center shadow-md opacity-85 hover:opacity-100 transition-opacity duration-200 flex-shrink-0 leaderboard-item"
                       style={{
                         ...rowStyle,
                         minHeight: isMobile ? "15px" : "17px",
-                         
                       }}
                     >
                       {/* Rank Medal - Touch top and bottom for top 3 */}
-                      <div className="flex-shrink-0 mr-1" style={{ marginTop: rank <= 3 ? '-8px' : '-8px', marginBottom: rank <= 3 ? '-4px' : '-5px' }}>
+                      <div className="flex-shrink-0 mr-1 rank-container" style={{ marginTop: rank <= 3 ? '-8px' : '-8px', marginBottom: rank <= 3 ? '-4px' : '-5px' }}>
                         {rank === 1 && (
-                          <div className={`${isMobile ? 'w-10 h-10' : 'w-12 h-12'} flex items-center justify-center`}>
+                          <div className={`${isMobile ? 'w-10 h-10' : 'w-12 h-12'} flex items-center justify-center trophy-container`}>
                             <img
                               src="/assets/games/snakegame/gold-trophy.png"
                               alt="Gold Trophy"
-                              className={`${isMobile ? 'w-14 h-16' : 'w-16 h-18'} object-contain drop-shadow-lg`}
+                              className={`${isMobile ? 'w-14 h-16' : 'w-16 h-18'} object-contain drop-shadow-lg trophy-image`}
                               style={{
                                 filter: "drop-shadow(2px 3px 6px rgba(0, 0, 0, 0.4))",
                               }}
@@ -334,11 +320,11 @@ const LeaderboardScene = () => {
                           </div>
                         )}
                         {rank === 2 && (
-                          <div className={`${isMobile ? 'w-10 h-10' : 'w-12 h-12'} flex items-center justify-center`}>
+                          <div className={`${isMobile ? 'w-10 h-10' : 'w-12 h-12'} flex items-center justify-center trophy-container`}>
                             <img
                               src="/assets/games/snakegame/silver-trophy.png"
                               alt="Silver Trophy"
-                              className={`${isMobile ? 'w-14 h-16' : 'w-16 h-18'} object-contain drop-shadow-lg`}
+                              className={`${isMobile ? 'w-14 h-16' : 'w-16 h-18'} object-contain drop-shadow-lg trophy-image`}
                               style={{
                                 filter: "drop-shadow(2px 3px 6px rgba(0, 0, 0, 0.4))",
                               }}
@@ -346,11 +332,11 @@ const LeaderboardScene = () => {
                           </div>
                         )}
                         {rank === 3 && (
-                          <div className={`${isMobile ? 'w-10 h-10' : 'w-12 h-12'} flex items-center justify-center`}>
+                          <div className={`${isMobile ? 'w-10 h-10' : 'w-12 h-12'} flex items-center justify-center trophy-container`}>
                             <img
                               src="/assets/games/snakegame/bronze-trophy.png"
                               alt="Bronze Trophy"
-                              className={`${isMobile ? 'w-14 h-16' : 'w-16 h-18'} object-contain drop-shadow-lg`}
+                              className={`${isMobile ? 'w-14 h-16' : 'w-16 h-18'} object-contain drop-shadow-lg trophy-image`}
                               style={{
                                 filter: "drop-shadow(2px 3px 6px rgba(0, 0, 0, 0.4))",
                               }}
@@ -358,38 +344,38 @@ const LeaderboardScene = () => {
                           </div>
                         )}
                         {rank > 3 && (
-                          <div className={`${isMobile ? 'w-10 h-10' : 'w-12 h-12'} rounded-full flex items-center justify-center font-black ${isMobile ? 'text-xl' : 'text-2xl'} text-amber-800`}>
+                          <div className={`${isMobile ? 'w-10 h-10' : 'w-12 h-12'} rounded-full flex items-center justify-center font-black ${isMobile ? 'text-xl' : 'text-2xl'} text-amber-800 rank-number`}>
                             {rank}
                           </div>
                         )}
                       </div>
 
                       {/* Avatar */}
-                      <div className="flex-shrink-0 mr-2" style={{ marginTop: '-8px', marginBottom: '-8px' }}>
+                      <div className="flex-shrink-0 mr-2 avatar-container" style={{ marginTop: '-8px', marginBottom: '-8px' }}>
                         <div
-                          className={`${isMobile ? 'w-6 h-6' : 'w-8 h-8'} rounded-full flex items-center justify-center shadow-md border-2 border-white overflow-hidden`}
+                          className={`${isMobile ? 'w-6 h-6' : 'w-8 h-8'} rounded-full flex items-center justify-center shadow-md border-2 border-white overflow-hidden avatar-circle`}
                           style={{ backgroundColor: "#2C5282" }}
                         >
                           <img
                             src={getAvatarSrc()}
                             alt="Avatar"
-                            className="w-full h-full object-cover"
+                            className="w-full h-full object-cover avatar-image"
                             onError={(e) => handleAvatarError(e, player)}
                           />
                         </div>
                       </div>
 
                       {/* Username */}
-                      <div className="flex-grow min-w-0 mr-2">
-                        <p className={`text-white font ${isMobile ? 'text-base' : 'text-lg'} tracking-wide drop-shadow-sm break-words`}>
+                      <div className="flex-grow min-w-0 mr-2 username-container">
+                        <p className={`text-white font ${isMobile ? 'text-base' : 'text-lg'} tracking-wide drop-shadow-sm break-words username-text`}>
                           {player.username}
                         </p>
                       </div>
 
                       {/* Score with Coin - Fixed width with dynamic font size */}
-                      <div className="flex-shrink-0 relative">
+                      <div className="flex-shrink-0 relative score-container">
                         <div 
-                          className={`flex items-center justify-center bg-black bg-opacity-30 rounded-2xl shadow-md ${isMobile ? 'pl-7' : 'pl-8'} ${getScorePadding(player.score, isMobile)}`}
+                          className={`flex items-center justify-center bg-black bg-opacity-30 rounded-2xl shadow-md ${isMobile ? 'pl-7' : 'pl-8'} ${getScorePadding(player.score, isMobile)} score-badge`}
                           style={{
                             height: isMobile ? '22px' : '23px',
                             width: isMobile ? '60px' : '63px',
@@ -398,9 +384,9 @@ const LeaderboardScene = () => {
                           <img
                             src="/assets/games/snakegame/coin1.png"
                             alt="Coin"
-                            className={`absolute ${isMobile ? '-left-1.5 w-4 h-4' : '-left-2 w-7 h-7'} top-1/2 transform -translate-y-1/2 rounded-full shadow-sm`}
+                            className={`absolute ${isMobile ? '-left-1.5 w-4 h-4' : '-left-2 w-7 h-7'} top-1/2 transform -translate-y-1/2 rounded-full shadow-sm coin-image`}
                           />
-                          <span className={`text-white font-black text-center drop-shadow-sm whitespace-nowrap ${getScoreFontSize(player.score, isMobile)}`}>
+                          <span className={`text-white font-black text-center drop-shadow-sm whitespace-nowrap ${getScoreFontSize(player.score, isMobile)} score-text`}>
                             {player.score?.toLocaleString() || "0"}
                           </span>
                         </div>
@@ -409,7 +395,7 @@ const LeaderboardScene = () => {
                   );
                 })
               ) : (
-                <div style={{
+                <div className="no-data-message" style={{
                   textAlign: 'center',
                   padding: '40px 20px',
                   color: '#FFFFFF',
@@ -425,24 +411,286 @@ const LeaderboardScene = () => {
       </div>
 
       {/* Buttons */}
-      <div className={`mt-2 flex justify-center ${isMobile ? 'space-x-2' : 'space-x-4'}`}>
+      <div className={`mt-2 flex justify-center ${isMobile ? 'space-x-2' : 'space-x-4'} button-container`}>
         <button
           onClick={goHome}
-          className={`flex items-center justify-center ${isMobile ? 'py-2 px-4 text-sm' : 'py-3 px-8 text-lg'} bg-[#a0522d] hover:bg-[#8b4513] text-[#f5e6ca] border-none font-bold rounded-md cursor-pointer transition-all duration-300 shadow-lg hover:scale-105`}
+          className={`flex items-center justify-center ${isMobile ? 'py-2 px-4 text-sm' : 'py-3 px-8 text-lg'} bg-[#a0522d] hover:bg-[#8b4513] text-[#f5e6ca] border-none font-bold rounded-md cursor-pointer transition-all duration-300 shadow-lg hover:scale-105 action-button home-button`}
         >
           <Home className={`${isMobile ? 'w-1.7 h-1.7' : 'w-4 h-4'} mr-1`} /> Go Home
         </button>
         
         <button
           onClick={() => setShowStats(true)}
-          className={`flex items-center justify-center ${isMobile ? 'py-2 px-4 text-sm' : 'py-3 px-8 text-lg'} bg-[#a0522d] hover:bg-[#8b4513] text-[#f5e6ca] border-none font-bold rounded-md cursor-pointer transition-all duration-300 shadow-lg hover:scale-105`}
+          className={`flex items-center justify-center ${isMobile ? 'py-2 px-4 text-sm' : 'py-3 px-8 text-lg'} bg-[#a0522d] hover:bg-[#8b4513] text-[#f5e6ca] border-none font-bold rounded-md cursor-pointer transition-all duration-300 shadow-lg hover:scale-105 action-button stats-button`}
         >
           <BarChart3 className={`${isMobile ? 'w-1.7 h-1.7' : 'w-4 h-4'} mr-1`} /> View Stats
         </button>
       </div>
 
-      {/* Global styles */}
+      {/* Enhanced Mobile-Only CSS - Desktop remains unchanged */}
       <style jsx global>{`
+        /* Desktop styles remain completely unchanged - PERFECT PRESERVATION */
+        @media screen and (min-width: 1024px) {
+          /* All desktop styles preserved exactly as they are - NO CHANGES */
+        }
+
+        /* Mobile-only optimizations - Hide banner and optimize layout */
+        @media screen and (max-width: 1023px) {
+          /* Hide banner on mobile only */
+          .mobile-hidden {
+            display: none !important;
+          }
+
+          /* Mobile Portrait - Optimized without banner */
+          @media (orientation: portrait) {
+            .leaderboard-container {
+              transform: scale(0.85);
+              transform-origin: center center;
+              padding: 12px !important;
+            }
+
+            .main-container {
+              width: 85% !important;
+              max-width: 420px !important;
+              height: auto !important;
+              max-height: none !important;
+            }
+
+            .content-overlay {
+              padding: 20px !important;
+              display: flex !important;
+              flex-direction: column !important;
+              justify-content: center !important;
+              height: 100% !important;
+            }
+
+            .leaderboard-list-container {
+              width: 100% !important;
+              max-width: 380px !important;
+              height: 70vh !important;
+              margin: 0 auto !important;
+              margin-top: 20px !important;
+            }
+
+            .leaderboard-items {
+              padding: 6px !important;
+            }
+
+            .leaderboard-item {
+              min-height: 50px !important;
+              padding: 10px 8px !important;
+              margin-bottom: 8px !important;
+            }
+
+            .trophy-container {
+              width: 48px !important;
+              height: 48px !important;
+            }
+
+            .trophy-image {
+              width: 56px !important;
+              height: 64px !important;
+            }
+
+            .rank-number {
+              font-size: 1.25rem !important;
+              width: 48px !important;
+              height: 48px !important;
+            }
+
+            .avatar-container .avatar-circle {
+              width: 32px !important;
+              height: 32px !important;
+            }
+
+            .username-container .username-text {
+              font-size: 1.125rem !important;
+            }
+
+            .score-container .score-badge {
+              height: 26px !important;
+              width: 70px !important;
+              padding-left: 32px !important;
+            }
+
+            .score-container .coin-image {
+              width: 24px !important;
+              height: 24px !important;
+              left: -8px !important;
+            }
+
+            .score-container .score-text {
+              font-size: 0.875rem !important;
+            }
+
+            .button-container {
+              margin-top: 20px !important;
+              gap: 16px !important;
+            }
+
+            .action-button {
+              padding: 12px 28px !important;
+              font-size: 1rem !important;
+            }
+
+            .action-button svg {
+              width: 18px !important;
+              height: 18px !important;
+            }
+          }
+
+          /* Mobile Landscape - Optimized without banner */
+          @media (orientation: landscape) {
+            .leaderboard-container {
+              transform: scale(0.8) !important;
+              transform-origin: center center !important;
+              padding: 8px !important;
+              height: 100vh !important;
+              width: 100vw !important;
+              overflow: hidden !important;
+            }
+
+            .main-container {
+              width: 90% !important;
+              max-width: 700px !important;
+              height: 95vh !important;
+              max-height: 95vh !important;
+              background-color: #FFDCB8 !important;
+              border-radius: 25px !important;
+              border: 6px solid #a0522d !important;
+              margin: 0 auto !important;
+              display: flex !important;
+              flex-direction: column !important;
+              justify-content: center !important;
+            }
+
+            .content-overlay {
+              padding: 16px !important;
+              height: 100% !important;
+              display: flex !important;
+              flex-direction: column !important;
+              justify-content: center !important;
+            }
+
+            .leaderboard-list-container {
+              width: 100% !important;
+              max-width: 620px !important;
+              height: 75vh !important;
+              margin: 0 auto !important;
+              margin-top: 10px !important;
+              flex: 1 !important;
+            }
+
+            .leaderboard-items {
+              padding: 8px !important;
+            }
+
+            .leaderboard-item {
+              min-height: 45px !important;
+              padding: 8px 12px !important;
+              margin-bottom: 6px !important;
+            }
+
+            .trophy-container {
+              width: 44px !important;
+              height: 44px !important;
+            }
+
+            .trophy-image {
+              width: 52px !important;
+              height: 60px !important;
+            }
+
+            .rank-number {
+              font-size: 1.125rem !important;
+              width: 44px !important;
+              height: 44px !important;
+            }
+
+            .avatar-container .avatar-circle {
+              width: 28px !important;
+              height: 28px !important;
+            }
+
+            .username-container .username-text {
+              font-size: 1rem !important;
+            }
+
+            .score-container .score-badge {
+              height: 24px !important;
+              width: 65px !important;
+              padding-left: 28px !important;
+            }
+
+            .score-container .coin-image {
+              width: 20px !important;
+              height: 20px !important;
+              left: -6px !important;
+            }
+
+            .score-container .score-text {
+              font-size: 0.75rem !important;
+            }
+
+            .button-container {
+              margin-top: 12px !important;
+              gap: 12px !important;
+              flex-shrink: 0 !important;
+            }
+
+            .action-button {
+              padding: 8px 24px !important;
+              font-size: 0.875rem !important;
+            }
+
+            .action-button svg {
+              width: 16px !important;
+              height: 16px !important;
+            }
+          }
+
+          /* Small mobile landscape devices */
+          @media (max-width: 667px) and (orientation: landscape) {
+            .leaderboard-container {
+              transform: scale(0.7) !important;
+            }
+
+            .main-container {
+              max-width: 650px !important;
+              height: 92vh !important;
+            }
+
+            .leaderboard-list-container {
+              height: 72vh !important;
+              max-width: 580px !important;
+            }
+          }
+
+          /* Extra small mobile landscape */
+          @media (max-width: 568px) and (orientation: landscape) {
+            .leaderboard-container {
+              transform: scale(0.65) !important;
+              padding: 4px !important;
+            }
+
+            .main-container {
+              max-width: 600px !important;
+              height: 90vh !important;
+            }
+
+            .leaderboard-list-container {
+              height: 70vh !important;
+              max-width: 520px !important;
+            }
+
+            .leaderboard-item {
+              min-height: 40px !important;
+              padding: 6px 10px !important;
+            }
+          }
+        }
+
+        /* Preserve all existing scrollbar and trophy styles */
         .scrollbar-custom {
           scrollbar-width: none;
           -ms-overflow-style: none;

@@ -51,7 +51,7 @@ export const EXPERIMENTS = [
   },
   {
     id: 8,
-    title: "Transistor Amplifier Circuit",
+    title: "Tranistor Amplifier Circuit",
     question: "Construct an amplifier circuit to study signal amplification and transistor characteristics using measurement tools.",
     correctAnswer: ['transistor', 'capacitor', 'resistor', 'oscilloscope'],
     answers: ['transistor', 'capacitor', 'resistor', 'oscilloscope', 'signal-generator', 'multimeter', 'inductor', 'transformer']

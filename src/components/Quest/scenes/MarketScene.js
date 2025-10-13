@@ -48,8 +48,8 @@ export default function MarketPage() {
   const router = useRouter();
   const [currentLevel, setCurrentLevel] = useState(1);
   const [levelData, setLevelData] = useState(null);
-  const [itemsInBasket, setItemsInBasket] = useState([]); // Items currently in basket
-  const [itemsOnBanner, setItemsOnBanner] = useState([]); // Items currently on banner - SEQUENTIAL ORDER
+  const [itemsInBasket, setItemsInBasket] = useState([]);
+  const [itemsOnBanner, setItemsOnBanner] = useState([]);
   const [showBasketPopup, setShowBasketPopup] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
   const [isClicked, setIsClicked] = useState(false);
@@ -57,46 +57,69 @@ export default function MarketPage() {
   const [activeId, setActiveId] = useState(null);
   const basketItemsContainerRef = useRef(null);
 
-  /* ---------- BANNER 4x2 GRID POSITIONS ---------- */
-  const getItemPosition = (item, index) => {
-    // PERFECT 4x2 GRID ON BANNER AREA ONLY
+  /* ---------- MOBILE BANNER POSITIONS - TIGHTER GRID ---------- */
+  const getMobileItemPosition = (item, index) => {
     const positions = [
-      // TOP ROW (4 items)
-      { top: '80px', left: '30%' },   // Position 1
-      { top: '80px', left: '42%' },   // Position 2  
-      { top: '80px', left: '55%' },   // Position 3
-      { top: '80px', left: '68%' },   // Position 4
+      // TOP ROW (4 items) - Closer together for mobile
+      { top: '21px', left: '25%' },
+      { top: '20x', left: '38%' },
+      { top: '21px', left: '52%' },
+      { top: '21px', left: '65%' },
       
-      // BOTTOM ROW (4 items)
-      { top: '180px', left: '30%' },   // Position 5
-      { top: '180px', left: '42%' },   // Position 6
-      { top: '180px', left: '55%' },   // Position 7
-      { top: '180px', left: '68%' },   // Position 8
+      // BOTTOM ROW (4 items) - Closer together for mobile
+      { top: '100px', left: '25%' },
+      { top: '100px', left: '38%' },
+      { top: '100px', left: '52%' },
+      { top: '100px', left: '65%' },
     ];
     
-    // Return position for index (max 8 items in 4x2 grid)
     return positions[index] || positions[0];
+  };
+
+  /* ---------- DESKTOP BANNER POSITIONS - SPACIOUS GRID ---------- */
+  const getDesktopItemPosition = (item, index) => {
+    const positions = [
+      // TOP ROW (4 items) - Original spacious layout
+      { top: '80px', left: '30%' },
+      { top: '80px', left: '42%' },
+      { top: '80px', left: '55%' },
+      { top: '80px', left: '68%' },
+      
+      // BOTTOM ROW (4 items) - Original spacious layout
+      { top: '180px', left: '30%' },
+      { top: '180px', left: '42%' },
+      { top: '180px', left: '55%' },
+      { top: '180px', left: '68%' },
+    ];
+    
+    return positions[index] || positions[0];
+  };
+
+  /* ---------- DEVICE-AWARE POSITION FUNCTION ---------- */
+  const getItemPosition = (item, index) => {
+    if (typeof window !== 'undefined') {
+      const isMobile = window.innerWidth <= 768;
+      return isMobile ? getMobileItemPosition(item, index) : getDesktopItemPosition(item, index);
+    }
+    return getDesktopItemPosition(item, index); // Fallback
   };
 
   /* ---------- ENHANCED HORIZONTAL SPREAD BASKET POSITIONS ---------- */
   const getBasketItemPosition = (item, index) => {
-    // ENHANCED HORIZONTAL SPREAD TO FILL COMPLETE BASKET WIDTH
     const basePositions = [
-      // MAXIMUM HORIZONTAL SPREAD ACROSS ENTIRE BASKET WIDTH
-      { top: '40%', left: '10%' },    // Far left top
-      { top: '35%', left: '30%' },   // Left-center top
-      { top: '38%', left: '45%' },   // Center-left top
-      { top: '45%', left: '60%' },   // Center top
-      { top: '40%', left: '85%' },   // Center-right top
-      { top: '32%', left: '100%' },   // Right-center top
-      { top: '40%', left: '117%' },   // Far right top
-      { top: '35%', left: '150%' },   // Bottom center
+      { top: '40%', left: '-2%' },
+      { top: '35%', left: '22%' },
+      { top: '38%', left: '35%' },
+      { top: '45%', left: '50%' },
+      { top: '40%', left: '65%' },
+      { top: '32%', left: '80%' },
+      { top: '40%', left: '95%' },
+      { top: '35%', left: '115%' },
     ];
     
-    // Smaller random variations to maintain horizontal spread
     const basePos = basePositions[index] || basePositions[0];
-    const randomOffsetX = (Math.random() - 0.5) * 8; // Reduced: -4% to +4%
-    const randomOffsetY = (Math.random() - 0.5) * 6; // Reduced: -3% to +3%
+    const randomOffsetX = (Math.random() - 0.5) * 8;
+    const randomOffsetY = (Math.random() - 0.5) * 6;
     
     return {
       top: `${parseFloat(basePos.top) + randomOffsetY}%`,
@@ -104,35 +127,28 @@ export default function MarketPage() {
     };
   };
 
-  /* ---------- GET NEXT AVAILABLE POSITION ---------- */
   const getNextAvailablePosition = () => {
-    // Find the first available position (0-7) based on items already on banner
     for (let i = 0; i < 8; i++) {
       const item = levelData.answers[i];
       if (item && !itemsOnBanner.includes(item)) {
         return i;
       }
     }
-    return 0; // Fallback to first position
+    return 0;
   };
 
-  /* ---------- SHUFFLE BASKET ITEMS FUNCTION ---------- */
   const shuffleBasketItems = () => {
     if (itemsInBasket.length === 0) return;
     
-    // Create a copy of the basket items array
     const shuffledItems = [...itemsInBasket];
     
-    // Fisher-Yates shuffle algorithm (same as Math.random logic used in dice)
     for (let i = shuffledItems.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
       [shuffledItems[i], shuffledItems[j]] = [shuffledItems[j], shuffledItems[i]];
     }
     
-    // Update the basket with shuffled items
     setItemsInBasket(shuffledItems);
     
-    // Enhanced card-swapping shuffle animation
     if (basketItemsContainerRef.current) {
       const basketItems = basketItemsContainerRef.current.querySelectorAll('.animated-item');
       basketItems.forEach((item, idx) => {
@@ -154,7 +170,7 @@ export default function MarketPage() {
             onComplete: () => {
               gsap.to(item, {
                 scale: 1,
-                rotation: (Math.random() - 0.5) * 15, // Slight random tilt for card effect
+                rotation: (Math.random() - 0.5) * 15,
                 x: 0,
                 y: 0,
                 opacity: 1,
@@ -174,34 +190,29 @@ export default function MarketPage() {
     shuffleBasketItems();
   };
 
-  /* ---------- SENSORS ---------- */
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 3 } }),
     useSensor(TouchSensor, { activationConstraint: { delay: 50, tolerance: 3 } })
   );
 
-  /* ---------- INIT ---------- */
   useEffect(() => {
     const level = getCurrentLevel();
     
-    // Get the same experiment as Restaurant Scene
     let data = getCurrentExperiment();
     if (!data) {
       data = getRandomExperiment();
       setCurrentExperiment(data);
     }
     
-    // LIMIT TO EXACTLY 8 ITEMS FOR 4x2 GRID
     const limitedData = {
       ...data,
       answers: data.answers.slice(0, 8)
     };
     
-    // REVERSED LOGIC: All items start in basket
     setCurrentLevel(level); 
     setLevelData(limitedData); 
-    setItemsInBasket(limitedData.answers); // All items start in basket
-    setItemsOnBanner([]); // No items on banner initially
+    setItemsInBasket(limitedData.answers);
+    setItemsOnBanner([]);
     
     if (typeof window !== 'undefined') {
       dropSoundRef.current = new Audio('/sounds/drop.mp3');
@@ -217,7 +228,6 @@ export default function MarketPage() {
     };
   }, []);
 
-  /* ---------- HELPERS ---------- */
   const playDropSound = () => {
     if (dropSoundRef.current) { 
       dropSoundRef.current.currentTime = 0; 
@@ -244,21 +254,17 @@ export default function MarketPage() {
 
     const itemId = active.id;
     
-    // Handle dropping on banner positions OR general banner area
     if (over.id.startsWith('banner-position-') || over.id === 'banner-area') {
       if (itemsInBasket.includes(itemId)) {
-        // Move from basket to banner - ADD TO END OF ARRAY FOR SEQUENTIAL PLACEMENT
         setItemsInBasket(prev => prev.filter(id => id !== itemId));
-        setItemsOnBanner(prev => [...prev, itemId]); // ADD TO END - SEQUENTIAL ORDER
+        setItemsOnBanner(prev => [...prev, itemId]);
         playDropSound();
         animateNewItem();
       }
     }
     
-    // Handle dropping back into basket
     if (over.id === 'basket') {
       if (itemsOnBanner.includes(itemId)) {
-        // Move from banner to basket
         setItemsOnBanner(prev => prev.filter(id => id !== itemId));
         setItemsInBasket(prev => [...prev, itemId]);
         playDropSound();
@@ -268,13 +274,10 @@ export default function MarketPage() {
   };
 
   const handleItemTap = (item) => {
-    // Handle tap for moving items between basket and banner
     if (itemsInBasket.includes(item)) {
-      // Move from basket to banner - ADD TO END FOR SEQUENTIAL PLACEMENT
       setItemsInBasket(prev => prev.filter(id => id !== item));
-      setItemsOnBanner(prev => [...prev, item]); // ADD TO END - SEQUENTIAL ORDER
+      setItemsOnBanner(prev => [...prev, item]);
     } else if (itemsOnBanner.includes(item)) {
-      // Move from banner to basket
       setItemsOnBanner(prev => prev.filter(id => id !== item));
       setItemsInBasket(prev => [...prev, item]);
     }
@@ -282,13 +285,11 @@ export default function MarketPage() {
   };
 
   const handleSubmitOrder = () => {
-    // Update basket state for result scene with items on banner
     setBasket(itemsOnBanner);
     router.push('/result');
   };
   
   const handleClearBasket = () => { 
-    // Move all items back to basket
     setItemsInBasket([...itemsInBasket, ...itemsOnBanner]);
     setItemsOnBanner([]);
   };
@@ -309,7 +310,7 @@ export default function MarketPage() {
         onDragStart={handleDragStart} onDragCancel={handleDragCancel} onDragEnd={handleDragEnd}
         modifiers={[restrictToWindowEdges, snapCenterToCursor]}>
 
-        <div style={{
+        <div className="main-container" style={{
           position: 'absolute',
           top: 0,
           left: 0,
@@ -329,7 +330,7 @@ export default function MarketPage() {
         }}>
 
           {/* Header */}
-          <div style={{
+          <div className="header-section" style={{
             textAlign: 'center', 
             marginBottom: 'clamp(4px, 1vh, 8px)', 
             flexShrink: 0,
@@ -353,7 +354,7 @@ export default function MarketPage() {
           </div>
 
           {/* Banner Area with Drop Zones and Items */}
-          <div style={{
+          <div className="banner-area" style={{
             position: 'relative',
             flex: '1',
             width: '100%',
@@ -389,10 +390,10 @@ export default function MarketPage() {
                   left: position.left,
                   transform: 'translateX(-50%)',
                   zIndex: 3,
-                  display: hasItemAtPosition ? 'none' : 'block' // HIDE when position is occupied
+                  display: hasItemAtPosition ? 'none' : 'block'
                 }}>
                   <DroppableWrapper id={`banner-position-${idx}`}>
-                    <div style={{
+                    <div className="drop-zone" style={{
                       width: 'clamp(65px, 13vw, 95px)',
                       height: 'clamp(62px, 12.4vh, 88px)',
                       borderRadius: 'clamp(18px, 4vw, 26px)',
@@ -403,19 +404,17 @@ export default function MarketPage() {
                       transition: 'all 0.3s ease',
                       border: 'none'
                     }}>
-                      {/* NO "DROP HERE" TEXT */}
                     </div>
                   </DroppableWrapper>
                 </div>
               );
             })}
 
-            {/* Items on Banner - SEQUENTIAL PLACEMENT */}
+            {/* Items on Banner - DEVICE-AWARE POSITIONING AND SIZING */}
             {itemsOnBanner.map((item, idx) => {
-              // SEQUENTIAL POSITIONING: Use idx (order of placement) instead of item's original index
-              const position = getItemPosition(item, idx); // idx = 0,1,2,3,4,5,6,7 in sequence
+              const position = getItemPosition(item, idx);
               return (
-                <div key={`banner-item-${item}-${idx}`} style={{
+                <div key={`banner-item-${item}-${idx}`} className="banner-item-container animated-item" style={{
                   position: 'absolute',
                   top: position.top,
                   left: position.left,
@@ -425,15 +424,14 @@ export default function MarketPage() {
                   userSelect: 'none',
                   zIndex: 5,
                   borderRadius: '20px'
-                }} className="animated-item">
+                }}>
                   <DraggableWrapper id={item} isDisabled={false} isDragging={activeId === item}>
-                    {/* BANNER ITEMS - UNIFORM SIZE */}
-                    <div style={{
+                    <div className="banner-item" style={{
                       background: 'linear-gradient(135deg, #fef7ed 0%, #fdf4e6 100%)',
                       borderRadius: 'clamp(20px, 4.5vw, 28px)', 
                       padding: 'clamp(12px, 2.8vw, 16px)', 
-                      minWidth: 'clamp(65px, 13vw, 95px)', // UNIFORM SIZE
-                      minHeight: 'clamp(62px, 12.4vh, 88px)', // UNIFORM SIZE
+                      minWidth: 'clamp(65px, 13vw, 95px)',
+                      minHeight: 'clamp(62px, 12.4vh, 88px)',
                       display: 'flex',
                       flexDirection: 'column',
                       alignItems: 'center',
@@ -458,18 +456,16 @@ export default function MarketPage() {
                     }}
                     onClick={() => handleItemTap(item)}>
                       
-                      {/* Item Emoji/Icon - UNIFORM SIZE */}
-                      <div style={{
-                        fontSize: 'clamp(18px, 3.8vw, 26px)', // UNIFORM SIZE
+                      <div className="banner-item-emoji" style={{
+                        fontSize: 'clamp(18px, 3.8vw, 26px)',
                         marginBottom: 'clamp(2px, 0.4vh, 3px)', 
                         lineHeight: '1'
                       }}>
                         {getItemDetails(item).emoji}
                       </div>
                       
-                      {/* Item Name - UNIFORM SIZE */}
-                      <div style={{
-                        fontSize: 'clamp(6px, 1.3vw, 9px)', // UNIFORM SIZE
+                      <div className="banner-item-name" style={{
+                        fontSize: 'clamp(6px, 1.3vw, 9px)',
                         fontWeight: '700',
                         color: '#92400e',
                         textAlign: 'center',
@@ -487,8 +483,8 @@ export default function MarketPage() {
             })}
           </div>
 
-          {/* Floating Basket - MOVED DOWNWARDS */}
-          <div style={{
+          {/* Floating Basket - FIXED SIZE CONSISTENCY */}
+          <div className="floating-basket-container" style={{
             position: 'absolute', 
             bottom: 'clamp(40px, 8vh, 60px)',
             left: '50%',
@@ -499,39 +495,41 @@ export default function MarketPage() {
             transition: 'filter 0.3s ease', 
             zIndex: 100
           }}>
-            {/* REMOVED ONCLICK HANDLER - NO MORE BASKET POPUP */}
             <div style={{
-              cursor: 'default', // Changed from conditional cursor
+              cursor: 'default',
               transition: 'transform 0.3s ease',
               willChange: 'transform', 
               position: 'relative'
             }}>
 
               <DroppableWrapper id="basket">
-                <div style={{ position: 'relative' }}>
-                  <img src="/basket(cart).png" style={{
-                    marginLeft: '-80px',  // FIXED SIZE: Removed clamp()
-                    marginBottom: '-40px',  // FIXED SIZE: Removed clamp()
-                    width: '380px',  // FIXED SIZE: Removed clamp()
+                <div className="basket-container" style={{ position: 'relative' }}>
+                  <img src="/basket(cart).png" className="basket-image" style={{
+                    marginLeft: '-80px',
+                    marginBottom: '-40px',
+                    width: '380px',
                     height: 'auto', 
-                    objectFit: 'contain'
+                    objectFit: 'contain',
+                    display: 'block',
+                    minWidth: '380px',
+                    maxWidth: '380px'
                   }} alt="Equipment Basket" />
 
                   {/* Items Inside Basket Container - ENHANCED HORIZONTAL SPREAD */}
                   <div ref={basketItemsContainerRef} style={{
                     position: 'absolute', 
-                    top: '22%', // Adjusted to cover more area
+                    top: '22%',
                     left: '50%', 
-                    width: '85%', // WIDER to accommodate horizontal spread
-                    height: '60%', // Much taller to cover complete basket height
+                    width: '85%',
+                    height: '60%',
                     transform: 'translateX(-50%)',
                     pointerEvents: 'auto'
                   }}>
                     {itemsInBasket.map((item, idx) => {
                       const position = getBasketItemPosition(item, idx);
-                      const randomRotation = (Math.random() - 0.5) * 20; // Random tilt -10° to +10°
+                      const randomRotation = (Math.random() - 0.5) * 20;
                       return (
-                        <div key={`basket-item-${item}-${idx}`} style={{
+                        <div key={`basket-item-${item}-${idx}`} className="animated-item" style={{
                           position: 'absolute',
                           top: position.top,
                           left: position.left,
@@ -539,53 +537,50 @@ export default function MarketPage() {
                           touchAction: 'none',
                           userSelect: 'none',
                           zIndex: 10 + idx
-                        }} className="animated-item">
+                        }}>
                           <DraggableWrapper id={item} isDisabled={false} isDragging={activeId === item}>
-                            {/* BASKET ITEMS - 15% LARGER, CARD-LIKE */}
                             <div style={{
                               background: 'linear-gradient(135deg, #fef7ed 0%, #fdf4e6 100%)',
-                              borderRadius: 'clamp(12px, 3vw, 18px)', // 15% larger: was 10px/2.5vw/15px
-                              padding: 'clamp(5px, 1.4vw, 7px)', // 15% larger: was 4px/1.2vw/6px
-                              minWidth: 'clamp(37px, 7.4vw, 53px)', // 15% larger: was 32px/6.4vw/46px
-                              minHeight: 'clamp(35px, 7vh, 48px)', // 15% larger: was 30px/6vh/42px
+                              borderRadius: 'clamp(12px, 3vw, 18px)',
+                              padding: 'clamp(5px, 1.4vw, 7px)',
+                              minWidth: 'clamp(37px, 7.4vw, 53px)',
+                              minHeight: 'clamp(35px, 7vh, 48px)',
                               display: 'flex',
                               flexDirection: 'column',
                               alignItems: 'center',
                               justifyContent: 'center',
-                              gap: 'clamp(1.2px, 0.35vw, 2.3px)', // 15% larger: was 1px/0.3vw/2px
+                              gap: 'clamp(1.2px, 0.35vw, 2.3px)',
                               border: '1px solid rgba(251, 191, 36, 0.5)', 
-                              boxShadow: '0 3px 12px rgba(0, 0, 0, 0.12), 0 1px 5px rgba(0, 0, 0, 0.06)', // Enhanced shadow for cards
+                              boxShadow: '0 3px 12px rgba(0, 0, 0, 0.12), 0 1px 5px rgba(0, 0, 0, 0.06)',
                               transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
                               cursor: 'grab',
                               userSelect: 'none',
                               backdropFilter: 'blur(1px)'
                             }}
                             onMouseEnter={(e) => {
-                              e.target.style.transform = 'translateY(-3px) scale(1.15) rotate(0deg)'; // Remove rotation on hover
+                              e.target.style.transform = 'translateY(-3px) scale(1.15) rotate(0deg)';
                               e.target.style.boxShadow = '0 6px 20px rgba(0, 0, 0, 0.18), 0 3px 8px rgba(0, 0, 0, 0.08)';
                               e.target.style.borderColor = 'rgba(251, 191, 36, 0.7)';
-                              e.target.style.zIndex = '100'; // Bring to front
+                              e.target.style.zIndex = '100';
                             }}
                             onMouseLeave={(e) => {
-                              e.target.style.transform = `translateY(0) scale(1) rotate(${randomRotation}deg)`; // Restore rotation
+                              e.target.style.transform = `translateY(0) scale(1) rotate(${randomRotation}deg)`;
                               e.target.style.boxShadow = '0 3px 12px rgba(0, 0, 0, 0.12), 0 1px 5px rgba(0, 0, 0, 0.06)';
                               e.target.style.borderColor = 'rgba(251, 191, 36, 0.5)';
                               e.target.style.zIndex = `${10 + idx}`;
                             }}
                             onClick={() => handleItemTap(item)}>
                             
-                              {/* Item Emoji/Icon - 15% LARGER */}
                               <div style={{
-                                fontSize: 'clamp(9.2px, 2.1vw, 14px)', // 15% larger: was 8px/1.8vw/12px
-                                marginBottom: 'clamp(0.6px, 0.12vh, 1.2px)', // 15% larger: was 0.5px/0.1vh/1px
+                                fontSize: 'clamp(9.2px, 2.1vw, 14px)',
+                                marginBottom: 'clamp(0.6px, 0.12vh, 1.2px)',
                                 lineHeight: '1'
                               }}>
                                 {getItemDetails(item).emoji}
                               </div>
                               
-                              {/* Item Name - 15% LARGER */}
                               <div style={{
-                                fontSize: 'clamp(2.9px, 0.7vw, 4.6px)', // 15% larger: was 2.5px/0.6vw/4px
+                                fontSize: 'clamp(2.9px, 0.7vw, 4.6px)',
                                 fontWeight: '700',
                                 color: '#92400e',
                                 textAlign: 'center',
@@ -607,16 +602,16 @@ export default function MarketPage() {
                   {itemsInBasket.length > 0 && (
                     <div 
                       onClick={(e) => { e.stopPropagation(); handleShuffleClick(); }} 
+                      className="shuffle-button"
                       style={{
                         position: 'absolute', 
                         top: 'clamp(82px, 3.5vh, 76px)',
-                        right: 'clamp(-152px, -2.5vw, -158px)', // Better right positioning
+                        right: 'clamp(-102px, -2.5vw, -158px)',
                         cursor: 'pointer',
                         transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
                         zIndex: 100,
                       }}
                     >
-                      {/* Enhanced Shuffle SVG Icon */}
                       <svg
                         className="transition-all duration-300 ease-out cursor-pointer"
                         style={{
@@ -674,7 +669,7 @@ export default function MarketPage() {
           </div>
 
           {/* Bottom Navigation */}
-          <div style={{
+          <div className="bottom-navigation" style={{
             display: 'flex', 
             justifyContent: 'space-between', 
             alignItems: 'center',
@@ -688,7 +683,7 @@ export default function MarketPage() {
             left: 'clamp(8px, 2vw, 16px)',
             right: 'clamp(8px, 2vw, 16px)'
           }}>
-            <button onClick={() => router.push('/restaurant')} style={{
+            <button onClick={() => router.push('/restaurant')} className="back-button" style={{
               display: 'flex', 
               height: 'clamp(34px, 7vh, 50px)', 
               width: 'clamp(75px, 15vw, 105px)',
@@ -711,6 +706,7 @@ export default function MarketPage() {
               variant={itemsOnBanner.length ? 'primary' : 'secondary'} 
               disabled={!itemsOnBanner.length}
               onClick={handleSubmitOrder}
+              className="submit-button"
               style={{
                 height: 'clamp(34px, 7vh, 50px)',
                 fontSize: 'clamp(11px, 2.2vw, 15px)',
@@ -722,9 +718,6 @@ export default function MarketPage() {
               Submit ({itemsOnBanner.length})
             </Button>
           </div>
-
-          {/* BASKET POPUP COMPLETELY REMOVED */}
-
         </div>
 
         <DragOverlay dropAnimation={{ duration: 400, easing: 'cubic-bezier(0.18,0.67,0.6,1.22)' }}>
@@ -739,7 +732,6 @@ export default function MarketPage() {
               willChange: 'transform', 
               backfaceVisibility: 'hidden'
             }}>
-              {/* Drag overlay with uniform size */}
               <div style={{
                 background: 'linear-gradient(135deg, #fef7ed 0%, #fdf4e6 100%)',
                 borderRadius: 'clamp(20px, 4.5vw, 28px)',
@@ -773,6 +765,56 @@ export default function MarketPage() {
       </DndContext>
 
       <style jsx>{`
+        /* MANDATORY FULLSCREEN FOR ALL DEVICES - SIMPLE CSS */
+        
+        /* Force fullscreen container on ALL devices */
+        .main-container {
+          position: absolute !important;
+          top: 0 !important;
+          left: 0 !important;
+          width: 100vw !important;
+          height: 100vh !important;
+          max-width: 100vw !important;
+          max-height: 100vh !important;
+          margin: 0 !important;
+          border: none !important;
+          border-radius: 0 !important;
+          box-shadow: none !important;
+          overflow: hidden !important;
+        }
+
+        /* Prevent any container scaling or windowing */
+        * {
+          box-sizing: border-box;
+          -webkit-user-select: none;
+          -moz-user-select: none;
+          -ms-user-select: none;
+          user-select: none;
+        }
+
+        /* Force body and html to be fullscreen */
+        :global(html),
+        :global(body) {
+          width: 100vw !important;
+          height: 100vh !important;
+          margin: 0 !important;
+          padding: 0 !important;
+          overflow: hidden !important;
+          position: fixed !important;
+          top: 0 !important;
+          left: 0 !important;
+        }
+
+        /* Disable any browser zooming or scaling */
+        :global(body) {
+          zoom: 1 !important;
+          transform: scale(1) !important;
+          -webkit-text-size-adjust: 100% !important;
+          -moz-text-size-adjust: 100% !important;
+          -ms-text-size-adjust: 100% !important;
+          text-size-adjust: 100% !important;
+        }
+
         div::-webkit-scrollbar {
           display: none;
         }
@@ -782,10 +824,339 @@ export default function MarketPage() {
           to { opacity: 1; transform: translateY(0) scale(1); }
         }
         
-        button:hover {
+        .back-button:hover,
+        .submit-button:hover {
           background-color: #1d4ed8; 
           transform: translateY(-3px);
           box-shadow: 0 8px 20px rgba(37, 99, 235, 0.4);
+        }
+
+        /* BASKET SIZE CONSISTENCY FIX - BOTH MOBILE AND DESKTOP */
+        .basket-image {
+          width: 380px !important;
+          min-width: 380px !important;
+          max-width: 380px !important;
+          height: auto !important;
+          display: block !important;
+          object-fit: contain !important;
+        }
+
+        .floating-basket-container {
+          min-width: 100px !important;
+        }
+
+        .basket-container {
+          transform: none !important;
+          scale: 1 !important;
+        }
+
+        /* MOBILE-SPECIFIC BANNER ITEM SIZING - OPTIMIZED FOR PHONES */
+        @media screen and (max-width: 480px) {
+          .main-container {
+            padding: clamp(4px, 1vw, 8px) !important;
+          }
+
+          /* Mobile banner items - Smaller but readable */
+          .banner-item {
+            min-width: 45px !important;
+            min-height: 40px !important;
+            padding: 6px !important;
+            border-radius: 12px !important;
+            gap: 2px !important;
+          }
+          
+          .banner-item-emoji {
+            font-size: 16px !important;
+            margin-bottom: 1px !important;
+          }
+          
+          .banner-item-name {
+            font-size: 6px !important;
+            line-height: 1.1 !important;
+            letter-spacing: 0.2px !important;
+          }
+
+          /* Mobile drop zones - Smaller to match items */
+          .drop-zone {
+            width: 45px !important;
+            height: 40px !important;
+            border-radius: 12px !important;
+          }
+
+          /* FIXED: Force consistent basket size on mobile */
+          .basket-image {
+            width: 280px !important;
+            min-width: 280px !important;
+            max-width: 280px !important;
+            margin-left: -60px !important;
+            margin-bottom: -30px !important;
+          }
+          
+          /* Stack navigation buttons on mobile */
+          .bottom-navigation {
+            flex-direction: column !important;
+            gap: 8px !important;
+            align-items: center !important;
+            padding: 0 clamp(12px, 3vw, 20px) !important;
+          }
+          
+          .back-button,
+          .submit-button {
+            width: 100% !important;
+            max-width: 300px !important;
+            min-height: 44px !important;
+          }
+        }
+
+        /* Extra Small Mobile phones (320px - 375px) */
+        @media screen and (max-width: 375px) {
+          .banner-item {
+            min-width: 38px !important;
+            min-height: 34px !important;
+            padding: 4px !important;
+            border-radius: 10px !important;
+          }
+          
+          .banner-item-emoji {
+            font-size: 14px !important;
+            margin-bottom: 0px !important;
+          }
+          
+          .banner-item-name {
+            font-size: 5px !important;
+            line-height: 1 !important;
+          }
+
+          .drop-zone {
+            width: 38px !important;
+            height: 34px !important;
+            border-radius: 10px !important;
+          }
+
+          .basket-image {
+            width: 260px !important;
+            min-width: 260px !important;
+            max-width: 260px !important;
+            margin-left: -55px !important;
+            margin-bottom: -25px !important;
+          }
+        }
+
+        /* TABLET RESPONSIVE - MEDIUM SIZED ITEMS */
+        @media screen and (min-width: 481px) and (max-width: 768px) {
+          .banner-item {
+            min-width: 55px !important;
+            min-height: 50px !important;
+            padding: 8px !important;
+            border-radius: 14px !important;
+          }
+          
+          .banner-item-emoji {
+            font-size: 18px !important;
+            margin-bottom: 1px !important;
+          }
+          
+          .banner-item-name {
+            font-size: 7px !important;
+            line-height: 1.1 !important;
+          }
+
+          .drop-zone {
+            width: 55px !important;
+            height: 50px !important;
+            border-radius: 14px !important;
+          }
+
+          .basket-image {
+            width: 320px !important;
+            min-width: 320px !important;
+            max-width: 320px !important;
+            margin-left: -65px !important;
+            margin-bottom: -35px !important;
+          }
+
+          .bottom-navigation {
+            flex-direction: row !important;
+            flex-wrap: wrap !important;
+            justify-content: center !important;
+            gap: clamp(8px, 2vw, 16px) !important;
+          }
+        }
+
+        /* DESKTOP RESPONSIVE - ORIGINAL PERFECT SIZES */
+        @media screen and (min-width: 769px) {
+          .banner-item {
+            min-width: clamp(65px, 13vw, 95px) !important;
+            min-height: clamp(62px, 12.4vh, 88px) !important;
+            padding: clamp(12px, 2.8vw, 16px) !important;
+            border-radius: clamp(20px, 4.5vw, 28px) !important;
+          }
+          
+          .banner-item-emoji {
+            font-size: clamp(18px, 3.8vw, 26px) !important;
+            margin-bottom: clamp(2px, 0.4vh, 3px) !important;
+          }
+          
+          .banner-item-name {
+            font-size: clamp(6px, 1.3vw, 9px) !important;
+            line-height: 1.2 !important;
+          }
+
+          .drop-zone {
+            width: clamp(65px, 13vw, 95px) !important;
+            height: clamp(62px, 12.4vh, 88px) !important;
+            border-radius: clamp(18px, 4vw, 26px) !important;
+          }
+
+          .basket-image {
+            width: 380px !important;
+            min-width: 380px !important;
+            max-width: 380px !important;
+            margin-left: -80px !important;
+            margin-bottom: -40px !important;
+          }
+
+          .bottom-navigation {
+            flex-direction: row !important;
+            justify-content: space-between !important;
+          }
+        }
+
+        /* Landscape mode adjustments */
+        @media screen and (orientation: landscape) and (max-height: 600px) {
+          .banner-area {
+            padding-bottom: clamp(80px, 15vh, 120px) !important;
+          }
+          
+          .floating-basket-container {
+            bottom: clamp(25px, 5vh, 40px) !important;
+          }
+          
+          .basket-image {
+            width: 300px !important;
+            min-width: 300px !important;
+            max-width: 300px !important;
+            margin-left: -65px !important;
+            margin-bottom: -30px !important;
+          }
+          
+          .bottom-navigation {
+            bottom: clamp(4px, 1vh, 8px) !important;
+            padding-bottom: clamp(4px, 1vh, 8px) !important;
+          }
+          
+          /* Landscape mobile banner items - Compact */
+          @media screen and (max-width: 480px) {
+            .banner-item {
+              min-width: 35px !important;
+              min-height: 32px !important;
+              padding: 4px !important;
+              border-radius: 8px !important;
+            }
+            
+            .banner-item-emoji {
+              font-size: 12px !important;
+              margin-bottom: 0px !important;
+            }
+            
+            .banner-item-name {
+              font-size: 5px !important;
+            }
+
+            .drop-zone {
+              width: 35px !important;
+              height: 32px !important;
+              border-radius: 8px !important;
+            }
+          }
+        }
+
+        /* iOS Safari specific fixes */
+        @supports (-webkit-touch-callout: none) {
+          .main-container {
+            height: -webkit-fill-available !important;
+          }
+          
+          :global(body) {
+            height: -webkit-fill-available !important;
+          }
+        }
+
+        /* Android Chrome specific fixes */
+        @media screen and (-webkit-min-device-pixel-ratio: 1) {
+          .back-button,
+          .submit-button {
+            min-height: 48px !important;
+            min-width: 48px !important;
+          }
+        }
+
+        /* Touch device optimizations */
+        @media (hover: none) and (pointer: coarse) {
+          div[style*="cursor: grab"] {
+            cursor: default !important;
+          }
+          
+          .back-button,
+          .submit-button {
+            min-height: 44px !important;
+            min-width: 88px !important;
+            font-size: clamp(12px, 3vw, 16px) !important;
+          }
+        }
+
+        /* High DPI displays */
+        @media screen and (min-resolution: 2dppx) {
+          .basket-image {
+            image-rendering: -webkit-optimize-contrast !important;
+          }
+        }
+
+        /* Prevent zoom on input focus (iOS) */
+        :global(input),
+        :global(select),
+        :global(textarea) {
+          font-size: 16px !important;
+        }
+
+        /* Smooth scrolling for all devices */
+        * {
+          -webkit-overflow-scrolling: touch;
+          scroll-behavior: smooth;
+        }
+
+        /* Disable text selection and context menus */
+        * {
+          -webkit-touch-callout: none !important;
+          -webkit-user-select: none !important;
+          -khtml-user-select: none !important;
+          -moz-user-select: none !important;
+          -ms-user-select: none !important;
+          user-select: none !important;
+        }
+
+        /* Prevent any scrolling or overflow */
+        :global(html),
+        :global(body),
+        .main-container {
+          overflow: hidden !important;
+          overscroll-behavior: none !important;
+        }
+
+        /* Force hardware acceleration */
+        .main-container,
+        .banner-area,
+        .floating-basket-container,
+        .bottom-navigation {
+          transform: translateZ(0) !important;
+          will-change: transform !important;
+          backface-visibility: hidden !important;
+        }
+
+        /* Force basket image consistency across all conditions */
+        img[alt="Equipment Basket"] {
+          transform: none !important;
+          scale: 1 !important;
         }
       `}</style>
     </Layout>

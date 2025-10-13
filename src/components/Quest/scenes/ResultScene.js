@@ -144,24 +144,44 @@ export default function ResultPage() {
 
   if (!levelData) return null;
 
-  // Success Icon SVG
+  // Success Icon SVG - Mobile Optimized
   const SuccessIcon = () => (
-    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <svg 
+      width="48" 
+      height="48" 
+      viewBox="0 0 24 24" 
+      fill="none" 
+      xmlns="http://www.w3.org/2000/svg"
+      style={{
+        width: 'clamp(30px, 6vw, 48px)',
+        height: 'clamp(30px, 6vw, 48px)'
+      }}
+    >
       <circle cx="12" cy="12" r="10" fill="#22C55E" stroke="#16A34A" strokeWidth="2"/>
       <path d="m9 12 2 2 4-4" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
     </svg>
   );
 
-  // Failure Icon SVG
+  // Failure Icon SVG - Mobile Optimized
   const FailureIcon = () => (
-    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <svg 
+      width="48" 
+      height="48" 
+      viewBox="0 0 24 24" 
+      fill="none" 
+      xmlns="http://www.w3.org/2000/svg"
+      style={{
+        width: 'clamp(30px, 6vw, 48px)',
+        height: 'clamp(30px, 6vw, 48px)'
+      }}
+    >
       <circle cx="12" cy="12" r="10" fill="#F87171" stroke="#EF4444" strokeWidth="2"/>
       <path d="m15 9-6 6" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
       <path d="m9 9 6 6" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
     </svg>
   );
 
-  // Custom Banner Component
+  // Custom Banner Component - Mobile Optimized
   const CustomBanner = ({ title }) => (
     <div style={{ 
       display: 'flex', 
@@ -173,10 +193,9 @@ export default function ResultPage() {
       <svg 
         viewBox="0 0 317.113 100" 
         style={{ 
-          width: '100%', 
+          width: 'clamp(160px, 35vw, 300px)',
           height: 'auto',
-          minWidth: '180px',
-          maxWidth: '280px'
+          maxWidth: '95%'
         }}
         preserveAspectRatio="xMidYMid meet"
       >
@@ -210,11 +229,11 @@ export default function ResultPage() {
           textAnchor="middle" 
           dominantBaseline="central"
           style={{
-            fontSize: 'clamp(14px, 3.5vw, 18px)',
+            fontSize: 'clamp(10px, 2.2vw, 18px)',
             fontWeight: 'bold',
             fill: '#FFFFFF',
             fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, sans-serif',
-            letterSpacing: '1px'
+            letterSpacing: 'clamp(0.3px, 0.1vw, 1px)'
           }}
         >
           {title}
@@ -223,24 +242,25 @@ export default function ResultPage() {
     </div>
   );
 
-  // Status Display
+  // Status Display - Mobile Optimized
   const renderOverallStatusOnly = () => {
     return (
       <div style={{
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        padding: 'clamp(18px, 4vw, 24px)',
-        borderRadius: 'clamp(14px, 3vw, 18px)',
+        padding: 'clamp(8px, 2vw, 24px)',
+        borderRadius: 'clamp(8px, 2vw, 18px)',
         background: isWin ? '#E6FFFA' : '#FEF2F2',
-        border: `2px solid ${isWin ? '#22C55E' : '#F87171'}`,
+        border: `clamp(1px, 0.2vw, 2px) solid ${isWin ? '#22C55E' : '#F87171'}`,
         color: isWin ? '#065F46' : '#7F1D1D',
         fontWeight: 700,
-        fontSize: 'clamp(18px, 4vw, 22px)',
-        gap: '16px',
+        fontSize: 'clamp(12px, 2.8vw, 22px)',
+        gap: 'clamp(6px, 1.5vw, 16px)',
         textTransform: 'uppercase',
-        letterSpacing: '1.2px',
-        boxShadow: `0 6px 24px ${isWin ? 'rgba(34, 197, 94, 0.15)' : 'rgba(248, 113, 113, 0.15)'}`,
+        letterSpacing: 'clamp(0.3px, 0.1vw, 1.2px)',
+        boxShadow: `0 clamp(2px, 0.5vw, 6px) clamp(8px, 2vw, 24px) ${isWin ? 'rgba(34, 197, 94, 0.15)' : 'rgba(248, 113, 113, 0.15)'}`,
+        minHeight: 'clamp(40px, 8vw, 70px)'
       }}>
         {isWin ? <SuccessIcon /> : <FailureIcon />}
         <span>{isWin ? 'Success' : 'Failed'}</span>
@@ -257,7 +277,7 @@ export default function ResultPage() {
         }
         
         .perfect-scroll::-webkit-scrollbar {
-          width: 8px;
+          width: clamp(4px, 1vw, 8px);
         }
         
         .perfect-scroll::-webkit-scrollbar-track {
@@ -275,8 +295,173 @@ export default function ResultPage() {
         }
 
         @keyframes slideIn {
-          from { opacity: 0; transform: translateY(30px) scale(0.95); }
+          from { opacity: 0; transform: translateY(clamp(15px, 3vw, 30px)) scale(0.95); }
           to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        /* Mobile-specific component size reductions */
+        @media screen and (max-width: 480px) {
+          .result-card {
+            width: 92vw !important;
+            height: 78vh !important;
+            padding: 12px !important;
+          }
+          
+          .mobile-banner {
+            height: 45px !important;
+            margin-bottom: 6px !important;
+          }
+          
+          .mobile-title {
+            font-size: 11px !important;
+            margin-bottom: 6px !important;
+          }
+          
+          .mobile-status {
+            padding: 6px 8px !important;
+            font-size: 10px !important;
+            gap: 4px !important;
+            min-height: 32px !important;
+            margin-bottom: 6px !important;
+          }
+          
+          .mobile-message {
+            font-size: 9px !important;
+            margin-bottom: 6px !important;
+          }
+          
+          .mobile-buttons {
+            gap: 4px !important;
+            padding: 6px 0 !important;
+          }
+          
+          .mobile-button {
+            padding: 6px 8px !important;
+            font-size: 8px !important;
+            min-width: 70px !important;
+            height: 28px !important;
+            border-radius: 4px !important;
+            letter-spacing: 0.2px !important;
+          }
+          
+          .mobile-icon {
+            width: 12px !important;
+            height: 12px !important;
+          }
+        }
+
+        @media screen and (min-width: 481px) and (max-width: 768px) {
+          .result-card {
+            width: 85vw !important;
+            height: 75vh !important;
+          }
+          
+          .mobile-banner {
+            height: 55px !important;
+            margin-bottom: 8px !important;
+          }
+          
+          .mobile-title {
+            font-size: 13px !important;
+            margin-bottom: 8px !important;
+          }
+          
+          .mobile-status {
+            padding: 8px 12px !important;
+            font-size: 12px !important;
+            gap: 6px !important;
+            min-height: 38px !important;
+            margin-bottom: 8px !important;
+          }
+          
+          .mobile-message {
+            font-size: 11px !important;
+            margin-bottom: 8px !important;
+          }
+          
+          .mobile-buttons {
+            gap: 6px !important;
+            padding: 8px 0 !important;
+          }
+          
+          .mobile-button {
+            padding: 7px 10px !important;
+            font-size: 9px !important;
+            min-width: 80px !important;
+            height: 32px !important;
+            border-radius: 6px !important;
+            letter-spacing: 0.3px !important;
+          }
+          
+          .mobile-icon {
+            width: 14px !important;
+            height: 14px !important;
+          }
+        }
+
+        /* Laptop and Desktop - Keep Original Sizes */
+        @media screen and (min-width: 1025px) {
+          .result-card {
+            width: 480px !important;
+            height: 500px !important;
+          }
+        }
+
+        @media screen and (min-width: 1441px) {
+          .result-card {
+            width: 520px !important;
+            height: 540px !important;
+          }
+        }
+
+        /* Touch device optimizations */
+        @media (hover: none) and (pointer: coarse) {
+          .mobile-button {
+            min-height: 36px !important;
+          }
+        }
+
+        /* Landscape mobile optimizations */
+        @media screen and (max-height: 500px) and (orientation: landscape) and (max-width: 800px) {
+          .result-card {
+            height: 92vh !important;
+            width: 80vw !important;
+            max-width: 500px !important;
+          }
+          
+          .mobile-banner {
+            height: 40px !important;
+            margin-bottom: 4px !important;
+          }
+          
+          .mobile-title {
+            font-size: 10px !important;
+            margin-bottom: 4px !important;
+          }
+          
+          .mobile-status {
+            padding: 4px 6px !important;
+            font-size: 9px !important;
+            min-height: 28px !important;
+            margin-bottom: 4px !important;
+          }
+          
+          .mobile-message {
+            font-size: 8px !important;
+            margin-bottom: 4px !important;
+          }
+          
+          .mobile-buttons {
+            gap: 3px !important;
+            padding: 4px 0 !important;
+          }
+          
+          .mobile-button {
+            padding: 4px 6px !important;
+            font-size: 7px !important;
+            min-width: 60px !important;
+            height: 24px !important;
+          }
         }
       `}</style>
 
@@ -287,7 +472,7 @@ export default function ResultPage() {
         left: 0,
         width: '100vw',
         height: '100vh',
-        backdropFilter: 'blur(8px)',
+        backdropFilter: 'blur(clamp(4px, 1vw, 8px))',
         background: 'rgba(255, 255, 255, 0.1)',
         zIndex: 0
       }} />
@@ -302,202 +487,232 @@ export default function ResultPage() {
         flexDirection: 'column',
         justifyContent: 'center',
         alignItems: 'center',
-        padding: 'clamp(16px, 4vw, 24px)',
+        padding: 'clamp(8px, 2vw, 24px)',
         color: '#111827',
         overflow: 'auto',
         zIndex: 1
       }}>
 
-        {/* Main Result Card - Refined Design */}
-        <div style={{
-          background: 'linear-gradient(135deg, #f5e6d3 0%, #e8d5be 50%, #d4c4a8 100%)',
-          borderRadius: 'clamp(12px, 3vw, 16px)',
-          width: 'clamp(320px, 85vw, 480px)',
-          height: 'clamp(420px, 78vh, 500px)',
-          maxWidth: '90vw',
-          maxHeight: '85vh',
-          position: 'relative',
-          zIndex: 1,
-          overflow: 'hidden',
-          animation: 'slideIn 1s ease-out',
-          border: '3px solid #8b6f47',
-          boxShadow: '0 20px 60px rgba(139, 111, 71, 0.3), 0 10px 30px rgba(139, 111, 71, 0.2), inset 0 1px 3px rgba(255, 255, 255, 0.3)'
-        }}>
+        {/* Main Result Card - Mobile Optimized Sizes */}
+        <div 
+          className="result-card"
+          style={{
+            background: 'linear-gradient(135deg, #f5e6d3 0%, #e8d5be 50%, #d4c4a8 100%)',
+            borderRadius: 'clamp(8px, 2vw, 16px)',
+            width: 'clamp(280px, 85vw, 480px)',
+            height: 'clamp(350px, 75vh, 500px)',
+            maxWidth: '95vw',
+            maxHeight: '90vh',
+            position: 'relative',
+            zIndex: 1,
+            overflow: 'hidden',
+            animation: 'slideIn 1s ease-out',
+            border: 'clamp(1px, 0.3vw, 3px) solid #8b6f47',
+            boxShadow: `
+              0 clamp(6px, 1.5vw, 20px) clamp(20px, 5vw, 60px) rgba(139, 111, 71, 0.3), 
+              0 clamp(3px, 0.75vw, 10px) clamp(10px, 2.5vw, 30px) rgba(139, 111, 71, 0.2), 
+              inset 0 1px clamp(1px, 0.3vw, 3px) rgba(255, 255, 255, 0.3)
+            `
+          }}
+        >
           <div style={{
             position: 'relative',
             zIndex: 2,
             height: '100%',
             display: 'flex',
             flexDirection: 'column',
-            padding: 'clamp(20px, 4vw, 26px)'
+            padding: 'clamp(12px, 3vw, 26px)'
           }}>
-            {/* Banner */}
-            <div style={{ height: 'clamp(70px, 16vw, 85px)', flexShrink: 0 }}>
+            
+            {/* Banner - Mobile Optimized */}
+            <div 
+              className="mobile-banner"
+              style={{ 
+                height: 'clamp(50px, 10vw, 85px)', 
+                flexShrink: 0,
+                marginBottom: 'clamp(6px, 1.5vw, 12px)'
+              }}
+            >
               <CustomBanner title={isWin ? 'SUCCESS' : 'TRY AGAIN'} />
             </div>
 
-            {/* Challenge Info */}
+            {/* Challenge Info - Mobile Optimized */}
             <div style={{
               textAlign: 'center',
-              marginBottom: 'clamp(14px, 3vh, 18px)',
+              marginBottom: 'clamp(6px, 1.5vw, 18px)',
               flexShrink: 0
             }}>
-              <h2 style={{
-                fontSize: 'clamp(15px, 3.2vw, 18px)',
-                fontWeight: '700',
-                color: '#3e2723',
-                margin: 0,
-                letterSpacing: '0.5px',
-                textShadow: '0 1px 2px rgba(255, 255, 255, 0.5)'
-              }}>
+              <h2 
+                className="mobile-title"
+                style={{
+                  fontSize: 'clamp(11px, 2.5vw, 18px)',
+                  fontWeight: '700',
+                  color: '#3e2723',
+                  marginTop: "20px",
+                  letterSpacing: 'clamp(0.2px, 0.05vw, 0.5px)',
+                  textShadow: '0 1px 2px rgba(255, 255, 255, 0.5)',
+                  lineHeight: 1.2
+                }}
+              >
                 Challenge {currentLevel} - {levelData.title}
               </h2>
             </div>
 
-            {/* Status Display */}
+            {/* Status Display - Mobile Optimized */}
             <div style={{
               display: 'flex',
               justifyContent: 'center',
-              marginBottom: 'clamp(14px, 3vh, 18px)',
+              marginBottom: 'clamp(6px, 1.5vw, 18px)',
               flexShrink: 0
             }}>
-              {renderOverallStatusOnly()}
+              <div 
+                className="mobile-status"
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  padding: 'clamp(6px, 1.5vw, 24px)',
+                  borderRadius: 'clamp(6px, 1.5vw, 18px)',
+                  background: isWin ? '#E6FFFA' : '#FEF2F2',
+                  border: `clamp(1px, 0.2vw, 2px) solid ${isWin ? '#22C55E' : '#F87171'}`,
+                  color: isWin ? '#065F46' : '#7F1D1D',
+                  fontWeight: 700,
+                  fontSize: 'clamp(10px, 2.2vw, 22px)',
+                  gap: 'clamp(4px, 1vw, 16px)',
+                  textTransform: 'uppercase',
+                  letterSpacing: 'clamp(0.2px, 0.05vw, 1.2px)',
+                  boxShadow: `0 clamp(1px, 0.3vw, 6px) clamp(6px, 1.5vw, 24px) ${isWin ? 'rgba(34, 197, 94, 0.15)' : 'rgba(248, 113, 113, 0.15)'}`,
+                  minHeight: 'clamp(35px, 7vw, 70px)'
+                }}
+              >
+                {isWin ? <SuccessIcon /> : <FailureIcon />}
+                <span>{isWin ? 'Success' : 'Failed'}</span>
+              </div>
             </div>
 
-            {/* Progress Messages */}
+            {/* Progress Messages - Mobile Optimized */}
             {isWin && currentLevel < 10 && (
-              <p style={{
-                fontSize: 'clamp(13px, 2.8vw, 16px)',
-                fontWeight: '600',
-                color: '#059669',
-                textAlign: 'center',
-                marginBottom: 'clamp(10px, 2.5vh, 14px)',
-                margin: '0 0 clamp(10px, 2.5vh, 14px) 0',
-                flexShrink: 0,
-                letterSpacing: '0.5px',
-                textShadow: '0 1px 2px rgba(255, 255, 255, 0.8)'
-              }}>
+              <p 
+                className="mobile-message"
+                style={{
+                  fontSize: 'clamp(9px, 2vw, 16px)',
+                  fontWeight: '600',
+                  color: '#059669',
+                  textAlign: 'center',
+                  marginBottom: 'clamp(6px, 1.5vw, 14px)',
+                  margin: '0 0 clamp(6px, 1.5vw, 14px) 0',
+                  flexShrink: 0,
+                  letterSpacing: 'clamp(0.2px, 0.05vw, 0.5px)',
+                  textShadow: '0 1px 2px rgba(255, 255, 255, 0.8)'
+                }}
+              >
                 Next challenge unlocked!
               </p>
             )}
 
             {isWin && currentLevel === 10 && (
-              <p style={{
-                fontSize: 'clamp(14px, 3.2vw, 18px)',
-                fontWeight: '700',
-                color: '#059669',
-                textAlign: 'center',
-                marginBottom: 'clamp(10px, 2.5vh, 14px)',
-                margin: '0 0 clamp(10px, 2.5vh, 14px) 0',
-                flexShrink: 0,
-                letterSpacing: '0.5px',
-                textShadow: '0 1px 2px rgba(255, 255, 255, 0.8)'
-              }}>
+              <p 
+                className="mobile-message"
+                style={{
+                  fontSize: 'clamp(10px, 2.2vw, 18px)',
+                  fontWeight: '700',
+                  color: '#059669',
+                  textAlign: 'center',
+                  marginBottom: 'clamp(6px, 1.5vw, 14px)',
+                  margin: '0 0 clamp(6px, 1.5vw, 14px) 0',
+                  flexShrink: 0,
+                  letterSpacing: 'clamp(0.2px, 0.05vw, 0.5px)',
+                  textShadow: '0 1px 2px rgba(255, 255, 255, 0.8)'
+                }}
+              >
                 All challenges completed!
               </p>
             )}
 
-            {/* Action Buttons */}
-            <div style={{
-              display: 'flex',
-              gap: 'clamp(8px, 2vw, 12px)',
-              justifyContent: 'center',
-              alignItems: 'center',
-              flexWrap: 'wrap',
-              marginTop: 'auto',
-              flexShrink: 0
-            }}>
+            {/* Action Buttons - Mobile Optimized */}
+            <div 
+              className="mobile-buttons"
+              style={{
+                display: 'flex',
+                gap: 'clamp(4px, 1vw, 12px)',
+                justifyContent: 'center',
+                alignItems: 'center',
+                flexWrap: 'wrap',
+                marginTop: 'auto',
+                flexShrink: 0,
+                padding: 'clamp(6px, 1.5vw, 16px) 0'
+              }}
+            >
               {isWin ? (
                 <>
                   {currentLevel < 10 ? (
                     <button
+                      className="mobile-button"
                       onClick={handleNextLevel}
                       style={{
-                        padding: 'clamp(8px, 2vw, 12px) clamp(16px, 4vw, 22px)',
-                        fontSize: 'clamp(10px, 2vw, 13px)',
+                        padding: 'clamp(6px, 1.5vw, 12px) clamp(8px, 2vw, 22px)',
+                        fontSize: 'clamp(8px, 1.8vw, 13px)',
                         fontWeight: '700',
                         background: 'linear-gradient(135deg, #3B82F6 0%, #2563EB 100%)',
                         color: '#FFFFFF',
-                        border: '2px solid #1e40af',
-                        borderRadius: 'clamp(8px, 2vw, 12px)',
+                        border: 'clamp(1px, 0.2vw, 2px) solid #1e40af',
+                        borderRadius: 'clamp(4px, 1vw, 12px)',
                         cursor: 'pointer',
                         transition: 'all 0.3s ease',
-                        minWidth: 'clamp(100px, 25vw, 140px)',
-                        height: 'clamp(36px, 8vh, 42px)',
-                        letterSpacing: '0.5px',
-                        boxShadow: '0 3px 12px rgba(59, 130, 246, 0.3), 0 1px 6px rgba(0, 0, 0, 0.2)'
-                      }}
-                      onMouseEnter={(e) => {
-                        e.target.style.background = 'linear-gradient(135deg, #2563EB 0%, #1e40af 100%)';
-                        e.target.style.transform = 'translateY(-2px)';
-                        e.target.style.boxShadow = '0 4px 16px rgba(59, 130, 246, 0.4), 0 2px 8px rgba(0, 0, 0, 0.3)';
-                      }}
-                      onMouseLeave={(e) => {
-                        e.target.style.background = 'linear-gradient(135deg, #3B82F6 0%, #2563EB 100%)';
-                        e.target.style.transform = 'translateY(0)';
-                        e.target.style.boxShadow = '0 3px 12px rgba(59, 130, 246, 0.3), 0 1px 6px rgba(0, 0, 0, 0.2)';
+                        minWidth: 'clamp(70px, 16vw, 140px)',
+                        height: 'clamp(28px, 6vw, 42px)',
+                        letterSpacing: 'clamp(0.2px, 0.05vw, 0.5px)',
+                        boxShadow: '0 clamp(1px, 0.3vw, 3px) clamp(4px, 1vw, 12px) rgba(59, 130, 246, 0.3), 0 1px clamp(2px, 0.5vw, 6px) rgba(0, 0, 0, 0.2)',
+                        flex: '1 1 auto',
+                        maxWidth: 'clamp(100px, 22vw, 180px)'
                       }}
                     >
                       NEXT CHALLENGE
                     </button>
                   ) : (
                     <button
+                      className="mobile-button"
                       onClick={handlePlayFromStart}
                       style={{
-                        padding: 'clamp(8px, 2vw, 12px) clamp(16px, 4vw, 22px)',
-                        fontSize: 'clamp(10px, 2vw, 13px)',
+                        padding: 'clamp(6px, 1.5vw, 12px) clamp(8px, 2vw, 22px)',
+                        fontSize: 'clamp(8px, 1.8vw, 13px)',
                         fontWeight: '700',
                         background: 'linear-gradient(135deg, #3B82F6 0%, #2563EB 100%)',
                         color: '#FFFFFF',
-                        border: '2px solid #1e40af',
-                        borderRadius: 'clamp(8px, 2vw, 12px)',
+                        border: 'clamp(1px, 0.2vw, 2px) solid #1e40af',
+                        borderRadius: 'clamp(4px, 1vw, 12px)',
                         cursor: 'pointer',
                         transition: 'all 0.3s ease',
-                        minWidth: 'clamp(100px, 25vw, 140px)',
-                        height: 'clamp(36px, 8vh, 42px)',
-                        letterSpacing: '0.5px',
-                        boxShadow: '0 3px 12px rgba(59, 130, 246, 0.3), 0 1px 6px rgba(0, 0, 0, 0.2)'
-                      }}
-                      onMouseEnter={(e) => {
-                        e.target.style.background = 'linear-gradient(135deg, #2563EB 0%, #1e40af 100%)';
-                        e.target.style.transform = 'translateY(-2px)';
-                        e.target.style.boxShadow = '0 4px 16px rgba(59, 130, 246, 0.4), 0 2px 8px rgba(0, 0, 0, 0.3)';
-                      }}
-                      onMouseLeave={(e) => {
-                        e.target.style.background = 'linear-gradient(135deg, #3B82F6 0%, #2563EB 100%)';
-                        e.target.style.transform = 'translateY(0)';
-                        e.target.style.boxShadow = '0 3px 12px rgba(59, 130, 246, 0.3), 0 1px 6px rgba(0, 0, 0, 0.2)';
+                        minWidth: 'clamp(70px, 16vw, 140px)',
+                        height: 'clamp(28px, 6vw, 42px)',
+                        letterSpacing: 'clamp(0.2px, 0.05vw, 0.5px)',
+                        boxShadow: '0 clamp(1px, 0.3vw, 3px) clamp(4px, 1vw, 12px) rgba(59, 130, 246, 0.3), 0 1px clamp(2px, 0.5vw, 6px) rgba(0, 0, 0, 0.2)',
+                        flex: '1 1 auto',
+                        maxWidth: 'clamp(100px, 22vw, 180px)'
                       }}
                     >
                       PLAY AGAIN
                     </button>
                   )}
                   <button
+                    className="mobile-button"
                     onClick={handleReplayLevel}
                     style={{
-                      padding: 'clamp(8px, 2vw, 12px) clamp(16px, 4vw, 22px)',
-                      fontSize: 'clamp(10px, 2vw, 13px)',
+                      padding: 'clamp(6px, 1.5vw, 12px) clamp(8px, 2vw, 22px)',
+                      fontSize: 'clamp(8px, 1.8vw, 13px)',
                       fontWeight: '700',
                       background: 'linear-gradient(135deg, #6B7280 0%, #4B5563 100%)',
                       color: '#FFFFFF',
-                      border: '2px solid #374151',
-                      borderRadius: 'clamp(8px, 2vw, 12px)',
+                      border: 'clamp(1px, 0.2vw, 2px) solid #374151',
+                      borderRadius: 'clamp(4px, 1vw, 12px)',
                       cursor: 'pointer',
                       transition: 'all 0.3s ease',
-                      minWidth: 'clamp(100px, 25vw, 140px)',
-                      height: 'clamp(36px, 8vh, 42px)',
-                      letterSpacing: '0.5px',
-                      boxShadow: '0 2px 6px rgba(0, 0, 0, 0.3)'
-                    }}
-                    onMouseEnter={(e) => {
-                      e.target.style.background = 'linear-gradient(135deg, #4B5563 0%, #374151 100%)';
-                      e.target.style.transform = 'translateY(-2px)';
-                      e.target.style.boxShadow = '0 3px 10px rgba(0, 0, 0, 0.4)';
-                    }}
-                    onMouseLeave={(e) => {
-                      e.target.style.background = 'linear-gradient(135deg, #6B7280 0%, #4B5563 100%)';
-                      e.target.style.transform = 'translateY(0)';
-                      e.target.style.boxShadow = '0 2px 6px rgba(0, 0, 0, 0.3)';
+                      minWidth: 'clamp(60px, 14vw, 120px)',
+                      height: 'clamp(28px, 6vw, 42px)',
+                      letterSpacing: 'clamp(0.2px, 0.05vw, 0.5px)',
+                      boxShadow: '0 clamp(1px, 0.2vw, 2px) clamp(2px, 0.5vw, 6px) rgba(0, 0, 0, 0.3)',
+                      flex: '1 1 auto',
+                      maxWidth: 'clamp(80px, 18vw, 140px)'
                     }}
                   >
                     REPLAY
@@ -506,61 +721,47 @@ export default function ResultPage() {
               ) : (
                 <>
                   <button
+                    className="mobile-button"
                     onClick={handleTryAgain}
                     style={{
-                      padding: 'clamp(8px, 2vw, 12px) clamp(16px, 4vw, 22px)',
-                      fontSize: 'clamp(10px, 2vw, 13px)',
+                      padding: 'clamp(3px, 1.5vw, 6px) clamp(8px, 2vw, 22px)',
+                      fontSize: 'clamp(8px, 1.8vw, 13px)',
                       fontWeight: '700',
                       background: 'linear-gradient(135deg, #F87171 0%, #EF4444 100%)',
                       color: '#FFFFFF',
-                      border: '2px solid #DC2626',
-                      borderRadius: 'clamp(8px, 2vw, 12px)',
+                      border: 'clamp(1px, 0.2vw, 2px) solid #DC2626',
+                      borderRadius: 'clamp(4px, 1vw, 12px)',
                       cursor: 'pointer',
                       transition: 'all 0.3s ease',
-                      minWidth: 'clamp(100px, 25vw, 140px)',
-                      height: 'clamp(36px, 8vh, 42px)',
-                      letterSpacing: '0.5px',
-                      boxShadow: '0 3px 12px rgba(248, 113, 113, 0.3), 0 1px 6px rgba(0, 0, 0, 0.2)'
-                    }}
-                    onMouseEnter={(e) => {
-                      e.target.style.background = 'linear-gradient(135deg, #EF4444 0%, #DC2626 100%)';
-                      e.target.style.transform = 'translateY(-2px)';
-                      e.target.style.boxShadow = '0 4px 16px rgba(248, 113, 113, 0.4), 0 2px 8px rgba(0, 0, 0, 0.3)';
-                    }}
-                    onMouseLeave={(e) => {
-                      e.target.style.background = 'linear-gradient(135deg, #F87171 0%, #EF4444 100%)';
-                      e.target.style.transform = 'translateY(0)';
-                      e.target.style.boxShadow = '0 3px 12px rgba(248, 113, 113, 0.3), 0 1px 6px rgba(0, 0, 0, 0.2)';
+                      minWidth: 'clamp(70px, 16vw, 140px)',
+                      height: 'clamp(28px, 6vw, 42px)',
+                      letterSpacing: 'clamp(0.2px, 0.05vw, 0.5px)',
+                      boxShadow: '0 clamp(1px, 0.3vw, 3px) clamp(4px, 1vw, 12px) rgba(248, 113, 113, 0.3), 0 1px clamp(2px, 0.5vw, 6px) rgba(0, 0, 0, 0.2)',
+                      flex: '1 1 auto',
+                      maxWidth: 'clamp(100px, 22vw, 180px)'
                     }}
                   >
                     TRY AGAIN
                   </button>
                   <button
+                    className="mobile-button"
                     onClick={handleGoToMenu}
                     style={{
-                      padding: 'clamp(8px, 2vw, 12px) clamp(16px, 4vw, 22px)',
-                      fontSize: 'clamp(10px, 2vw, 13px)',
+                      padding: 'clamp(6px, 1.5vw, 12px) clamp(8px, 2vw, 22px)',
+                      fontSize: 'clamp(8px, 1.8vw, 13px)',
                       fontWeight: '700',
                       background: 'linear-gradient(135deg, #6B7280 0%, #4B5563 100%)',
                       color: '#FFFFFF',
-                      border: '2px solid #374151',
-                      borderRadius: 'clamp(8px, 2vw, 12px)',
+                      border: 'clamp(1px, 0.2vw, 2px) solid #374151',
+                      borderRadius: 'clamp(4px, 1vw, 12px)',
                       cursor: 'pointer',
                       transition: 'all 0.3s ease',
-                      minWidth: 'clamp(100px, 25vw, 140px)',
-                      height: 'clamp(36px, 8vh, 42px)',
-                      letterSpacing: '0.5px',
-                      boxShadow: '0 2px 6px rgba(0, 0, 0, 0.3)'
-                    }}
-                    onMouseEnter={(e) => {
-                      e.target.style.background = 'linear-gradient(135deg, #4B5563 0%, #374151 100%)';
-                      e.target.style.transform = 'translateY(-2px)';
-                      e.target.style.boxShadow = '0 3px 10px rgba(0, 0, 0, 0.4)';
-                    }}
-                    onMouseLeave={(e) => {
-                      e.target.style.background = 'linear-gradient(135deg, #6B7280 0%, #4B5563 100%)';
-                      e.target.style.transform = 'translateY(0)';
-                      e.target.style.boxShadow = '0 2px 6px rgba(0, 0, 0, 0.3)';
+                      minWidth: 'clamp(60px, 14vw, 120px)',
+                      height: 'clamp(28px, 6vw, 42px)',
+                      letterSpacing: 'clamp(0.2px, 0.05vw, 0.5px)',
+                      boxShadow: '0 clamp(1px, 0.2vw, 2px) clamp(2px, 0.5vw, 6px) rgba(0, 0, 0, 0.3)',
+                      flex: '1 1 auto',
+                      maxWidth: 'clamp(80px, 18vw, 140px)'
                     }}
                   >
                     MENU
@@ -568,38 +769,38 @@ export default function ResultPage() {
                 </>
               )}
               <button
+                className="mobile-button"
                 onClick={() => router.push('/leaderboard')}
                 style={{
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  padding: 'clamp(8px, 2vw, 12px) clamp(16px, 4vw, 22px)',
-                  fontSize: 'clamp(10px, 2vw, 13px)',
+                  padding: 'clamp(6px, 1.5vw, 12px) clamp(8px, 2vw, 22px)',
+                  fontSize: 'clamp(8px, 1.8vw, 13px)',
                   background: '#a0522d',
                   color: '#f5e6ca',
                   border: 'none',
                   fontWeight: 'bold',
-                  borderRadius: 'clamp(8px, 2vw, 12px)',
+                  borderRadius: 'clamp(4px, 1vw, 12px)',
                   cursor: 'pointer',
                   transition: 'all 0.3s ease',
-                  boxShadow: '0 2px 6px rgba(0, 0, 0, 0.3)',
-                  minWidth: 'clamp(100px, 25vw, 140px)',
-                  height: 'clamp(36px, 8vh, 42px)',
-                  letterSpacing: '0.5px',
-                  gap: '4px'
-                }}
-                onMouseEnter={(e) => {
-                  e.target.style.background = '#8b4513';
-                  e.target.style.transform = 'translateY(-2px) scale(1.05)';
-                  e.target.style.boxShadow = '0 3px 10px rgba(0, 0, 0, 0.4)';
-                }}
-                onMouseLeave={(e) => {
-                  e.target.style.background = '#a0522d';
-                  e.target.style.transform = 'translateY(0) scale(1)';
-                  e.target.style.boxShadow = '0 2px 6px rgba(0, 0, 0, 0.3)';
+                  boxShadow: '0 clamp(1px, 0.2vw, 2px) clamp(2px, 0.5vw, 6px) rgba(0, 0, 0, 0.3)',
+                  minWidth: 'clamp(60px, 14vw, 120px)',
+                  height: 'clamp(28px, 6vw, 42px)',
+                  letterSpacing: 'clamp(0.2px, 0.05vw, 0.5px)',
+                  gap: 'clamp(2px, 0.3vw, 4px)',
+                  flex: '1 1 auto',
+                  maxWidth: 'clamp(80px, 18vw, 140px)'
                 }}
               >
-                <BarChart3 style={{ width: 'clamp(16px, 3vw, 20px)', height: 'clamp(16px, 3vw, 20px)' }} />
+                <BarChart3 
+                  className="mobile-icon"
+                  style={{ 
+                    width: 'clamp(12px, 2.5vw, 20px)', 
+                    height: 'clamp(12px, 2.5vw, 20px)',
+                    flexShrink: 0
+                  }} 
+                />
                 <span>Leaderboard</span>
               </button>
             </div>
