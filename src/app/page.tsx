@@ -1,4 +1,4 @@
-// src/app/page.js - Science Lab Quest Menu - Enhanced UI with Same Content
+// src/app/page.tsx - COMPLETE FULL VERSION
 'use client';
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
@@ -8,26 +8,20 @@ import { resetProgress } from '../components/Quest/utils/storage';
 
 export default function MenuPage() {
   const router = useRouter();
-  const [showInstructions, setShowInstructions] = useState(false);
-  const [isMobile, setIsMobile] = useState(false);
+  const [showInstructions, setShowInstructions] = useState<boolean>(false);
+  const [isMobile, setIsMobile] = useState<boolean>(false);
 
-  // Mobile detection function
-  const detectMobileDevice = () => {
+  const detectMobileDevice = (): boolean => {
     if (typeof window === 'undefined') return false;
     
-    // Check using matchMedia for screen width
     const mobileBreakpoint = window.matchMedia('(max-width: 768px)');
-    
-    // Check using user agent for mobile devices
-    const userAgent = navigator.userAgent || navigator.vendor || window.opera;
+    const userAgent = navigator.userAgent || navigator.vendor || (window as any).opera;
     const mobileRegex = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i;
     
-    // Return true if either condition is met
     return mobileBreakpoint.matches || mobileRegex.test(userAgent);
   };
 
-  // Cross-browser fullscreen function
-  const requestFullscreen = () => {
+  const requestFullscreen = (): void => {
     if (typeof document === 'undefined') return;
     
     const elem = document.documentElement;
@@ -35,16 +29,15 @@ export default function MenuPage() {
     try {
       if (elem.requestFullscreen) {
         elem.requestFullscreen().catch(() => {});
-      } else if (elem.webkitRequestFullscreen) {
-        elem.webkitRequestFullscreen().catch(() => {});
-      } else if (elem.mozRequestFullScreen) {
-        elem.mozRequestFullScreen().catch(() => {});
-      } else if (elem.msRequestFullscreen) {
-        elem.msRequestFullscreen().catch(() => {});
+      } else if ((elem as any).webkitRequestFullscreen) {
+        (elem as any).webkitRequestFullscreen().catch(() => {});
+      } else if ((elem as any).mozRequestFullScreen) {
+        (elem as any).mozRequestFullScreen().catch(() => {});
+      } else if ((elem as any).msRequestFullscreen) {
+        (elem as any).msRequestFullscreen().catch(() => {});
       }
       
-      // For mobile browsers - hide address bar
-      if (window.screen && window.screen.orientation) {
+      if (window.screen && (window.screen as any).orientation) {
         setTimeout(() => {
           window.scrollTo(0, 1);
         }, 500);
@@ -54,34 +47,30 @@ export default function MenuPage() {
     }
   };
 
-  // Force fullscreen only on mobile devices
   useEffect(() => {
     const checkDevice = () => {
       const mobile = detectMobileDevice();
       setIsMobile(mobile);
       
-      // Only enter fullscreen on mobile devices
       if (mobile) {
         const enterFullscreen = () => {
           if (document.documentElement.requestFullscreen) {
             document.documentElement.requestFullscreen().catch(() => {});
-          } else if (document.documentElement.webkitRequestFullscreen) {
-            document.documentElement.webkitRequestFullscreen().catch(() => {});
-          } else if (document.documentElement.mozRequestFullScreen) {
-            document.documentElement.mozRequestFullScreen().catch(() => {});
-          } else if (document.documentElement.msRequestFullscreen) {
-            document.documentElement.msRequestFullscreen().catch(() => {});
+          } else if ((document.documentElement as any).webkitRequestFullscreen) {
+            (document.documentElement as any).webkitRequestFullscreen().catch(() => {});
+          } else if ((document.documentElement as any).mozRequestFullScreen) {
+            (document.documentElement as any).mozRequestFullScreen().catch(() => {});
+          } else if ((document.documentElement as any).msRequestFullscreen) {
+            (document.documentElement as any).msRequestFullscreen().catch(() => {});
           }
           
-          // For mobile browsers - hide address bar
-          if (window.screen && window.screen.orientation) {
+          if (window.screen && (window.screen as any).orientation) {
             setTimeout(() => {
               window.scrollTo(0, 1);
             }, 500);
           }
         };
 
-        // Attempt fullscreen after a short delay only on mobile
         const timer = setTimeout(enterFullscreen, 100);
         return () => clearTimeout(timer);
       }
@@ -89,7 +78,6 @@ export default function MenuPage() {
 
     checkDevice();
 
-    // Listen for resize events to update mobile detection
     const handleResize = () => {
       const mobile = detectMobileDevice();
       setIsMobile(mobile);
@@ -99,17 +87,14 @@ export default function MenuPage() {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  const handleStartGame = () => {
-    // Request fullscreen first, then navigate
+  const handleStartGame = (): void => {
     requestFullscreen();
-    
-    // Navigate to the game after a short delay to ensure fullscreen is activated
     setTimeout(() => {
       router.push('/restaurant');
     }, 200);
   };
 
-  const handleResetProgress = () => {
+  const handleResetProgress = (): void => {
     if (typeof window !== 'undefined' && window.confirm) {
       const confirmReset = window.confirm('Are you sure you want to reset all progress? This cannot be undone.');
       if (confirmReset) {
@@ -119,7 +104,7 @@ export default function MenuPage() {
     }
   };
 
-  const handleShowInstructions = () => {
+  const handleShowInstructions = (): void => {
     setShowInstructions(true);
   };
 
@@ -150,7 +135,7 @@ export default function MenuPage() {
           animation: 'fadeIn 0.8s ease-out',
           width: '100%',
           maxWidth: '600px',
-          marginTop: 'clamp(-80px, -10vh, -60px)' // Slight upward adjustment for perfect center
+          marginTop: 'clamp(-80px, -10vh, -60px)'
         }}>
           
           {/* Title Background Glow - Responsive */}
@@ -178,8 +163,6 @@ export default function MenuPage() {
             margin: 0,
             fontFamily: 'poppins, -apple-system, BlinkMacSystemFont, sans-serif',
             lineHeight: '1.1',
-            // textShadow: '  rgba(5, 109, 255, 1)',
-            // filter: 'drop-shadow(0 3px 8px rgba(92, 77, 1, 1))',
             position: 'relative',
             zIndex: 2,
             letterSpacing: 'clamp(-1px, -0.025em, 0px)'
@@ -201,7 +184,7 @@ export default function MenuPage() {
         {/* Enhanced Main Game Button Container - Repositioned for PC */}
         <div style={{
           position: 'absolute',
-          bottom: 'clamp(60px, 15vh, 120px)', // Positioned from bottom for better PC experience
+          bottom: 'clamp(60px, 15vh, 120px)',
           left: '50%',
           transform: 'translateX(-50%)',
           display: 'flex',
@@ -212,7 +195,7 @@ export default function MenuPage() {
           maxWidth: 'clamp(280px, 85vw, 450px)'
         }}>
           
-          {/* Start Button with Enhanced Effects - Mobile First */}
+          {/* Start Button with Enhanced Effects */}
           <div style={{ 
             position: 'relative',
             width: '100%',
@@ -224,7 +207,7 @@ export default function MenuPage() {
               style={{
                 fontSize: 'clamp(14px, 3vw, 18px)',
                 fontWeight: '700',
-                padding: 'clamp(10-px, 3vh, 14px) clamp(20px, 6vw, 36px)',
+                padding: 'clamp(10px, 3vh, 14px) clamp(20px, 6vw, 36px)',
                 width: '100%',
                 minHeight: 'clamp(50px, 10vh, 70px)',
                 maxHeight: '80px',
@@ -251,16 +234,18 @@ export default function MenuPage() {
                 marginLeft:'27px'
               }}
               onMouseEnter={(e) => {
-                e.target.style.transform = 'translateY(-3px) scale(1.02)';
-                e.target.style.boxShadow = `
+                const target = e.target as HTMLElement;
+                target.style.transform = 'translateY(-3px) scale(1.02)';
+                target.style.boxShadow = `
                   0 12px 35px rgba(37, 99, 235, 0.35), 
                   inset 0 1px 0 rgba(255, 255, 255, 0.35),
                   0 0 0 1px rgba(255, 255, 255, 0.15)
                 `;
               }}
               onMouseLeave={(e) => {
-                e.target.style.transform = 'translateY(0) scale(1)';
-                e.target.style.boxShadow = `
+                const target = e.target as HTMLElement;
+                target.style.transform = 'translateY(0) scale(1)';
+                target.style.boxShadow = `
                   0 6px 24px rgba(37, 99, 235, 0.25), 
                   inset 0 1px 0 rgba(255, 255, 255, 0.25),
                   0 0 0 1px rgba(255, 255, 255, 0.08)
@@ -340,23 +325,25 @@ export default function MenuPage() {
                 backdropFilter: 'blur(8px)',
                 textShadow: '0 1px 2px rgba(255, 255, 255, 0.7)',
                 cursor: 'pointer',
-                marginLeft:'38px '
+                marginLeft:'38px'
               }}
               onMouseEnter={(e) => {
-                e.target.style.transform = 'translateY(-2px)';
-                e.target.style.boxShadow = `
+                const target = e.target as HTMLElement;
+                target.style.transform = 'translateY(-2px)';
+                target.style.boxShadow = `
                   0 6px 20px rgba(0, 0, 0, 0.1), 
                   inset 0 1px 0 rgba(255, 255, 255, 0.8)
                 `;
-                e.target.style.background = 'linear-gradient(135deg, rgba(241, 245, 249, 0.95) 0%, rgba(226, 232, 240, 0.95) 100%)';
+                target.style.background = 'linear-gradient(135deg, rgba(241, 245, 249, 0.95) 0%, rgba(226, 232, 240, 0.95) 100%)';
               }}
               onMouseLeave={(e) => {
-                e.target.style.transform = 'translateY(0)';
-                e.target.style.boxShadow = `
+                const target = e.target as HTMLElement;
+                target.style.transform = 'translateY(0)';
+                target.style.boxShadow = `
                   0 3px 12px rgba(0, 0, 0, 0.06), 
                   inset 0 1px 0 rgba(255, 255, 255, 0.7)
                 `;
-                e.target.style.background = 'linear-gradient(135deg, rgba(255, 255, 255, 0.9) 0%, rgba(248, 250, 252, 0.9) 100%)';
+                target.style.background = 'linear-gradient(135deg, rgba(255, 255, 255, 0.9) 0%, rgba(248, 250, 252, 0.9) 100%)';
               }}
             >
               How to Play
@@ -388,20 +375,22 @@ export default function MenuPage() {
                 marginRight:'-20px'
               }}
               onMouseEnter={(e) => {
-                e.target.style.transform = 'translateY(-2px)';
-                e.target.style.boxShadow = `
+                const target = e.target as HTMLElement;
+                target.style.transform = 'translateY(-2px)';
+                target.style.boxShadow = `
                   0 6px 20px rgba(220, 38, 38, 0.18), 
                   inset 0 1px 0 rgba(255, 255, 255, 0.8)
                 `;
-                e.target.style.background = 'linear-gradient(135deg, rgba(254, 226, 226, 0.95) 0%, rgba(252, 165, 165, 0.25) 100%)';
+                target.style.background = 'linear-gradient(135deg, rgba(254, 226, 226, 0.95) 0%, rgba(252, 165, 165, 0.25) 100%)';
               }}
               onMouseLeave={(e) => {
-                e.target.style.transform = 'translateY(0)';
-                e.target.style.boxShadow = `
+                const target = e.target as HTMLElement;
+                target.style.transform = 'translateY(0)';
+                target.style.boxShadow = `
                   0 3px 12px rgba(220, 38, 38, 0.12), 
                   inset 0 1px 0 rgba(255, 255, 255, 0.7)
                 `;
-                e.target.style.background = 'linear-gradient(135deg, rgba(254, 242, 242, 0.9) 0%, rgba(254, 226, 226, 0.9) 100%)';
+                target.style.background = 'linear-gradient(135deg, rgba(254, 242, 242, 0.9) 0%, rgba(254, 226, 226, 0.9) 100%)';
               }}
             >
               Reset Game
@@ -548,15 +537,17 @@ export default function MenuPage() {
                   cursor: 'pointer'
                 }}
                 onMouseEnter={(e) => {
-                  e.target.style.transform = 'translateY(-2px) scale(1.02)';
-                  e.target.style.boxShadow = `
+                  const target = e.target as HTMLElement;
+                  target.style.transform = 'translateY(-2px) scale(1.02)';
+                  target.style.boxShadow = `
                     0 10px 30px rgba(59, 130, 246, 0.35), 
                     inset 0 1px 0 rgba(255, 255, 255, 0.35)
                   `;
                 }}
                 onMouseLeave={(e) => {
-                  e.target.style.transform = 'translateY(0) scale(1)';
-                  e.target.style.boxShadow = `
+                  const target = e.target as HTMLElement;
+                  target.style.transform = 'translateY(0) scale(1)';
+                  target.style.boxShadow = `
                     0 6px 20px rgba(59, 130, 246, 0.25), 
                     inset 0 1px 0 rgba(255, 255, 255, 0.25)
                   `;
@@ -589,7 +580,6 @@ export default function MenuPage() {
           }
         `}
 
-        /* Enhanced Responsive Animations */
         @keyframes fadeIn {
           from { opacity: 0; transform: translateY(clamp(20px, 4vh, 30px)); }
           to { opacity: 1; transform: translateY(0); }
@@ -616,7 +606,6 @@ export default function MenuPage() {
           }
         }
 
-        /* Enhanced Scrollbar for Modal */
         div::-webkit-scrollbar {
           width: clamp(4px, 1vw, 6px);
         }
@@ -633,39 +622,6 @@ export default function MenuPage() {
         
         div::-webkit-scrollbar-thumb:hover {
           background: rgba(148, 163, 184, 0.8);
-        }
-
-        /* Mobile-specific fullscreen optimizations */
-        ${isMobile ? `
-          @media screen and (max-height: 600px) {
-            body {
-              -webkit-overflow-scrolling: touch;
-              overflow: hidden;
-            }
-          }
-
-          /* Hide address bar on mobile */
-          @media screen and (orientation: landscape) and (max-height: 500px) {
-            body {
-              height: 100vh;
-              height: -webkit-fill-available;
-            }
-          }
-        ` : ''}
-
-        /* Ultra-wide Screen Support */
-        @media screen and (min-width: 1400px) {
-          .max-content-width {
-            max-width: 600px;
-          }
-        }
-
-        /* Touch Device Optimizations */
-        @media (hover: none) and (pointer: coarse) {
-          button {
-            min-height: clamp(44px, 9vh, 56px) !important;
-            font-size: clamp(14px, 3.2vw, 16px) !important;
-          }
         }
       `}</style>
     </Layout>

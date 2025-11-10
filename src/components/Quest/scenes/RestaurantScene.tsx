@@ -78,7 +78,7 @@ export default function RestaurantPage() {
           
           {/* Speech Bubble */}
           <div className="speech-bubble" style={{
-            marginTop: '-68px',
+            marginTop: '-208px',
             marginBottom: ' 62px',
             marginLeft: 'clamp(15px, 6vw, 90px)',
             background: 'rgba(255, 255, 255, 0.2)',
