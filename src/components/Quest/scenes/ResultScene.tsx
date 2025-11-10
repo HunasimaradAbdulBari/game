@@ -1,9 +1,10 @@
+// src/components/Quest/scenes/ResultScene.tsx - COMPLETE
 'use client';
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Layout from '../Layout';
 import Button from '../Button';
-import { BarChart3 } from "lucide-react"
+import { BarChart3 } from "lucide-react";
 import { 
   getCurrentLevel, 
   setCurrentLevel, 
@@ -14,18 +15,18 @@ import { getCurrentExperiment, checkWin, updateProgress, clearCurrentExperiment 
 import { 
   saveToLeaderboard, 
   generateUserId,
-  formatDate 
 } from '../../../services/labGameStorageService';
+import { Experiment } from '../../../types';
 
 export default function ResultPage() {
   const router = useRouter();
-  const [currentLevel, setCurrentLevelState] = useState(1);
-  const [levelData, setLevelData] = useState(null);
-  const [basket, setBasket] = useState([]);
-  const [isWin, setIsWin] = useState(false);
-  const [userId, setUserId] = useState('');
+  const [currentLevel, setCurrentLevelState] = useState<number>(1);
+  const [levelData, setLevelData] = useState<Experiment | null>(null);
+  const [basket, setBasket] = useState<string[]>([]);
+  const [isWin, setIsWin] = useState<boolean>(false);
+  const [userId, setUserId] = useState<string>('');
 
-  const playSound = (soundType) => {
+  const playSound = (soundType: 'win' | 'lose'): void => {
     if (typeof window !== 'undefined') {
       try {
         const audio = new Audio(`/sounds/${soundType}.mp3`);
@@ -87,7 +88,10 @@ export default function ResultPage() {
         correctAnswers: correctAnswers,
         totalQuestions: totalQuestions,
         percentage: percentage,
-        passed: true
+        passed: true,
+        subject: 'physics',
+        questionAnswers: currentBasket,
+        wrongAnswers: totalQuestions - correctAnswers
       };
 
       saveToLeaderboard(gameData);
@@ -110,7 +114,7 @@ export default function ResultPage() {
     }, 800);
   }, [router]);
 
-  const handleNextLevel = () => {
+  const handleNextLevel = (): void => {
     const nextLevel = currentLevel + 1;
     if (nextLevel <= 10) {
       setCurrentLevel(nextLevel);
@@ -119,32 +123,27 @@ export default function ResultPage() {
     }
   };
 
-  const handleTryAgain = () => {
+  const handleTryAgain = (): void => {
     router.push('/restaurant');
   };
 
-  const handleReplayLevel = () => {
+  const handleReplayLevel = (): void => {
     router.push('/restaurant');
   };
 
-  const handlePlayFromStart = () => {
+  const handlePlayFromStart = (): void => {
     setCurrentLevel(1);
     clearCurrentExperiment();
     router.push('/restaurant');
   };
 
-  const handleGoToMenu = () => {
+  const handleGoToMenu = (): void => {
     clearCurrentExperiment();
     router.push('/');
   };
 
-  const handleGoToLeaderboard = () => {
-    router.push('/leaderboard');
-  };
-
   if (!levelData) return null;
 
-  // Success Icon SVG - Mobile Optimized
   const SuccessIcon = () => (
     <svg 
       width="48" 
@@ -162,7 +161,6 @@ export default function ResultPage() {
     </svg>
   );
 
-  // Failure Icon SVG - Mobile Optimized
   const FailureIcon = () => (
     <svg 
       width="48" 
@@ -181,8 +179,7 @@ export default function ResultPage() {
     </svg>
   );
 
-  // Custom Banner Component - Mobile Optimized
-  const CustomBanner = ({ title }) => (
+  const CustomBanner = ({ title }: { title: string }) => (
     <div style={{ 
       display: 'flex', 
       justifyContent: 'center', 
@@ -242,230 +239,15 @@ export default function ResultPage() {
     </div>
   );
 
-  // Status Display - Mobile Optimized
-  const renderOverallStatusOnly = () => {
-    return (
-      <div style={{
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        padding: 'clamp(8px, 2vw, 24px)',
-        borderRadius: 'clamp(8px, 2vw, 18px)',
-        background: isWin ? '#E6FFFA' : '#FEF2F2',
-        border: `clamp(1px, 0.2vw, 2px) solid ${isWin ? '#22C55E' : '#F87171'}`,
-        color: isWin ? '#065F46' : '#7F1D1D',
-        fontWeight: 700,
-        fontSize: 'clamp(12px, 2.8vw, 22px)',
-        gap: 'clamp(6px, 1.5vw, 16px)',
-        textTransform: 'uppercase',
-        letterSpacing: 'clamp(0.3px, 0.1vw, 1.2px)',
-        boxShadow: `0 clamp(2px, 0.5vw, 6px) clamp(8px, 2vw, 24px) ${isWin ? 'rgba(34, 197, 94, 0.15)' : 'rgba(248, 113, 113, 0.15)'}`,
-        minHeight: 'clamp(40px, 8vw, 70px)'
-      }}>
-        {isWin ? <SuccessIcon /> : <FailureIcon />}
-        <span>{isWin ? 'Success' : 'Failed'}</span>
-      </div>
-    );
-  };
-
   return (
     <Layout scene="result">
       <style jsx global>{`
-        .perfect-scroll {
-          scrollbar-width: thin;
-          scrollbar-color: rgba(156, 163, 175, 0.6) transparent;
-        }
-        
-        .perfect-scroll::-webkit-scrollbar {
-          width: clamp(4px, 1vw, 8px);
-        }
-        
-        .perfect-scroll::-webkit-scrollbar-track {
-          background: transparent;
-          border-radius: 4px;
-        }
-        
-        .perfect-scroll::-webkit-scrollbar-thumb {
-          background: rgba(156, 163, 175, 0.6);
-          border-radius: 4px;
-        }
-        
-        .perfect-scroll::-webkit-scrollbar-thumb:hover {
-          background: rgba(156, 163, 175, 0.8);
-        }
-
         @keyframes slideIn {
           from { opacity: 0; transform: translateY(clamp(15px, 3vw, 30px)) scale(0.95); }
           to { opacity: 1; transform: translateY(0) scale(1); }
         }
-
-        /* Mobile-specific component size reductions */
-        @media screen and (max-width: 480px) {
-          .result-card {
-            width: 92vw !important;
-            height: 78vh !important;
-            padding: 12px !important;
-          }
-          
-          .mobile-banner {
-            height: 45px !important;
-            margin-bottom: 6px !important;
-          }
-          
-          .mobile-title {
-            font-size: 11px !important;
-            margin-bottom: 6px !important;
-          }
-          
-          .mobile-status {
-            padding: 6px 8px !important;
-            font-size: 10px !important;
-            gap: 4px !important;
-            min-height: 32px !important;
-            margin-bottom: 6px !important;
-          }
-          
-          .mobile-message {
-            font-size: 9px !important;
-            margin-bottom: 6px !important;
-          }
-          
-          .mobile-buttons {
-            gap: 4px !important;
-            padding: 6px 0 !important;
-          }
-          
-          .mobile-button {
-            padding: 6px 8px !important;
-            font-size: 8px !important;
-            min-width: 70px !important;
-            height: 28px !important;
-            border-radius: 4px !important;
-            letter-spacing: 0.2px !important;
-          }
-          
-          .mobile-icon {
-            width: 12px !important;
-            height: 12px !important;
-          }
-        }
-
-        @media screen and (min-width: 481px) and (max-width: 768px) {
-          .result-card {
-            width: 85vw !important;
-            height: 75vh !important;
-          }
-          
-          .mobile-banner {
-            height: 55px !important;
-            margin-bottom: 8px !important;
-          }
-          
-          .mobile-title {
-            font-size: 13px !important;
-            margin-bottom: 8px !important;
-          }
-          
-          .mobile-status {
-            padding: 8px 12px !important;
-            font-size: 12px !important;
-            gap: 6px !important;
-            min-height: 38px !important;
-            margin-bottom: 8px !important;
-          }
-          
-          .mobile-message {
-            font-size: 11px !important;
-            margin-bottom: 8px !important;
-          }
-          
-          .mobile-buttons {
-            gap: 6px !important;
-            padding: 8px 0 !important;
-          }
-          
-          .mobile-button {
-            padding: 7px 10px !important;
-            font-size: 9px !important;
-            min-width: 80px !important;
-            height: 32px !important;
-            border-radius: 6px !important;
-            letter-spacing: 0.3px !important;
-          }
-          
-          .mobile-icon {
-            width: 14px !important;
-            height: 14px !important;
-          }
-        }
-
-        /* Laptop and Desktop - Keep Original Sizes */
-        @media screen and (min-width: 1025px) {
-          .result-card {
-            width: 480px !important;
-            height: 500px !important;
-          }
-        }
-
-        @media screen and (min-width: 1441px) {
-          .result-card {
-            width: 520px !important;
-            height: 540px !important;
-          }
-        }
-
-        /* Touch device optimizations */
-        @media (hover: none) and (pointer: coarse) {
-          .mobile-button {
-            min-height: 36px !important;
-          }
-        }
-
-        /* Landscape mobile optimizations */
-        @media screen and (max-height: 500px) and (orientation: landscape) and (max-width: 800px) {
-          .result-card {
-            height: 92vh !important;
-            width: 80vw !important;
-            max-width: 500px !important;
-          }
-          
-          .mobile-banner {
-            height: 40px !important;
-            margin-bottom: 4px !important;
-          }
-          
-          .mobile-title {
-            font-size: 10px !important;
-            margin-bottom: 4px !important;
-          }
-          
-          .mobile-status {
-            padding: 4px 6px !important;
-            font-size: 9px !important;
-            min-height: 28px !important;
-            margin-bottom: 4px !important;
-          }
-          
-          .mobile-message {
-            font-size: 8px !important;
-            margin-bottom: 4px !important;
-          }
-          
-          .mobile-buttons {
-            gap: 3px !important;
-            padding: 4px 0 !important;
-          }
-          
-          .mobile-button {
-            padding: 4px 6px !important;
-            font-size: 7px !important;
-            min-width: 60px !important;
-            height: 24px !important;
-          }
-        }
       `}</style>
 
-      {/* Blurred Background Overlay */}
       <div style={{
         position: 'fixed',
         top: 0,
@@ -493,7 +275,6 @@ export default function ResultPage() {
         zIndex: 1
       }}>
 
-        {/* Main Result Card - Mobile Optimized Sizes */}
         <div 
           className="result-card"
           style={{
@@ -508,11 +289,7 @@ export default function ResultPage() {
             overflow: 'hidden',
             animation: 'slideIn 1s ease-out',
             border: 'clamp(1px, 0.3vw, 3px) solid #8b6f47',
-            boxShadow: `
-              0 clamp(6px, 1.5vw, 20px) clamp(20px, 5vw, 60px) rgba(139, 111, 71, 0.3), 
-              0 clamp(3px, 0.75vw, 10px) clamp(10px, 2.5vw, 30px) rgba(139, 111, 71, 0.2), 
-              inset 0 1px clamp(1px, 0.3vw, 3px) rgba(255, 255, 255, 0.3)
-            `
+            boxShadow: '0 clamp(6px, 1.5vw, 20px) clamp(20px, 5vw, 60px) rgba(139, 111, 71, 0.3)'
           }}
         >
           <div style={{
@@ -524,7 +301,6 @@ export default function ResultPage() {
             padding: 'clamp(12px, 3vw, 26px)'
           }}>
             
-            {/* Banner - Mobile Optimized */}
             <div 
               className="mobile-banner"
               style={{ 
@@ -536,7 +312,6 @@ export default function ResultPage() {
               <CustomBanner title={isWin ? 'SUCCESS' : 'TRY AGAIN'} />
             </div>
 
-            {/* Challenge Info - Mobile Optimized */}
             <div style={{
               textAlign: 'center',
               marginBottom: 'clamp(6px, 1.5vw, 18px)',
@@ -558,7 +333,6 @@ export default function ResultPage() {
               </h2>
             </div>
 
-            {/* Status Display - Mobile Optimized */}
             <div style={{
               display: 'flex',
               justifyContent: 'center',
@@ -590,7 +364,6 @@ export default function ResultPage() {
               </div>
             </div>
 
-            {/* Progress Messages - Mobile Optimized */}
             {isWin && currentLevel < 10 && (
               <p 
                 className="mobile-message"
@@ -602,8 +375,6 @@ export default function ResultPage() {
                   marginBottom: 'clamp(6px, 1.5vw, 14px)',
                   margin: '0 0 clamp(6px, 1.5vw, 14px) 0',
                   flexShrink: 0,
-                  letterSpacing: 'clamp(0.2px, 0.05vw, 0.5px)',
-                  textShadow: '0 1px 2px rgba(255, 255, 255, 0.8)'
                 }}
               >
                 Next challenge unlocked!
@@ -621,15 +392,12 @@ export default function ResultPage() {
                   marginBottom: 'clamp(6px, 1.5vw, 14px)',
                   margin: '0 0 clamp(6px, 1.5vw, 14px) 0',
                   flexShrink: 0,
-                  letterSpacing: 'clamp(0.2px, 0.05vw, 0.5px)',
-                  textShadow: '0 1px 2px rgba(255, 255, 255, 0.8)'
                 }}
               >
                 All challenges completed!
               </p>
             )}
 
-            {/* Action Buttons - Mobile Optimized */}
             <div 
               className="mobile-buttons"
               style={{
@@ -661,8 +429,6 @@ export default function ResultPage() {
                         transition: 'all 0.3s ease',
                         minWidth: 'clamp(70px, 16vw, 140px)',
                         height: 'clamp(28px, 6vw, 42px)',
-                        letterSpacing: 'clamp(0.2px, 0.05vw, 0.5px)',
-                        boxShadow: '0 clamp(1px, 0.3vw, 3px) clamp(4px, 1vw, 12px) rgba(59, 130, 246, 0.3), 0 1px clamp(2px, 0.5vw, 6px) rgba(0, 0, 0, 0.2)',
                         flex: '1 1 auto',
                         maxWidth: 'clamp(100px, 22vw, 180px)'
                       }}
@@ -685,8 +451,6 @@ export default function ResultPage() {
                         transition: 'all 0.3s ease',
                         minWidth: 'clamp(70px, 16vw, 140px)',
                         height: 'clamp(28px, 6vw, 42px)',
-                        letterSpacing: 'clamp(0.2px, 0.05vw, 0.5px)',
-                        boxShadow: '0 clamp(1px, 0.3vw, 3px) clamp(4px, 1vw, 12px) rgba(59, 130, 246, 0.3), 0 1px clamp(2px, 0.5vw, 6px) rgba(0, 0, 0, 0.2)',
                         flex: '1 1 auto',
                         maxWidth: 'clamp(100px, 22vw, 180px)'
                       }}
@@ -709,8 +473,6 @@ export default function ResultPage() {
                       transition: 'all 0.3s ease',
                       minWidth: 'clamp(60px, 14vw, 120px)',
                       height: 'clamp(28px, 6vw, 42px)',
-                      letterSpacing: 'clamp(0.2px, 0.05vw, 0.5px)',
-                      boxShadow: '0 clamp(1px, 0.2vw, 2px) clamp(2px, 0.5vw, 6px) rgba(0, 0, 0, 0.3)',
                       flex: '1 1 auto',
                       maxWidth: 'clamp(80px, 18vw, 140px)'
                     }}
@@ -724,7 +486,7 @@ export default function ResultPage() {
                     className="mobile-button"
                     onClick={handleTryAgain}
                     style={{
-                      padding: 'clamp(3px, 1.5vw, 6px) clamp(8px, 2vw, 22px)',
+                      padding: 'clamp(6px, 1.5vw, 12px) clamp(8px, 2vw, 22px)',
                       fontSize: 'clamp(8px, 1.8vw, 13px)',
                       fontWeight: '700',
                       background: 'linear-gradient(135deg, #F87171 0%, #EF4444 100%)',
@@ -735,8 +497,6 @@ export default function ResultPage() {
                       transition: 'all 0.3s ease',
                       minWidth: 'clamp(70px, 16vw, 140px)',
                       height: 'clamp(28px, 6vw, 42px)',
-                      letterSpacing: 'clamp(0.2px, 0.05vw, 0.5px)',
-                      boxShadow: '0 clamp(1px, 0.3vw, 3px) clamp(4px, 1vw, 12px) rgba(248, 113, 113, 0.3), 0 1px clamp(2px, 0.5vw, 6px) rgba(0, 0, 0, 0.2)',
                       flex: '1 1 auto',
                       maxWidth: 'clamp(100px, 22vw, 180px)'
                     }}
@@ -758,8 +518,6 @@ export default function ResultPage() {
                       transition: 'all 0.3s ease',
                       minWidth: 'clamp(60px, 14vw, 120px)',
                       height: 'clamp(28px, 6vw, 42px)',
-                      letterSpacing: 'clamp(0.2px, 0.05vw, 0.5px)',
-                      boxShadow: '0 clamp(1px, 0.2vw, 2px) clamp(2px, 0.5vw, 6px) rgba(0, 0, 0, 0.3)',
                       flex: '1 1 auto',
                       maxWidth: 'clamp(80px, 18vw, 140px)'
                     }}
@@ -784,17 +542,14 @@ export default function ResultPage() {
                   borderRadius: 'clamp(4px, 1vw, 12px)',
                   cursor: 'pointer',
                   transition: 'all 0.3s ease',
-                  boxShadow: '0 clamp(1px, 0.2vw, 2px) clamp(2px, 0.5vw, 6px) rgba(0, 0, 0, 0.3)',
                   minWidth: 'clamp(60px, 14vw, 120px)',
                   height: 'clamp(28px, 6vw, 42px)',
-                  letterSpacing: 'clamp(0.2px, 0.05vw, 0.5px)',
                   gap: 'clamp(2px, 0.3vw, 4px)',
                   flex: '1 1 auto',
                   maxWidth: 'clamp(80px, 18vw, 140px)'
                 }}
               >
                 <BarChart3 
-                  className="mobile-icon"
                   style={{ 
                     width: 'clamp(12px, 2.5vw, 20px)', 
                     height: 'clamp(12px, 2.5vw, 20px)',

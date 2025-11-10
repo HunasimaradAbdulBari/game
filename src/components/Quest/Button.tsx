@@ -1,5 +1,8 @@
-// components/Button.js
-export default function Button({
+// src/components/Quest/Button.tsx
+import React from 'react';
+import { ButtonProps } from '../../types';
+
+const Button: React.FC<ButtonProps> = ({
   children,
   onClick,
   variant = 'primary',
@@ -7,8 +10,8 @@ export default function Button({
   disabled = false,
   className = '',
   ...props
-}) {
-  const handleClick = (e) => {
+}) => {
+  const handleClick = (e: React.MouseEvent<HTMLButtonElement>) => {
     if (disabled) return;
 
     const buttonElement = e.currentTarget;
@@ -25,7 +28,6 @@ export default function Button({
     }
 
     if (onClick) {
-      e.persist && e.persist();
       onClick(e);
     }
   };
@@ -152,4 +154,6 @@ export default function Button({
       `}</style>
     </button>
   );
-}
+};
+
+export default Button;

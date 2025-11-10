@@ -1,9 +1,10 @@
-// components/Layout.js - Full Screen Layout
+'use client';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { LayoutProps } from '../../types';
 
-export default function Layout({ children, scene }) {
-  const [mounted, setMounted] = useState(false);
+const Layout: React.FC<LayoutProps> = ({ children, scene }) => {
+  const [mounted, setMounted] = useState<boolean>(false);
   const router = useRouter();
 
   useEffect(() => {
@@ -19,4 +20,6 @@ export default function Layout({ children, scene }) {
       </div>
     </div>
   );
-}
+};
+
+export default Layout;

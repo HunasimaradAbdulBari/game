@@ -1,5 +1,7 @@
-// utils/gameLogic.js - Simplified Game Data
-export const EXPERIMENTS = [
+// src/components/Quest/utils/gameLogic.ts
+import { Experiment, ItemIcon } from '../../../types';
+
+export const EXPERIMENTS: Experiment[] = [
   {
     id: 1,
     title: "Simple Pendulum Experiment",
@@ -65,7 +67,7 @@ export const EXPERIMENTS = [
   }
 ];
 
-export const ITEM_ICONS = {
+export const ITEM_ICONS: ItemIcon = {
   // Physics Equipment
   'pendulum': '⚖️', 'stopwatch': '⏱️', 'protractor': '📐', 'scale': '⚖️', 'spring': '🏹',
   'weights': '🏋️', 'ruler': '📏', 'compass': '🧭', 'incline': '📐',
@@ -90,29 +92,28 @@ export const ITEM_ICONS = {
   'not-gate': '❌', 'nand-gate': '🚫', 'xor-gate': '⚡', 'flip-flop': '🔄', 'counter': '🔢', 'decoder': '🔓'
 };
 
-export const getLevelData = (level) => {
+export const getLevelData = (level: number): Experiment => {
   const experiment = EXPERIMENTS.find(exp => exp.id === level);
   return experiment || EXPERIMENTS[0];
 };
 
-export const getRandomExperiment = () => {
+export const getRandomExperiment = (): Experiment => {
   const randomIndex = Math.floor(Math.random() * EXPERIMENTS.length);
   return EXPERIMENTS[randomIndex];
 };
 
-// NEW: Shared experiment storage functions
-export const setCurrentExperiment = (experiment) => {
+export const setCurrentExperiment = (experiment: Experiment): void => {
   if (typeof window !== 'undefined') {
     localStorage.setItem('current-experiment', JSON.stringify(experiment));
   }
 };
 
-export const getCurrentExperiment = () => {
+export const getCurrentExperiment = (): Experiment | null => {
   if (typeof window !== 'undefined') {
     const stored = localStorage.getItem('current-experiment');
     if (stored) {
       try {
-        return JSON.parse(stored);
+        return JSON.parse(stored) as Experiment;
       } catch (e) {
         console.error('Error parsing stored experiment:', e);
       }
@@ -121,13 +122,13 @@ export const getCurrentExperiment = () => {
   return null;
 };
 
-export const clearCurrentExperiment = () => {
+export const clearCurrentExperiment = (): void => {
   if (typeof window !== 'undefined') {
     localStorage.removeItem('current-experiment');
   }
 };
 
-export const checkWin = (basket, levelData) => {
+export const checkWin = (basket: string[], levelData: Experiment): boolean => {
   if (!levelData || !levelData.correctAnswer || !Array.isArray(basket)) {
     return false;
   }
@@ -139,9 +140,9 @@ export const checkWin = (basket, levelData) => {
     required.every((item, i) => item === selected[i]);
 };
 
-export const updateProgress = (currentLevel) => {
+export const updateProgress = (currentLevel: number): void => {
   if (typeof window !== 'undefined') {
-    const maxUnlocked = parseInt(localStorage.getItem('max-unlocked-level') || '1');
+    const maxUnlocked = parseInt(localStorage.getItem('max-unlocked-level') || '1', 10);
     const nextLevel = currentLevel + 1;
     
     if (nextLevel > maxUnlocked && nextLevel <= EXPERIMENTS.length) {

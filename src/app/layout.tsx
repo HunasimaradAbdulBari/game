@@ -1,13 +1,16 @@
-// src/app/layout.js - Replaces _app.js and _document.js
+// src/app/layout.tsx
 'use client';
 import { useEffect } from 'react';
 import '../styles/globals.css';
-// import '../styles/menu.module.css'
 
-export default function RootLayout({ children }) {
+interface RootLayoutProps {
+  children: React.ReactNode;
+}
+
+export default function RootLayout({ children }: RootLayoutProps) {
   useEffect(() => {
     // Prevent zoom on mobile devices
-    const preventZoom = (e) => {
+    const preventZoom = (e: TouchEvent) => {
       if (e.touches && e.touches.length > 1) {
         e.preventDefault();
       }

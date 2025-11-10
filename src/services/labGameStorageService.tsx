@@ -1,53 +1,16 @@
-// src/services/labGameStorageService.js
-
-/**
- * Lab Game Data Structure
- */
-export const LabGameData = {
-  userId: '',
-  gameId: '',
-  score: 0,
-  subject: '',
-  level: 0,
-  questionAnswers: [],
-  playerName: '',
-  correctAnswers: 0,
-  wrongAnswers: 0,
-  totalQuestions: 0,
-  percentage: 0,
-  passed: false
-};
-
-/**
- * Leaderboard Entry Structure
- */
-export const LeaderboardEntry = {
-  userId: '',
-  playerName: '',
-  score: 0,
-  percentage: 0,
-  correctAnswers: 0,
-  totalQuestions: 0,
-  timestamp: 0,
-  gameId: '',
-  subject: '',
-  level: 0
-};
+// src/services/labGameStorageService.ts
+import { LabGameData, LeaderboardEntry } from '../types';
 
 const STORAGE_KEY = 'lab_quest_game_data';
 const LEADERBOARD_KEY = 'lab_quest_leaderboard';
 
-/**
- * Save game data to localStorage
- */
-export function saveGameData(gameData) {
+export function saveGameData(gameData: LabGameData): boolean {
   try {
     if (typeof window === 'undefined') return false;
     const existingData = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
     const userKey = `${gameData.userId}_${gameData.gameId}`;
     existingData[userKey] = gameData;
     localStorage.setItem(STORAGE_KEY, JSON.stringify(existingData));
-    // Also save to leaderboard
     saveToLeaderboard(gameData);
     return true;
   } catch (error) {
@@ -56,10 +19,7 @@ export function saveGameData(gameData) {
   }
 }
 
-/**
- * Load game data from localStorage
- */
-export function loadGameData(userId, gameId) {
+export function loadGameData(userId: string, gameId: string): LabGameData | null {
   try {
     if (typeof window === 'undefined') return null;
     const existingData = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
@@ -71,10 +31,7 @@ export function loadGameData(userId, gameId) {
   }
 }
 
-/**
- * Remove game data from localStorage
- */
-export function removeGameData(userId, gameId) {
+export function removeGameData(userId: string, gameId: string): boolean {
   try {
     if (typeof window === 'undefined') return false;
     const existingData = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
@@ -88,14 +45,11 @@ export function removeGameData(userId, gameId) {
   }
 }
 
-/**
- * Save score to leaderboard
- */
-export function saveToLeaderboard(gameData) {
+export function saveToLeaderboard(gameData: LabGameData): boolean {
   try {
     if (typeof window === 'undefined') return false;
     const leaderboard = getLeaderboard();
-    const entry = {
+    const entry: LeaderboardEntry = {
       userId: gameData.userId,
       playerName: gameData.playerName || `Player ${gameData.userId.slice(-4)}`,
       score: gameData.score,
@@ -108,17 +62,14 @@ export function saveToLeaderboard(gameData) {
       level: gameData.level || 1
     };
 
-    // Add new entry
     leaderboard.push(entry);
 
-    // Sort by score (highest first), then by percentage, then by timestamp (most recent first)
     leaderboard.sort((a, b) => {
       if (b.score !== a.score) return b.score - a.score;
       if (b.percentage !== a.percentage) return b.percentage - a.percentage;
       return b.timestamp - a.timestamp;
     });
 
-    // Keep only top 10 entries
     const topLeaderboard = leaderboard.slice(0, 10);
     localStorage.setItem(LEADERBOARD_KEY, JSON.stringify(topLeaderboard));
     return true;
@@ -128,17 +79,13 @@ export function saveToLeaderboard(gameData) {
   }
 }
 
-/**
- * Get leaderboard data
- */
-export function getLeaderboard() {
+export function getLeaderboard(): LeaderboardEntry[] {
   try {
     if (typeof window === 'undefined') return [];
-    const leaderboard = JSON.parse(localStorage.getItem(LEADERBOARD_KEY) || '[]');
+    const leaderboard: LeaderboardEntry[] = JSON.parse(localStorage.getItem(LEADERBOARD_KEY) || '[]');
     
-    // If leaderboard is empty, add some sample data for testing
     if (leaderboard.length === 0) {
-      const sampleData = [
+      const sampleData: LeaderboardEntry[] = [
         {
           userId: 'player1',
           playerName: 'Snake Master',
@@ -146,7 +93,7 @@ export function getLeaderboard() {
           percentage: 95,
           correctAnswers: 19,
           totalQuestions: 20,
-          timestamp: Date.now() - 86400000, // 1 day ago
+          timestamp: Date.now() - 86400000,
           gameId: 'snakegame',
           subject: 'physics',
           level: 5
@@ -158,7 +105,7 @@ export function getLeaderboard() {
           percentage: 88,
           correctAnswers: 17,
           totalQuestions: 20,
-          timestamp: Date.now() - 172800000, // 2 days ago
+          timestamp: Date.now() - 172800000,
           gameId: 'snakegame',
           subject: 'physics',
           level: 4
@@ -170,7 +117,7 @@ export function getLeaderboard() {
           percentage: 82,
           correctAnswers: 16,
           totalQuestions: 20,
-          timestamp: Date.now() - 259200000, // 3 days ago
+          timestamp: Date.now() - 259200000,
           gameId: 'snakegame',
           subject: 'physics',
           level: 3
@@ -187,10 +134,7 @@ export function getLeaderboard() {
   }
 }
 
-/**
- * Clear all game data
- */
-export function clearAllGameData() {
+export function clearAllGameData(): boolean {
   try {
     if (typeof window === 'undefined') return false;
     localStorage.removeItem(STORAGE_KEY);
@@ -201,10 +145,7 @@ export function clearAllGameData() {
   }
 }
 
-/**
- * Clear leaderboard
- */
-export function clearLeaderboard() {
+export function clearLeaderboard(): boolean {
   try {
     if (typeof window === 'undefined') return false;
     localStorage.removeItem(LEADERBOARD_KEY);
@@ -215,10 +156,7 @@ export function clearLeaderboard() {
   }
 }
 
-/**
- * Get all game data
- */
-export function getAllGameData() {
+export function getAllGameData(): Record<string, LabGameData> {
   try {
     if (typeof window === 'undefined') return {};
     return JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
@@ -228,21 +166,15 @@ export function getAllGameData() {
   }
 }
 
-/**
- * Generate a unique user ID
- */
-export function generateUserId() {
+export function generateUserId(): string {
   return 'user_' + Math.random().toString(36).substr(2, 9) + '_' + Date.now();
 }
 
-/**
- * Format date for display
- */
-export function formatDate(timestamp) {
+export function formatDate(timestamp: number): string {
   if (!timestamp) return 'Unknown';
   const date = new Date(timestamp);
   const now = new Date();
-  const diffMs = now - date;
+  const diffMs = now.getTime() - date.getTime();
   const diffMins = Math.floor(diffMs / 60000);
   const diffHours = Math.floor(diffMs / 3600000);
   const diffDays = Math.floor(diffMs / 86400000);

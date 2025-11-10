@@ -239,6 +239,6 @@ body {
 @media (max-width: 480px) {
   .drag-item {
     width: clamp(50px, 15vw, 80px);
-    height: clamp(50px, 15vw, 80px);
+    height: clamp(49px, 15vw, 80px);
   }
 }
