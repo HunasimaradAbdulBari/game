@@ -1,5 +1,17 @@
-import { useEffect, useRef } from 'react';
-import { ITEM_ICONS } from '../Quest/utils/gameLogic';
+// src/components/Quest/DragItem.tsx
+import React, { useEffect, useRef } from 'react';
+import { ITEM_ICONS } from './utils/gameLogic';
+import { DragDropManager, DragData, DragOptions } from '../../types';
+
+interface DragItemProps {
+  item: string;
+  onDragStart?: (data: DragData, element: HTMLElement, event: Event) => void;
+  onDragEnd?: (data: DragData, element: HTMLElement, event: Event) => void;
+  dragManager?: DragDropManager;
+  disabled?: boolean;
+  inBasket?: boolean;
+  onTap?: (item: string) => void;
+}
 
 export default function DragItem({ 
   item, 
@@ -9,36 +21,38 @@ export default function DragItem({
   disabled = false,
   inBasket = false,
   onTap 
-}) {
-  const itemRef = useRef(null);
+}: DragItemProps) {
+  const itemRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     if (!dragManager || !itemRef.current || disabled) return;
 
     const element = itemRef.current;
-    const data = { item, type: 'ingredient' };
+    const data: DragData = { item, type: 'ingredient' };
 
-    dragManager.makeDraggable(element, data, {
+    const options: DragOptions = {
       onDragStart: (el, data, e) => {
         if (onDragStart) onDragStart(data, el, e);
       },
       onDragEnd: (el, data, e) => {
         if (onDragEnd) onDragEnd(data, el, e);
       }
-    });
+    };
+
+    dragManager.makeDraggable(element, data, options);
 
     return () => {
       // Cleanup handled by dragManager
     };
   }, [dragManager, item, disabled, onDragStart, onDragEnd]);
 
-  const handleClick = () => {
+  const handleClick = (): void => {
     if (disabled || !onTap) return;
     onTap(item);
   };
 
-  const getItemColor = (item) => {
-    const colors = {
+  const getItemColor = (item: string): string => {
+    const colors: Record<string, string> = {
       'bread': '#fbbf24', 'lettuce': '#10b981', 'tomato': '#f87171',
       'cheese': '#fde047', 'meat': '#a78bfa', 'onion': '#a8a29e',
       'pickle': '#84cc16', 'sauce': '#ff8500', 'mushroom': '#8b5cf6',
@@ -55,8 +69,7 @@ export default function DragItem({
       className={`drag-item ${inBasket ? 'in-basket' : ''} ${disabled ? 'disabled' : ''}`}
       onClick={handleClick}
       style={{
-        marginTop:'120px',
-        '--item-color': getItemColor(item),
+        marginTop: '120px',
         opacity: disabled ? 0.5 : 1,
         transform: inBasket ? 'scale(0.9)' : 'scale(1)',
         border: `2px solid ${getItemColor(item)}40`,

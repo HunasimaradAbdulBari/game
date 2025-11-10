@@ -1,11 +1,16 @@
+// src/components/Quest/ClientLayout.tsx
 'use client';
 
 import { useEffect } from 'react';
 
-export default function ClientLayout({ children }) {
+interface ClientLayoutProps {
+  children: React.ReactNode;
+}
+
+export default function ClientLayout({ children }: ClientLayoutProps) {
   useEffect(() => {
     // Prevent zoom on mobile devices
-    const preventZoom = (e) => {
+    const preventZoom = (e: TouchEvent): void => {
       if (e.touches && e.touches.length > 1) {
         e.preventDefault();
       }
